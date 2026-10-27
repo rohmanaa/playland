@@ -13,6 +13,25 @@
   
   <!-- Three.js r128 -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+  <script>
+if (typeof THREE === 'undefined') {
+  var overlay = document.createElement('div');
+  overlay.style.position = 'fixed';
+  overlay.style.inset = '0';
+  overlay.style.background = '#111';
+  overlay.style.color = '#fff';
+  overlay.style.display = 'flex';
+  overlay.style.flexDirection = 'column';
+  overlay.style.alignItems = 'center';
+  overlay.style.justifyContent = 'center';
+  overlay.style.zIndex = '99999';
+  overlay.style.fontFamily = 'sans-serif';
+  overlay.style.padding = '24px';
+  overlay.style.textAlign = 'center';
+  overlay.innerHTML = '<div style="font-size:20px;font-weight:bold;margin-bottom:12px;">Gagal memuat Three.js. Periksa koneksi internet lalu muat ulang.</div><button onclick="location.reload()" style="padding:10px 24px;font-size:16px;cursor:pointer;">Muat Ulang</button>';
+  document.body.appendChild(overlay);
+}
+</script>
 
   <style>
     :root {
@@ -1074,7 +1093,7 @@
     }
 
     startBGM() {
-      if (this.bgmTimer) return;
+      if (this.bgmTimer) { clearInterval(this.bgmTimer); this.bgmTimer = null; }
       // Gentle uplifting Arabian pentatonic music sequence
       const melody = [
         392.0, 440.0, 493.88, 523.25, 659.25, 783.99,
@@ -2049,6 +2068,7 @@
   // --- 12. GAME FLOW & STATE MACHINE ---
   function startGame(level) {
     Audio.init();
+    if (Audio.bgmTimer) { clearInterval(Audio.bgmTimer); Audio.bgmTimer = null; }
     gameState = 'PLAYING';
     STATE.currentLevel = level || STATE.currentLevel;
 
@@ -2071,6 +2091,7 @@
 
   function handleGameOver(won, multiplier = 1) {
     if (gameState !== 'PLAYING') return;
+    if (Audio.bgmTimer) { clearInterval(Audio.bgmTimer); Audio.bgmTimer = null; }
 
     if (won) {
       gameState = 'VICTORY';
@@ -2456,6 +2477,19 @@
     setupInputs();
     updateUIElements();
     animate();
+
+    document.addEventListener('visibilitychange', () => {
+      if (document.hidden) {
+        if (gameState === 'PLAYING') {
+          gameState = 'PAUSED';
+          openModal('modal-pause');
+        }
+        if (Audio.ctx) Audio.ctx.suspend();
+        if (Audio.bgmTimer) { clearInterval(Audio.bgmTimer); Audio.bgmTimer = null; }
+      } else {
+        if (Audio.ctx && Audio.ctx.state === 'suspended') Audio.ctx.resume();
+      }
+    });
   });
   </script>
 </body>

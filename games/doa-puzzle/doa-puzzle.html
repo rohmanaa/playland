@@ -318,6 +318,25 @@
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
 <script>
+if (typeof THREE === 'undefined') {
+  var overlay = document.createElement('div');
+  overlay.style.position = 'fixed';
+  overlay.style.inset = '0';
+  overlay.style.background = '#111';
+  overlay.style.color = '#fff';
+  overlay.style.display = 'flex';
+  overlay.style.flexDirection = 'column';
+  overlay.style.alignItems = 'center';
+  overlay.style.justifyContent = 'center';
+  overlay.style.zIndex = '99999';
+  overlay.style.fontFamily = 'sans-serif';
+  overlay.style.padding = '24px';
+  overlay.style.textAlign = 'center';
+  overlay.innerHTML = '<div style="font-size:20px;font-weight:bold;margin-bottom:12px;">Gagal memuat Three.js. Periksa koneksi internet lalu muat ulang.</div><button onclick="location.reload()" style="padding:10px 24px;font-size:16px;cursor:pointer;">Muat Ulang</button>';
+  document.body.appendChild(overlay);
+}
+</script>
+<script>
 // =============================================
 // DOA HARIAN DATA
 // =============================================
@@ -381,7 +400,8 @@ let coins = [];
 let collectedCoins = 0;
 let totalCoins = 0;
 let currentLevel = 0;
-let totalStars = parseInt(localStorage.getItem('doaPuzzleStars') || '0');
+let totalStars = 0;
+try { totalStars = parseInt(localStorage.getItem('doaPuzzleStars') || '0'); } catch (e) {}
 let gameStarted = false;
 let levelComplete = false;
 
@@ -1122,7 +1142,7 @@ function showLevelComplete() {
   levelComplete = true;
   const lvl = DOA_LEVELS[currentLevel % DOA_LEVELS.length];
   totalStars += lvl.words.length;
-  localStorage.setItem('doaPuzzleStars', totalStars);
+  try { localStorage.setItem('doaPuzzleStars', totalStars); } catch (e) {}
 
   document.getElementById('hud-stars').textContent = totalStars;
   document.getElementById('lc-title').textContent = `${lvl.name} Selesai! ðŸŽ‰`;
