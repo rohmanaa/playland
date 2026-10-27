@@ -363,7 +363,9 @@ function updateFades(dt,pts){
       const ex=C.x+sx*t-cx,ey=C.y+sy*t-cy,ez=C.z+sz*t-cz;
       if(ex*ex+ey*ey+ez*ez<f.rad*f.rad) hit=true;
     }
-    f.k+=((hit?0.14:1)-f.k)*rate;
+    const overBoard=f.obj&&(Math.abs(cx)<9.5&&Math.abs(cz)<9.5);
+    if(overBoard) hit=true;
+    f.k+=(((hit?0.04:1))-f.k)*rate;
     f.mat.opacity=f.k*f.base; f.mat.depthWrite=f.k>0.97;
     f.lmat.opacity=0.6*f.k;
   }

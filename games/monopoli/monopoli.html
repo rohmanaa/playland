@@ -210,7 +210,7 @@ sv.own.bld=sv.own.bld||['warna'];sv.own.tug=sv.own.tug||['warna'];sv.eq.bld=sv.e
 function chkDay(){if(!sv.ms||sv.ms.d!==today())sv.ms={d:today(),w:0,k:0,h:0,c:[0,0,0]};}chkDay();
 const save=()=>{try{localStorage.setItem('juraganBlokV1',JSON.stringify(sv));}catch(e){}};
 const fades=[],tv=new THREE.Vector3();
-function addFade(g,oy,r){fades.push({g:g,oy:oy,r:r,a:1,mat:g.children[0].material,lmat:g.children[1]&&g.children[1].material});}
+function addFade(g,oy,r,isCloud){fades.push({g:g,oy:oy,r:r,isCloud:!!isCloud,a:1,mat:g.children[0].material,lmat:g.children[1]&&g.children[1].material});}
 /* Pulau dan papan */
 const world=new THREE.Group();scene.add(world);
 let boardG=null;
@@ -229,13 +229,13 @@ buildBoard();
 
 function tree(X,Z,s){const x=0,z=0,DB=makeBatch(),u=.5*s;for(let i=0;i<3;i++)addBox(DB,x,u*(i+.5),z,.4*s,u,.4*s,jit(0x8A5A2E,.08));
   for(let ly=0;ly<3;ly++)for(let ix=-1;ix<=1;ix++)for(let iz=-1;iz<=1;iz++){if(ly===2&&Math.abs(ix)+Math.abs(iz)>1)continue;addBox(DB,x+ix*u,u*3+u*(ly+.5),z+iz*u,u,u,u,jit(0x4FBF3A,.12));}
-  const g=buildBatch(DB,{mat:MAT.clone(),lmat:LINE_MAT.clone()});g.position.set(X,0,Z);world.add(g);addFade(g,1.4,1.6);}
+  const g=buildBatch(DB,{mat:MAT.clone(),lmat:LINE_MAT.clone()});g.position.set(X,0,Z);world.add(g);addFade(g,1.4,1.6,false);}
 [[-9,-4],[9,-3],[-9,4],[9,4.5],[-3,9],[3.5,-9],[-4,-9],[2,9]].forEach(t=>tree(t[0],t[1],.9));
 
 const clouds=[];
 function makeCloud(x,y,z,s){const b=makeBatch(),n=5+Math.floor(rnd()*4);
   for(let i=0;i<n;i++)addBox(b,(i-n/2)*1.3+(rnd()-.5)*.6,(rnd()-.5)*.5,(rnd()-.5)*1.2,1.6+rnd()*1.6,.8+rnd()*.4,1.4+rnd(),new THREE.Color().setHSL(.58,.35,.97-rnd()*.04),{edge:false});
-  const g=buildBatch(b,{cast:false,receive:false,mat:MAT.clone()});g.position.set(x,y,z);g.scale.setScalar(s);scene.add(g);addFade(g,0,3*s);clouds.push({g,speed:.18+rnd()*.22});}
+  const g=buildBatch(b,{cast:false,receive:false,mat:MAT.clone()});g.position.set(x,y,z);g.scale.setScalar(s);scene.add(g);addFade(g,0,3*s,true);clouds.push({g,speed:.18+rnd()*.22});}
 makeCloud(-14,10,-8,1.1);makeCloud(-3,12,-12,1.3);makeCloud(12,9.5,3,1);makeCloud(16,13,-10,1.2);
 /* Pion */
 const PSK={
@@ -533,8 +533,11 @@ function frame(now){
   camera.lookAt(camTarget);
   const td=camera.position.distanceTo(camTarget)-1;
   fades.forEach(o=>{tv.copy(o.g.position);tv.y+=o.oy;const dc=tv.distanceTo(camera.position);tv.project(camera);
-    const hit=dc<td&&tv.z<1&&Math.abs(tv.x)<.5&&Math.abs(tv.y)<.5;
-    o.a+=((hit?.14:1)-o.a)*Math.min(1,dt*8);
+    const hitCam=dc<td&&tv.z<1&&Math.abs(tv.x)<.5&&Math.abs(tv.y)<.5;
+    const overBoard=o.isCloud&&(Math.abs(o.g.position.x)<11.5&&Math.abs(o.g.position.z)<11.5);
+    const hit=hitCam||overBoard;
+    const targetA=hit?0.04:1;
+    o.a+=(targetA-o.a)*Math.min(1,dt*8);
     const on=o.a<.99;o.mat.transparent=on;o.mat.opacity=o.a;o.mat.depthWrite=!on;if(o.lmat)o.lmat.opacity=.6*o.a;});
   if(!reduce)clouds.forEach(c=>{c.g.position.x+=c.speed*dt;if(c.g.position.x>26)c.g.position.x=-26;});
   
