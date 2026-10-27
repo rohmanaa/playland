@@ -1218,6 +1218,168 @@
       display: block;
     }
 
+    /* Floating Close Button at Top-Center of Game Screen */
+    .game-floating-close-btn {
+      position: absolute;
+      top: 14px;
+      left: 50%;
+      transform: translateX(-50%);
+      z-index: 45;
+      background: rgba(18, 30, 49, 0.88);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      border: 2px solid rgba(255, 255, 255, 0.4);
+      border-radius: 999px;
+      padding: 7px 18px 7px 14px;
+      color: #ffffff;
+      font-family: 'Fredoka', cursive, sans-serif;
+      font-size: 13.5px;
+      font-weight: 700;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      cursor: pointer;
+      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.45);
+      transition: all 0.25s cubic-bezier(0.34, 1.56, 0.64, 1);
+      user-select: none;
+    }
+
+    .game-floating-close-btn:hover {
+      transform: translateX(-50%) translateY(-2px) scale(1.05);
+      background: linear-gradient(135deg, #e74c3c, #c0392b);
+      border-color: #ff9b91;
+      box-shadow: 0 10px 28px rgba(231, 76, 60, 0.55);
+    }
+
+    .btn-exit-tool {
+      background: rgba(231, 76, 60, 0.12);
+      border-color: rgba(231, 76, 60, 0.35);
+      color: #e74c3c;
+    }
+
+    .btn-exit-tool:hover {
+      background: #e74c3c;
+      color: #ffffff;
+      border-color: #e74c3c;
+    }
+
+    /* Modal Konfirmasi Exit Game */
+    .game-confirm-modal-overlay {
+      position: absolute;
+      inset: 0;
+      z-index: 100;
+      background: rgba(10, 22, 39, 0.82);
+      backdrop-filter: blur(10px);
+      -webkit-backdrop-filter: blur(10px);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+      animation: modalFadeIn 0.2s ease-out forwards;
+    }
+
+    @keyframes modalFadeIn {
+      from { opacity: 0; }
+      to { opacity: 1; }
+    }
+
+    .game-confirm-card {
+      background: var(--card-bg);
+      border: 3px solid var(--card-border);
+      border-radius: 26px;
+      padding: 28px 26px 24px;
+      max-width: 420px;
+      width: 100%;
+      text-align: center;
+      box-shadow: 0 20px 50px rgba(0, 0, 0, 0.45), 0 8px 0 var(--card-border);
+      animation: modalCardPop 0.3s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+    }
+
+    @keyframes modalCardPop {
+      from { transform: scale(0.85); opacity: 0; }
+      to { transform: scale(1); opacity: 1; }
+    }
+
+    .game-confirm-icon-wrap {
+      width: 64px;
+      height: 64px;
+      margin: 0 auto 16px;
+      border-radius: 50%;
+      background: rgba(243, 156, 18, 0.15);
+      border: 3px solid #f39c12;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .game-confirm-title {
+      font-family: 'Fredoka', cursive, sans-serif;
+      font-size: 22px;
+      color: var(--ink);
+      margin-bottom: 8px;
+    }
+
+    .game-confirm-desc {
+      font-size: 14px;
+      font-weight: 700;
+      color: var(--ink-soft);
+      line-height: 1.5;
+      margin-bottom: 22px;
+    }
+
+    .game-confirm-buttons {
+      display: flex;
+      gap: 12px;
+      justify-content: center;
+    }
+
+    .btn-confirm-cancel {
+      flex: 1;
+      background: var(--primary-blue);
+      border: 2px solid rgba(255, 255, 255, 0.4);
+      color: #ffffff;
+      padding: 12px 16px;
+      border-radius: 999px;
+      font-family: 'Fredoka', cursive, sans-serif;
+      font-size: 15px;
+      font-weight: 700;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      box-shadow: 0 4px 14px rgba(35, 139, 247, 0.35);
+      transition: transform 0.15s;
+    }
+
+    .btn-confirm-cancel:hover {
+      transform: translateY(-2px);
+    }
+
+    .btn-confirm-ok {
+      flex: 1;
+      background: #e74c3c;
+      border: 2px solid rgba(255, 255, 255, 0.4);
+      color: #ffffff;
+      padding: 12px 16px;
+      border-radius: 999px;
+      font-family: 'Fredoka', cursive, sans-serif;
+      font-size: 15px;
+      font-weight: 700;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      box-shadow: 0 4px 14px rgba(231, 76, 60, 0.35);
+      transition: transform 0.15s;
+    }
+
+    .btn-confirm-ok:hover {
+      transform: translateY(-2px);
+      background: #c0392b;
+    }
+
     /* GAME SPLASH & LOADING SCREEN OVERLAY */
     .game-splash-overlay {
       position: absolute;
@@ -2068,6 +2230,33 @@
 
             <!-- Game Player Screen with Mandatory Splash & Loading Overlay -->
             <div class="game-screen-wrapper" id="gameScreenWrapper">
+              <!-- Floating Close Button at Top-Center of Screen -->
+              <button class="game-floating-close-btn" id="btnFloatingCloseGame" title="Keluar / Tutup Permainan">
+                <span class="iconify" data-icon="fluent-color:dismiss-circle-24" style="font-size: 18px;"></span>
+                <span>Tutup Game</span>
+              </button>
+
+              <!-- Confirm Exit Modal -->
+              <div class="game-confirm-modal-overlay" id="gameExitConfirmModal" style="display: none;">
+                <div class="game-confirm-card">
+                  <div class="game-confirm-icon-wrap">
+                    <span class="iconify" data-icon="fluent-color:warning-24" style="font-size: 38px;"></span>
+                  </div>
+                  <h3 class="game-confirm-title">Keluar dari Permainan?</h3>
+                  <p class="game-confirm-desc">Apakah kamu yakin ingin mengakhiri sesi game dan kembali ke Beranda?</p>
+                  <div class="game-confirm-buttons">
+                    <button class="btn-confirm-cancel" id="btnCancelExitGame">
+                      <span class="iconify" data-icon="fluent-color:play-24" style="font-size: 18px;"></span>
+                      <span>Lanjut Main</span>
+                    </button>
+                    <button class="btn-confirm-ok" id="btnConfirmExitGame">
+                      <span class="iconify" data-icon="fluent-color:dismiss-24" style="font-size: 18px;"></span>
+                      <span>Ya, Keluar</span>
+                    </button>
+                  </div>
+                </div>
+              </div>
+
               <!-- Loading / Splash Screen Overlay -->
               <div class="game-splash-overlay" id="gameSplashOverlay">
                 <div class="splash-card">
@@ -2122,6 +2311,9 @@
 
               <!-- Action buttons -->
               <div class="game-btn-toolbar-group">
+                <button class="btn-action-tool btn-exit-tool" id="btnToolbarExitGame" title="Tutup Game">
+                  <span class="iconify" data-icon="fluent-color:dismiss-circle-24"></span> Keluar Game
+                </button>
                 <button class="btn-action-tool btn-fullscreen-main" id="btnToolbarFullscreen">
                   <span class="iconify" data-icon="fluent:full-screen-maximize-24-filled"></span> Layar Penuh
                 </button>
@@ -3058,6 +3250,37 @@
     });
 
     // Detail Toolbar Actions
+    const gameExitConfirmModal = document.getElementById('gameExitConfirmModal');
+    const btnFloatingCloseGame = document.getElementById('btnFloatingCloseGame');
+    const btnToolbarExitGame = document.getElementById('btnToolbarExitGame');
+    const btnCancelExitGame = document.getElementById('btnCancelExitGame');
+    const btnConfirmExitGame = document.getElementById('btnConfirmExitGame');
+
+    function promptExitGame() {
+      if (gameExitConfirmModal) gameExitConfirmModal.style.display = 'flex';
+    }
+
+    if (btnFloatingCloseGame) btnFloatingCloseGame.addEventListener('click', promptExitGame);
+    if (btnToolbarExitGame) btnToolbarExitGame.addEventListener('click', promptExitGame);
+
+    if (btnCancelExitGame) {
+      btnCancelExitGame.addEventListener('click', () => {
+        if (gameExitConfirmModal) gameExitConfirmModal.style.display = 'none';
+      });
+    }
+
+    if (btnConfirmExitGame) {
+      btnConfirmExitGame.addEventListener('click', () => {
+        if (gameExitConfirmModal) gameExitConfirmModal.style.display = 'none';
+        if (detailGameIframe) detailGameIframe.src = 'about:blank';
+        if (document.fullscreenElement) {
+          try { document.exitFullscreen(); } catch (e) { }
+        }
+        switchView('home');
+        showToast('🚪 Berhasil keluar dari permainan');
+      });
+    }
+
     const btnToolbarFullscreen = document.getElementById('btnToolbarFullscreen');
     btnToolbarFullscreen.addEventListener('click', () => {
       const screen = document.getElementById('gameScreenWrapper');
