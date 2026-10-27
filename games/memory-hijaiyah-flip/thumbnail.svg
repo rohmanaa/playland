@@ -1,0 +1,23 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 300" width="100%" height="100%">
+  <defs>
+    <linearGradient id="bgGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#74b9ff"/>
+      <stop offset="100%" stop-color="#a29bfe"/>
+    </linearGradient>
+    <filter id="shadow">
+      <feDropShadow dx="0" dy="6" stdDeviation="5" flood-color="#000" flood-opacity="0.25"/>
+    </filter>
+  </defs>
+  <rect width="400" height="300" rx="22" fill="url(#bgGrad)"/>
+  <rect x="70" y="50" width="110" height="150" rx="16" fill="#1e3799" stroke="#ffffff" stroke-width="4" filter="url(#shadow)"/>
+  <text x="125" y="145" font-size="64" fill="#ffeaa7" text-anchor="middle">☪</text>
+  
+  <rect x="220" y="50" width="110" height="150" rx="16" fill="#ffffff" stroke="#ffffff" stroke-width="4" filter="url(#shadow)"/>
+  <text x="275" y="145" font-family="'Amiri', serif" font-weight="bold" font-size="80" fill="#2c3e50" text-anchor="middle">ب</text>
+  <text x="275" y="180" font-family="sans-serif" font-weight="bold" font-size="18" fill="#747d8c" text-anchor="middle">Ba</text>
+
+  <rect x="60" y="235" width="280" height="42" rx="21" fill="#1b4b84" stroke="#ffffff" stroke-width="3" filter="url(#shadow)"/>
+  <text x="200" y="263" font-family="sans-serif" font-weight="bold" font-size="20" fill="#ffffff" text-anchor="middle">
+    MEMORY <tspan fill="#ffeaa7">HIJAIYAH</tspan>
+  </text>
+</svg>

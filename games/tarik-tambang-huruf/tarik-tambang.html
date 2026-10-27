@@ -1,0 +1,255 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Tarik Tambang Hijaiyah — PlayLand</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Baloo+2:wght@500;600;700;800&family=Amiri:wght@700&display=swap');
+:root{--ink:#17345a;--muted:#72849b;--green:#24b86b;--red:#f05252;--gold:#ffca55;--panel:#fff;--shadow:0 14px 35px #16395b26}
+*{box-sizing:border-box}html,body{margin:0;min-height:100%;font-family:'Baloo 2',system-ui,sans-serif;color:var(--ink)}
+body{min-height:100vh;overflow-x:hidden;background:#a9e5ff}
+button{font:inherit}
+.game{min-height:100vh;position:relative;overflow:hidden;padding:16px 18px 28px;background:linear-gradient(180deg,#8bd9ff 0%,#c7f0ff 44%,#a9e68a 44%,#65c75a 100%)}
+.sun{position:absolute;right:8%;top:8%;width:74px;height:74px;border-radius:50%;background:#fff3a6;box-shadow:0 0 0 14px #fff3a633,0 0 60px #fff4a888}
+.cloud{position:absolute;width:118px;height:34px;background:#ffffffb5;border-radius:99px;filter:drop-shadow(0 4px 2px #3b9cc51a);animation:cloudDrift 24s linear infinite}
+.cloud:before,.cloud:after{content:"";position:absolute;background:inherit;border-radius:50%}.cloud:before{width:44px;height:44px;left:18px;bottom:0}.cloud:after{width:58px;height:56px;right:17px;bottom:0}
+.c1{left:5%;top:14%;transform:scale(.8)}.c2{left:64%;top:24%;animation-delay:-11s;transform:scale(.65)}
+@keyframes cloudDrift{0%,100%{translate:0 0}50%{translate:28px 4px}}
+.shell{position:relative;z-index:1;max-width:1060px;margin:0 auto}
+.header{display:flex;align-items:center;justify-content:space-between;gap:14px;margin-bottom:14px}
+.brand{display:flex;align-items:center;gap:11px}.brand-mark{width:48px;height:48px;display:grid;place-items:center;background:#fff;border-radius:16px;box-shadow:0 5px 0 #d6e9f4;font-size:25px}.brand h1{font-size:clamp(19px,3vw,28px);line-height:1;margin:0;font-weight:800;letter-spacing:-.4px}.brand p{margin:3px 0 0;color:#4e7690;font-size:13px;font-weight:700}
+.hud{display:flex;align-items:center;gap:8px;flex-wrap:wrap;justify-content:flex-end}
+.hud-chip{display:flex;align-items:center;gap:7px;padding:8px 13px;background:#ffffffed;border:1px solid #fff;border-radius:14px;box-shadow:0 5px 0 #d7e8f1;font-weight:800;font-size:14px;white-space:nowrap}
+.dot{width:10px;height:10px;border-radius:50%;background:var(--green);box-shadow:0 0 0 4px #24b86b20}.dot.red{background:var(--red);box-shadow:0 0 0 4px #f0525220}
+.arena-card{position:relative;overflow:hidden;border:2px solid #ffffffc9;border-radius:28px;background:linear-gradient(180deg,#d9f5ffcc 0%,#e8f9ffb8 60%,#8dd86a 60%,#69c64e 100%);box-shadow:var(--shadow);min-height:280px;margin-bottom:16px}
+.arena-top{display:flex;align-items:center;justify-content:space-between;padding:15px 20px 0;position:relative;z-index:2}
+.team-pill{display:flex;align-items:center;gap:8px;padding:7px 12px;border-radius:12px;background:#ffffffed;box-shadow:0 4px 0 #d4e7ef;font-weight:800;font-size:13px}
+.team-pill .badge{display:grid;place-items:center;width:25px;height:25px;border-radius:8px;background:#e5fff0;color:#138b50}.team-pill.enemy .badge{background:#ffe9e9;color:#c92f3c}
+.arena-scene{position:relative;height:215px;margin-top:-2px}
+.ground{position:absolute;bottom:0;left:0;right:0;height:53px;background:linear-gradient(180deg,#78d45b,#58b743);border-top:4px solid #b9f58d}
+.ground:before{content:"";position:absolute;left:0;right:0;top:8px;height:2px;background:#ffffff55}
+.center-line{position:absolute;left:50%;top:25px;bottom:28px;width:3px;border-radius:3px;background:#ffffffb5;transform:translateX(-50%);z-index:1}
+.rope-area{position:absolute;left:13%;right:13%;top:49%;height:22px;transform:translateY(-50%);z-index:2}
+.rope{position:absolute;inset:5px 0 5px;border-radius:20px;background:repeating-linear-gradient(90deg,#ad681e 0 14px,#eab45d 14px 20px,#c98531 20px 24px);border:2px solid #fff0d0;box-shadow:0 4px 0 #754a2850}
+.flag{position:absolute;left:50%;top:-15px;transform:translateX(-50%);height:43px;width:23px;border-radius:5px 5px 8px 8px;background:linear-gradient(90deg,#f64d4d,#db303f);border:3px solid white;box-shadow:0 4px 8px #17345a45;transition:left .35s cubic-bezier(.2,.8,.2,1)}
+.flag:before{content:"";position:absolute;top:-12px;left:7px;width:3px;height:12px;background:#fff}
+.player,.robot{position:absolute;top:25px;width:150px;height:168px;z-index:4;transition:left .4s cubic-bezier(.2,.8,.2,1),right .4s cubic-bezier(.2,.8,.2,1);display:flex;align-items:center;justify-content:center}
+.player{left:4%}.robot{right:4%}
+.character{width:130px;height:145px;overflow:visible;filter:drop-shadow(0 7px 5px #24466326)}
+.player .character{animation:leanPlayer .7s ease-in-out infinite alternate;transform-origin:65% 78%}
+.robot .character{animation:leanRobot .7s ease-in-out infinite alternate;transform-origin:35% 78%}
+@keyframes leanPlayer{from{transform:rotate(5deg) translateY(0)}to{transform:rotate(-5deg) translateY(-3px)}}
+@keyframes leanRobot{from{transform:rotate(-5deg) translateY(0)}to{transform:rotate(5deg) translateY(-3px)}}
+.pulling .player .character,.pulling .robot .character{animation-duration:.22s}
+.player .rope-hand,.robot .rope-hand{animation:armPull .5s ease-in-out infinite alternate;transform-box:fill-box;transform-origin:center}
+@keyframes armPull{to{rotate:-8deg}}
+.speech{position:absolute;top:4px;left:50%;transform:translateX(-50%);background:#fff;padding:4px 10px;border-radius:11px;font-size:12px;font-weight:800;box-shadow:0 3px 0 #d5e5ee;white-space:nowrap}
+.speech:after{content:"";position:absolute;left:50%;bottom:-6px;border-width:6px 5px 0;border-style:solid;border-color:white transparent transparent;transform:translateX(-50%)}
+.arena-bottom{position:absolute;bottom:8px;left:50%;transform:translateX(-50%);z-index:5;color:#fff;font-size:11px;font-weight:800;letter-spacing:1.3px;text-shadow:0 2px 3px #286a32;white-space:nowrap}
+.game-layout{display:grid;grid-template-columns:minmax(0,1fr) 280px;gap:16px;align-items:stretch}
+.quiz-card,.side-card{background:#ffffffef;border:1px solid #fff;border-radius:24px;box-shadow:var(--shadow)}
+.quiz-card{padding:22px 24px 20px;text-align:center}
+.question-head{display:flex;justify-content:space-between;align-items:center;gap:10px;margin-bottom:8px}
+.eyebrow{font-size:12px;font-weight:800;letter-spacing:1.2px;color:#6e8ba2;text-transform:uppercase}
+.timer-label{display:flex;align-items:center;gap:6px;font-size:13px;font-weight:800;color:#e34b4b}
+.timer-track{height:8px;border-radius:20px;background:#e9eef2;overflow:hidden;margin-bottom:15px}
+.timer-fill{height:100%;width:100%;border-radius:20px;background:linear-gradient(90deg,#39c779,#9cdb61);transition:width .2s linear,background .2s}
+.timer-fill.warn{background:linear-gradient(90deg,#ffc04b,#ff8d46)}.timer-fill.danger{background:linear-gradient(90deg,#ff6b6b,#df394b)}
+.question-text{font-size:15px;color:#627a90;font-weight:700;margin:0}
+.arabic{font-family:'Amiri',serif;font-size:72px;line-height:1.05;color:#18375a;text-shadow:0 3px 0 #dbe9f3;margin:3px 0 14px}
+.options{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}
+.answer{border:2px solid #e0e9f0;border-radius:15px;background:linear-gradient(#fff,#f5f8fb);box-shadow:0 4px 0 #dfe8ef;color:#243f60;padding:12px 8px;font-weight:800;font-size:16px;cursor:pointer;transition:transform .12s,border-color .12s,background .12s;min-height:49px}
+.answer:hover{transform:translateY(-2px);border-color:#9ac9ec}.answer:active{transform:translateY(2px);box-shadow:0 1px 0 #dfe8ef}.answer:focus-visible{outline:3px solid #55b9f1;outline-offset:3px}
+.answer.correct{background:#d9ffeb;border-color:#45cf8a;color:#137344}.answer.wrong{background:#ffe4e4;border-color:#ff7777;color:#b72c3c}.answer:disabled{cursor:default}
+.feedback{min-height:24px;margin-top:11px;font-size:14px;font-weight:800;color:#5c7890}
+.side-card{padding:20px;display:flex;flex-direction:column;gap:15px}
+.side-title{font-size:15px;font-weight:800;margin:0}
+.progress-caption{display:flex;justify-content:space-between;font-size:12px;font-weight:800;color:#70869b;margin-bottom:7px}
+.round-track{height:10px;border-radius:20px;background:#e8eef3;overflow:hidden}.round-fill{height:100%;width:10%;background:linear-gradient(90deg,#3e9cff,#64d5f3);border-radius:20px;transition:width .3s}
+.score-row{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.score-box{padding:12px;border-radius:15px;background:#f3fbf6;border:1px solid #d8f3e3}.score-box.enemy{background:#fff5f5;border-color:#ffe0e0}
+.score-box small{display:block;color:#7b8fa1;font-weight:800;font-size:11px}.score-box strong{display:block;font-size:25px;line-height:1.15}.score-box.enemy strong{color:#e74b56}
+.tip{padding:12px;border-radius:15px;background:#fff8dc;border:1px solid #ffe9a1;color:#8a6822;font-size:12px;line-height:1.45;font-weight:700;margin-top:auto}
+.btn-secondary{border:0;border-radius:13px;padding:10px 12px;background:#eaf4fb;color:#42617b;font-weight:800;cursor:pointer}.btn-secondary:hover{background:#d9ecfa}
+.modal{position:fixed;inset:0;background:#102947b8;backdrop-filter:blur(8px);display:none;align-items:center;justify-content:center;padding:18px;z-index:20}.modal.show{display:flex}
+.modal-card{width:min(420px,100%);padding:28px 24px;border-radius:28px;background:#fff;text-align:center;box-shadow:0 25px 80px #0b203c55;animation:pop .35s cubic-bezier(.2,.8,.2,1)}
+@keyframes pop{from{opacity:0;transform:scale(.85) translateY(12px)}to{opacity:1;transform:scale(1) translateY(0)}}
+.trophy{width:76px;height:76px;margin:0 auto 10px;border-radius:24px;background:#fff3c7;display:grid;place-items:center;font-size:40px}
+.modal-card h2{margin:0 0 5px;font-size:27px}.modal-card p{margin:0;color:#72849b;font-weight:600}
+.final-scores{display:flex;justify-content:center;gap:24px;margin:18px 0;font-weight:800}.final-scores strong{display:block;font-size:23px}
+.primary-btn{border:0;border-radius:15px;background:linear-gradient(135deg,#32c879,#16a65c);color:#fff;padding:13px 24px;font-weight:800;font-size:16px;box-shadow:0 5px 0 #13854a;cursor:pointer}.primary-btn:active{transform:translateY(3px);box-shadow:0 2px 0 #13854a}
+@media(max-width:720px){.game{padding:12px 11px 24px}.header{align-items:flex-start;flex-direction:column}.hud{width:100%;justify-content:space-between}.hud-chip{flex:1;justify-content:center;padding:7px 8px;font-size:12px}.brand-mark{width:42px;height:42px}.arena-card{min-height:245px;border-radius:22px}.arena-scene{height:185px}.player,.robot{width:110px;height:140px;top:25px}.player{left:1%}.robot{right:1%}.character{width:105px;height:125px}.rope-area{left:16%;right:16%}.arena-top{padding:12px 12px 0}.team-pill{font-size:11px;padding:6px 8px}.game-layout{grid-template-columns:1fr}.side-card{display:grid;grid-template-columns:1fr 1fr;gap:12px;padding:15px}.side-title,.tip,.btn-secondary{grid-column:1/-1}.quiz-card{padding:19px 15px 15px}.arabic{font-size:64px}.answer{font-size:15px;padding:10px 5px}.tip{margin-top:0}}
+@media(max-width:390px){.hud-chip{font-size:11px}.arena-scene{height:165px}.player,.robot{top:22px}.character{width:91px}.speech{font-size:10px}.team-pill{font-size:10px}.options{gap:7px}.answer{font-size:14px}}
+@media(prefers-reduced-motion:reduce){*,*:before,*:after{animation-duration:.01ms!important;animation-iteration-count:1!important;scroll-behavior:auto!important;transition-duration:.01ms!important}}
+</style>
+</head>
+<body>
+<main class="game" id="game">
+  <div class="sun"></div><div class="cloud c1"></div><div class="cloud c2"></div>
+  <div class="shell">
+    <header class="header">
+      <div class="brand"><div class="brand-mark">🏆</div><div><h1>Tarik Tambang Cerdas</h1><p>Kenali huruf hijaiyah, rebut kemenangan!</p></div></div>
+      <div class="hud">
+        <div class="hud-chip"><span class="dot"></span> Ahmad <strong id="playerScore">0</strong></div>
+        <div class="hud-chip">Babak <strong id="roundVal">1/10</strong></div>
+        <div class="hud-chip"><span class="dot red"></span> Robot <strong id="botScore">0</strong></div>
+      </div>
+    </header>
+
+    <section class="arena-card" aria-label="Arena tarik tambang">
+      <div class="arena-top">
+        <div class="team-pill"><span class="badge">★</span> TIM AHMAD</div>
+        <div class="team-pill enemy"><span class="badge">⚙</span> ROBOT LAWAN</div>
+      </div>
+      <div class="arena-scene" id="arenaScene">
+        <div class="center-line"></div>
+        <div class="rope-area" id="ropeArea"><div class="rope"></div><div class="flag" id="ropeFlag"></div></div>
+        <div class="player" id="teamLeft">
+          <span class="speech" id="gruntLeft">Ayo, bisa!</span>
+          <svg class="character" viewBox="0 0 130 150" role="img" aria-label="Karakter Ahmad">
+            <defs><linearGradient id="skin" x2="0" y2="1"><stop stop-color="#ffd6ad"/><stop offset="1" stop-color="#efa875"/></linearGradient><linearGradient id="shirt" x2="0" y2="1"><stop stop-color="#41d88a"/><stop offset="1" stop-color="#159a62"/></linearGradient></defs>
+            <!-- legs and sneakers -->
+            <path d="M48 105 L43 129 Q41 136 49 137 L62 137 Q67 135 62 130 L62 108Z" fill="#294c78"/>
+            <path d="M70 105 L75 129 Q76 135 84 135 L96 135 Q102 131 94 128 L86 105Z" fill="#294c78"/>
+            <path d="M43 130 Q33 130 31 138 Q31 143 51 143 L61 141 Q65 138 59 135 L49 132Z" fill="#f7fbff" stroke="#b4d2e5" stroke-width="2"/>
+            <path d="M78 130 Q74 136 81 140 L99 140 Q108 138 101 133 L94 130Z" fill="#f7fbff" stroke="#b4d2e5" stroke-width="2"/>
+            <!-- torso -->
+            <path d="M42 66 Q65 57 84 68 L91 108 Q65 120 39 108Z" fill="url(#shirt)" stroke="#117e53" stroke-width="2"/>
+            <path d="M52 68 L64 80 L76 68" fill="none" stroke="#a6ffd0" stroke-width="3" stroke-linecap="round"/>
+            <!-- back arm -->
+            <path d="M43 73 Q30 77 34 91 L49 98" fill="none" stroke="#eaa274" stroke-width="12" stroke-linecap="round"/>
+            <!-- head -->
+            <path d="M43 28 Q43 10 64 10 Q86 11 87 31 L84 49 Q77 64 64 64 Q48 61 44 47Z" fill="url(#skin)" stroke="#ce8b60" stroke-width="2"/>
+            <!-- hair -->
+            <path d="M42 34 Q36 14 54 8 Q76 0 88 17 L88 30 Q78 22 70 20 Q57 29 43 27Z" fill="#51362e"/>
+            <path d="M45 26 Q50 18 58 20" fill="none" stroke="#765044" stroke-width="3" stroke-linecap="round"/>
+            <!-- ears -->
+            <ellipse cx="42" cy="38" rx="5" ry="8" fill="#f0b182"/><ellipse cx="87" cy="38" rx="5" ry="8" fill="#f0b182"/>
+            <!-- face -->
+            <ellipse cx="56" cy="37" rx="2.5" ry="3.5" fill="#243b50"/><ellipse cx="74" cy="37" rx="2.5" ry="3.5" fill="#243b50"/>
+            <path d="M53 31 Q57 28 60 31 M70 31 Q74 28 78 31" fill="none" stroke="#684438" stroke-width="2.5" stroke-linecap="round"/>
+            <path d="M59 48 Q65 54 73 47" fill="none" stroke="#a94d48" stroke-width="3" stroke-linecap="round"/>
+            <circle cx="49" cy="44" r="4" fill="#ff9c91" opacity=".55"/><circle cx="81" cy="44" r="4" fill="#ff9c91" opacity=".55"/>
+            <!-- arm reaching rope -->
+            <path class="rope-hand" d="M79 74 Q91 75 97 83 L107 84" fill="none" stroke="#f0b182" stroke-width="12" stroke-linecap="round"/>
+            <path d="M102 79 Q108 76 111 81 L111 88 Q108 92 103 88" fill="#f0b182" stroke="#d48d62" stroke-width="2"/>
+            <path d="M38 71 Q32 81 42 90" fill="none" stroke="#5be49b" stroke-width="4" stroke-linecap="round"/>
+          </svg>
+        </div>
+        <div class="robot" id="teamRight">
+          <span class="speech" id="gruntRight">Beep boop!</span>
+          <svg class="character" viewBox="0 0 130 150" role="img" aria-label="Karakter robot lawan">
+            <defs><linearGradient id="metal" x2="0" y2="1"><stop stop-color="#f4fbff"/><stop offset="1" stop-color="#a9c5df"/></linearGradient><linearGradient id="screen" x2="0" y2="1"><stop stop-color="#24466c"/><stop offset="1" stop-color="#132c4a"/></linearGradient></defs>
+            <!-- antenna -->
+            <path d="M66 22 L69 10" stroke="#8ca9c3" stroke-width="4" stroke-linecap="round"/><circle cx="70" cy="8" r="5" fill="#ff6975" stroke="#fff" stroke-width="2"/>
+            <!-- legs -->
+            <path d="M46 107 L43 129 L55 132 L61 109Z" fill="#829fba" stroke="#607f9c" stroke-width="2"/>
+            <path d="M72 109 L78 130 L91 128 L86 105Z" fill="#829fba" stroke="#607f9c" stroke-width="2"/>
+            <rect x="35" y="128" width="27" height="13" rx="6" fill="#f0f6fb" stroke="#91abc4" stroke-width="2"/>
+            <rect x="76" y="127" width="27" height="13" rx="6" fill="#f0f6fb" stroke="#91abc4" stroke-width="2"/>
+            <!-- body -->
+            <path d="M39 63 Q65 55 88 65 L90 108 Q64 117 38 108Z" fill="url(#metal)" stroke="#7595b3" stroke-width="2.5"/>
+            <rect x="48" y="74" width="31" height="22" rx="7" fill="#d7e7f4" stroke="#a1bad0" stroke-width="2"/>
+            <circle cx="57" cy="85" r="3" fill="#2fb9f1"/><circle cx="70" cy="85" r="3" fill="#ff6878"/>
+            <path d="M58 100 L70 100" stroke="#6f91ae" stroke-width="3" stroke-linecap="round"/>
+            <!-- arms -->
+            <path d="M43 73 Q29 77 33 91 L45 96" fill="none" stroke="#a9c3da" stroke-width="11" stroke-linecap="round"/>
+            <path class="rope-hand" d="M83 73 Q94 74 98 83 L109 83" fill="none" stroke="#a9c3da" stroke-width="11" stroke-linecap="round"/>
+            <circle cx="109" cy="84" r="7" fill="#e8f3fc" stroke="#7c9bb8" stroke-width="2"/>
+            <!-- head -->
+            <rect x="36" y="21" width="58" height="46" rx="13" fill="url(#metal)" stroke="#7898b7" stroke-width="3"/>
+            <rect x="43" y="29" width="44" height="29" rx="8" fill="url(#screen)"/>
+            <ellipse cx="54" cy="41" rx="4" ry="5" fill="#5ce4ff"/><ellipse cx="75" cy="41" rx="4" ry="5" fill="#5ce4ff"/>
+            <path d="M57 50 Q65 54 73 50" fill="none" stroke="#7af0ff" stroke-width="2.5" stroke-linecap="round"/>
+            <rect x="30" y="34" width="6" height="18" rx="3" fill="#f46d82"/><rect x="94" y="34" width="6" height="18" rx="3" fill="#f46d82"/>
+            <circle cx="48" cy="24" r="3" fill="#fff" opacity=".8"/>
+          </svg>
+        </div>
+        <div class="ground"></div><div class="arena-bottom">TARIK • JAWAB • MENANG</div>
+      </div>
+    </section>
+
+    <section class="game-layout">
+      <div class="quiz-card">
+        <div class="question-head"><span class="eyebrow">Tantangan Hijaiyah</span><span class="timer-label">◷ <span id="timerNum">10</span> detik</span></div>
+        <div class="timer-track"><div class="timer-fill" id="timerBar"></div></div>
+        <p class="question-text" id="qPromptText">Apa nama huruf hijaiyah ini?</p>
+        <div class="arabic" id="qArabicText">ب</div>
+        <div class="options" id="optsContainer"></div>
+        <div class="feedback" id="feedback" aria-live="polite">Pilih jawaban yang benar untuk menarik tali!</div>
+      </div>
+      <aside class="side-card">
+        <h2 class="side-title">🏁 Progres pertandingan</h2>
+        <div><div class="progress-caption"><span>Babak berjalan</span><strong id="progressText">1 dari 10</strong></div><div class="round-track"><div class="round-fill" id="roundFill"></div></div></div>
+        <div class="score-row">
+          <div class="score-box"><small>POIN AHMAD</small><strong id="sidePlayer">0</strong></div>
+          <div class="score-box enemy"><small>POIN ROBOT</small><strong id="sideBot">0</strong></div>
+        </div>
+        <div class="tip">💡 <strong>Tips:</strong> Jawab sebelum waktu habis. Jawaban benar membuat tim Ahmad menarik tali ke arah kemenangan.</div>
+        <button class="btn-secondary" id="btnRestartSmall">↻ Mulai ulang pertandingan</button>
+      </aside>
+    </section>
+  </div>
+</main>
+<div class="modal" id="modalVictory" role="dialog" aria-modal="true" aria-labelledby="winTitle">
+  <div class="modal-card"><div class="trophy" id="winIcon">🏆</div><h2 id="winTitle">Tim Ahmad menang!</h2><p id="winDesc">Hebat! Kamu berhasil menyelesaikan tantangan.</p><div class="final-scores"><div>🟢 Ahmad<strong id="finalPlayer">0</strong></div><div>🔴 Robot<strong id="finalBot">0</strong></div></div><button class="primary-btn" id="btnRestart">Main lagi ↗</button></div>
+</div>
+<script>
+const QUESTIONS=[
+{ar:'ا',ans:'Alif',opts:['Alif','Ba','Jim']},{ar:'ب',ans:'Ba',opts:['Ta','Ba','Tsa']},{ar:'ت',ans:'Ta',opts:['Ba','Ta','Nun']},
+{ar:'ث',ans:'Tsa',opts:['Tsa','Jim','Ha']},{ar:'ج',ans:'Jim',opts:['Kha','Ha','Jim']},{ar:'ح',ans:'Ha',opts:['Ha','Jim','Kha']},
+{ar:'خ',ans:'Kha',opts:['Kha','Dal','Dzal']},{ar:'د',ans:'Dal',opts:['Ra','Dal','Zain']},{ar:'ذ',ans:'Dzal',opts:['Sin','Syin','Dzal']},
+{ar:'ر',ans:'Ra',opts:['Ra','Zai','Lam']},{ar:'ز',ans:'Zain',opts:['Ra','Zain','Sin']},{ar:'س',ans:'Sin',opts:['Sin','Syin','Shad']},
+{ar:'ش',ans:'Syin',opts:['Sin','Syin','Jim']},{ar:'ص',ans:'Shad',opts:['Dhad','Shad','Tha']},{ar:'ع',ans:"'Ain",opts:["'Ain",'Ghain','Fa']},
+{ar:'ق',ans:'Qaf',opts:['Fa','Qaf','Kaf']},{ar:'ل',ans:'Lam',opts:['Mim','Lam','Nun']},{ar:'م',ans:'Mim',opts:['Nun','Mim','Waw']},
+{ar:'ن',ans:'Nun',opts:['Mim','Waw','Nun']},{ar:'و',ans:'Waw',opts:['Waw','Ya','Ha']},{ar:'ي',ans:'Ya',opts:['Waw','Ya','Alif']},{ar:'ك',ans:'Kaf',opts:['Kaf','Lam','Qaf']}
+];
+const $=id=>document.getElementById(id),MAX=10,TIME=10;
+let round=1,playerScore=0,botScore=0,tug=0,busy=false,timer=null,timeLeft=TIME,current=null,used=[];
+function beep(freq=520,dur=.1,type='sine'){try{const c=new(window.AudioContext||window.webkitAudioContext)(),o=c.createOscillator(),g=c.createGain();o.type=type;o.frequency.value=freq;g.gain.setValueAtTime(.08,c.currentTime);g.gain.exponentialRampToValueAtTime(.001,c.currentTime+dur);o.connect(g);g.connect(c.destination);o.start();o.stop(c.currentTime+dur);o.onended=()=>c.close()}catch(e){}}
+function shuffle(a){return [...a].sort(()=>Math.random()-.5)}
+function updateArena(){
+ const f=Math.max(-1,Math.min(1,tug/100));
+ $('ropeFlag').style.left=(50+f*31)+'%';
+ $('teamLeft').style.left=`calc(4% + ${f*36}px)`;
+ $('teamRight').style.right=`calc(4% - ${f*36}px)`;
+ $('roundFill').style.width=(Math.min(round,MAX)/MAX*100)+'%';
+ $('progressText').textContent=`${Math.min(round,MAX)} dari ${MAX}`;
+ $('playerScore').textContent=playerScore;$('botScore').textContent=botScore;
+ $('sidePlayer').textContent=playerScore;$('sideBot').textContent=botScore;
+ $('game').classList.add('pulling');setTimeout(()=>$('game').classList.remove('pulling'),450);
+}
+function setSpeech(left,right){$('gruntLeft').textContent=left;$('gruntRight').textContent=right}
+function stopTimer(){clearInterval(timer);timer=null}
+function startTimer(){stopTimer();timeLeft=TIME;renderTimer();timer=setInterval(()=>{timeLeft-=.1;if(timeLeft<=0){timeLeft=0;renderTimer();stopTimer();if(!busy)resolve(false,null,true)}else renderTimer()},100)}
+function renderTimer(){const pct=timeLeft/TIME*100;$('timerBar').style.width=pct+'%';$('timerBar').classList.toggle('warn',timeLeft<=6&&timeLeft>3);$('timerBar').classList.toggle('danger',timeLeft<=3);$('timerNum').textContent=Math.ceil(timeLeft)}
+function nextQuestion(){
+ if(round>MAX){endGame();return}
+ busy=false;$('roundVal').textContent=`${round}/${MAX}`;$('qPromptText').textContent='Apa nama huruf hijaiyah ini?';
+ let pool=QUESTIONS.filter(q=>!used.includes(q.ar));if(!pool.length){used=[];pool=QUESTIONS}
+ current=pool[Math.floor(Math.random()*pool.length)];used.push(current.ar);
+ $('qArabicText').textContent=current.ar;$('feedback').textContent='Pilih jawaban yang benar untuk menarik tali!';
+ $('optsContainer').replaceChildren();
+ shuffle(current.opts).forEach(opt=>{const b=document.createElement('button');b.className='answer';b.textContent=opt;b.onclick=()=>resolve(opt===current.ans,b,false);$('optsContainer').appendChild(b)});
+ startTimer();
+}
+function resolve(correct,button,timeout){
+ if(busy)return;busy=true;stopTimer();document.querySelectorAll('.answer').forEach(b=>b.disabled=true);
+ if(correct){playerScore+=10;tug=Math.max(-100,tug-20);if(button)button.classList.add('correct');$('feedback').textContent='Benar! Tarik terus, Ahmad!';setSpeech('Mantap!','Waduh!');beep(650,.12);setTimeout(()=>beep(820,.13,'triangle'),80)}
+ else{botScore+=timeout?5:10;tug=Math.min(100,tug+ (timeout?14:20));if(button)button.classList.add('wrong');$('feedback').textContent=timeout?'Waktu habis! Robot mengambil kesempatan.':'Belum tepat. Coba fokus di babak berikutnya!';setSpeech('Ayo lagi!','Aku menarik!');beep(230,.18,'square')}
+ updateArena();round++;
+ setTimeout(()=>{setSpeech('Ayo, bisa!','Beep boop!');nextQuestion()},850);
+}
+function endGame(){
+ stopTimer();$('finalPlayer').textContent=playerScore;$('finalBot').textContent=botScore;
+ const win=playerScore>=botScore;$('winIcon').textContent=win?'🏆':'🤖';$('winTitle').textContent=win?'TIM AHMAD MENANG!':'ROBOT MENANG!';
+ $('winTitle').style.color=win?'#18a45b':'#e44855';$('winDesc').textContent=win?'Masya Allah! Kamu hebat mengenali huruf hijaiyah.':'Jangan menyerah! Berlatih lagi dan rebut kemenangan berikutnya.';
+ $('modalVictory').classList.add('show');if(win){beep(660,.2);setTimeout(()=>beep(880,.25,'triangle'),130)}
+}
+function restart(){stopTimer();round=1;playerScore=0;botScore=0;tug=0;used=[];busy=false;$('modalVictory').classList.remove('show');setSpeech('Ayo, bisa!','Beep boop!');updateArena();nextQuestion()}
+$('btnRestart').addEventListener('click',restart);$('btnRestartSmall').addEventListener('click',restart);
+updateArena();nextQuestion();
+</script>
+</body>
+</html>

@@ -93,6 +93,15 @@ body.playing .dock{display:flex}
 .f5{transform:rotateX(90deg) translateZ(32px)}
 .f2{transform:rotateX(-90deg) translateZ(32px)}
 
+/* Flat die (canvas 2D) replaces 3D css die in flat mode */
+#dieFlatWrap{display:none;}
+#dieFlatCanvas{display:block;border-radius:10px;border:3px solid var(--ink);box-shadow:0 4px 0 var(--ink);}
+body.flat-view #dieScene{display:none;}
+body.flat-view #dieFlatWrap{display:flex;align-items:center;justify-content:center;width:64px;height:64px;}
+
+/* Top-down active indicator */
+body.topdown .hud .btn[data-topdown]{background:#FFF1A6;box-shadow:0 2px 0 var(--ink);transform:translateY(3px);}
+
 .overlay{
   position:fixed;inset:0;z-index:20;display:flex;overflow:auto;background:rgba(27,42,59,.42);
   padding:calc(16px + env(safe-area-inset-top,0px)) max(16px,env(safe-area-inset-right,0px)) calc(16px + env(safe-area-inset-bottom,0px)) max(16px,env(safe-area-inset-left,0px));
@@ -131,7 +140,9 @@ body.playing .dock{display:flex}
 <header class="hud" id="hud">
   <div class="players" id="players" aria-label="Pemain"></div>
   <div class="tools">
-    <button class="btn small light" id="btnCam" type="button">Kamera</button>
+    <button class="btn small light" id="btnCam" type="button">Reset Kamera</button>
+    <button class="btn small light" data-topdown id="btnTop" type="button">POV Atas</button>
+    <button class="btn small light" id="btnFlat" type="button">Tampilan Flat</button>
     <button class="btn small light" id="btnSnd" type="button">Suara: nyala</button>
     <button class="btn small light" id="btnMenu" type="button">Menu</button>
   </div>
@@ -141,6 +152,7 @@ body.playing .dock{display:flex}
   <p class="panel msg" id="msg" aria-live="polite"></p>
   <div class="panel roller">
     <div class="die-scene" id="dieScene"><div class="die-tilt"><div class="die" id="die"></div></div></div>
+    <div id="dieFlatWrap"><canvas id="dieFlatCanvas" width="64" height="64"></canvas></div>
     <button class="btn big" id="btnRoll" type="button">Lempar dadu</button>
   </div>
 </footer>
@@ -558,15 +570,53 @@ for(let v=1;v<=6;v++){
 }
 const DIE_T={1:[0,0],2:[90,0],3:[0,-90],4:[0,90],5:[-90,0],6:[0,180]};
 let dX=0,dY=0;
+let flatView=false, topDownView=false;
+let lastDieVal=1;
+
+// Flat die canvas
+const flatCanvas=$('dieFlatCanvas');
+function drawFlatDie(v, bgColor, dotColor){
+  const ctx=flatCanvas.getContext('2d');
+  const S=64;
+  ctx.clearRect(0,0,S,S);
+  ctx.fillStyle=bgColor||'#fff';
+  ctx.beginPath(); ctx.roundRect(0,0,S,S,10); ctx.fill();
+  // pips
+  const POS=[[16,16],[48,16],[16,32],[48,32],[16,48],[48,48],[32,32]];
+  const seats={1:[6],2:[0,5],3:[0,6,5],4:[0,1,4,5],5:[0,1,6,4,5],6:[0,1,2,3,4,5]};
+  ctx.fillStyle=dotColor||'#1B2A3B';
+  (seats[v]||[]).forEach(i=>{ const p=POS[i]; ctx.beginPath(); ctx.arc(p[0],p[1],6,0,Math.PI*2); ctx.fill(); });
+}
+
+function colorDie(playerCss){
+  // CSS 3D die: color face background + pip color
+  const faces=dieEl.querySelectorAll('.face');
+  faces.forEach(f=>{
+    f.style.background=playerCss;
+    f.querySelectorAll('i.on').forEach(pip=>{ pip.style.background='#fff'; pip.style.boxShadow='0 0 0 1px rgba(0,0,0,0.3)'; });
+    f.querySelectorAll('i:not(.on)').forEach(pip=>{ pip.style.background='transparent'; });
+  });
+  // Flat die: redraw with player color
+  drawFlatDie(lastDieVal, playerCss, '#fff');
+}
+
 function showDie(v,anim){
+  lastDieVal=v;
+  if(flatView){
+    const pl=players&&players[cur];
+    drawFlatDie(v, pl?pl.css:'#fff', '#1B2A3B');
+    return;
+  }
   const tx=DIE_T[v][0],ty=DIE_T[v][1];
   const ax=Math.ceil((dX-tx)/360)+(anim?2:0),ay=Math.ceil((dY-ty)/360)+(anim?2:0);
   dX=tx+360*ax; dY=ty+360*ay;
   dieEl.style.transition=anim?'transform 1.05s cubic-bezier(.15,.7,.2,1)':'none';
   dieEl.style.transform='rotateX('+dX+'deg) rotateY('+dY+'deg)';
   if(anim){ dieScene.classList.remove('hop'); void dieScene.offsetWidth; dieScene.classList.add('hop'); }
+  // Re-apply player color
+  const pl=players&&players[cur];
+  if(pl) colorDie(pl.css);
 }
-showDie(1,false);
 
 /* ---------- Konfeti ---------- */
 const confetti=[];
@@ -732,12 +782,21 @@ function clearMarkers(){ tokens.forEach(t=>{ t.mesh.userData.marker.visible=fals
 function beginTurn(reason){
   const p=players[cur];
   clearMarkers(); pending=null; renderChips();
+  refreshDieColor(); // ← warna dadu sesuai pemain aktif
   if(reason) setMsg(p.name+' '+reason+', lempar lagi.'+(p.cpu?'':' Tekan Lempar dadu.'));
   else setMsg(p.cpu?p.name+' sedang melempar dadu...':(p.name==='Kamu'?'Giliranmu. Tekan Lempar dadu.':'Giliran '+p.name+'. Tekan Lempar dadu.'));
   setRoll(!p.cpu);
   if(p.cpu){ const gid=gameId; setTimeout(()=>{ if(gid===gameId&&!gameOver) doRoll(); },950); }
 }
 function nextTurn(){ cur=(cur+1)%players.length; busy=false; beginTurn(); }
+
+// Update die color when turn changes
+function refreshDieColor(){
+  const pl=players&&players[cur];
+  if(!pl) return;
+  colorDie(pl.css);
+  if(flatView) drawFlatDie(lastDieVal, pl.css, '#fff');
+}
 
 function pickToken(pl,list,v){
   return new Promise(res=>{
@@ -859,7 +918,9 @@ function startGame(m){
   cur=0; menuOpen=false; focus=null; resetCam();
   $('menu').hidden=true; $('win').hidden=true;
   document.body.classList.add('playing');
-  showDie(1,false); beginTurn();
+  showDie(1,false);
+  refreshDieColor(); // warna dadu pemain pertama
+  beginTurn();
 }
 
 document.querySelectorAll('[data-mode]').forEach(b=>b.addEventListener('click',()=>{ ensureAudio(); startGame(b.getAttribute('data-mode')); }));
@@ -869,6 +930,39 @@ $('btnSnd').addEventListener('click',()=>{ muted=!muted; ensureAudio(); $('btnSn
 $('btnMenu').addEventListener('click',()=>{ menuOpen=true; $('win').hidden=true; $('menu').hidden=false; });
 $('btnAgain').addEventListener('click',()=>{ ensureAudio(); startGame(mode); });
 $('btnToMenu').addEventListener('click',()=>{ menuOpen=true; $('win').hidden=true; $('menu').hidden=false; });
+
+// === TOP-DOWN CAMERA TOGGLE ===
+$('btnTop').addEventListener('click',()=>{
+  topDownView=!topDownView;
+  document.body.classList.toggle('topdown',topDownView);
+  $('btnTop').textContent=topDownView?'POV 3D':'POV Atas';
+  if(topDownView){
+    // Switch to orthographic-style top-down by setting pitch near vertical
+    goal.pitch=Math.PI/2-0.05;
+    goal.zoom=0.85;
+  } else {
+    goal.pitch=0.95;
+    goal.zoom=1;
+  }
+});
+
+// === FLAT / 3D VIEW TOGGLE ===
+$('btnFlat').addEventListener('click',()=>{
+  flatView=!flatView;
+  document.body.classList.toggle('flat-view',flatView);
+  $('btnFlat').textContent=flatView?'Tampilan 3D':'Tampilan Flat';
+  if(flatView){
+    // Flat view: top-down too
+    goal.pitch=Math.PI/2-0.02;
+    goal.zoom=0.8;
+    // Draw flat die
+    const pl=players&&players[cur];
+    drawFlatDie(lastDieVal, pl?pl.css:'#ffffff', '#1B2A3B');
+  } else {
+    goal.pitch=0.95; goal.zoom=1;
+    showDie(lastDieVal,false);
+  }
+});
 
 /* ---------- Loop render ---------- */
 let last=performance.now();

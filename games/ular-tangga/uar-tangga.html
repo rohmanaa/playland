@@ -151,7 +151,8 @@ body.playing .dock{display:flex}
 <header class="hud" id="hud">
   <div class="players" id="players" aria-label="Pemain"></div>
   <div class="tools">
-    <button class="btn small light" id="btnCam" type="button">Kamera</button>
+    <button class="btn small light" id="btnCam" type="button">Reset Kamera</button>
+    <button class="btn small light" id="btnPov" type="button">POV: Atas</button>
     <button class="btn small light" id="btnTheme" type="button">Tema</button>
     <button class="btn small light" id="btnSnd" type="button">Suara: nyala</button>
     <button class="btn small light" id="btnMenu" type="button">Menu</button>
@@ -901,7 +902,7 @@ function clearConfetti(){ confetti.forEach(c=>scene.remove(c.m)); confetti.lengt
 
 /* ---------- Kamera dan input ---------- */
 const cam={yaw:0.5,pitch:0.55,zoom:1},goal={yaw:0.5,pitch:0.55,zoom:1},camTarget=new THREE.Vector3(0,2.8,-0.2);
-let baseDist=22,menuOpen=true;
+let baseDist=22,menuOpen=true,isTopDown=false;
 const clamp=(v,a,b)=>Math.max(a,Math.min(b,v));
 function onResize(){
   const w=window.innerWidth,h=window.innerHeight;
@@ -913,8 +914,21 @@ function onResize(){
 }
 window.addEventListener('resize',onResize); onResize();
 function resetCam(){
+  isTopDown=false;
+  if($('btnPov')) $('btnPov').textContent='POV: Atas';
   const k=Math.round(cam.yaw/(Math.PI*2)); cam.yaw-=k*Math.PI*2;
   goal.yaw=0; goal.pitch=0.62; goal.zoom=1;
+}
+function togglePov(){
+  isTopDown=!isTopDown;
+  if(isTopDown){
+    goal.yaw=0;
+    goal.pitch=Math.PI/2-0.05; // 87 derajat (top-down murni tanpa gimbal lock)
+    goal.zoom=0.88;
+    $('btnPov').textContent='POV: 3D';
+  } else {
+    resetCam();
+  }
 }
 const cv=$('c'),ptrs=new Map();let pinch=0;
 const span=()=>{ const a=Array.from(ptrs.values()); return Math.hypot(a[0].x-a[1].x,a[0].y-a[1].y); };
@@ -1135,6 +1149,7 @@ THEMES.forEach(t=>{
 document.querySelectorAll('[data-mode]').forEach(b=>b.addEventListener('click',()=>{ ensureAudio(); startGame(b.getAttribute('data-mode')); }));
 $('btnRoll').addEventListener('click',()=>{ ensureAudio(); doRoll(); });
 $('btnCam').addEventListener('click',resetCam);
+$('btnPov').addEventListener('click',togglePov);
 $('btnTheme').addEventListener('click',()=>{
   const now=pendingTheme||themeKey,i=THEMES.findIndex(t=>t.key===now);
   chooseTheme(THEMES[(i+1)%THEMES.length].key);
@@ -1159,7 +1174,11 @@ function frame(now){
   if(menuOpen) goal.yaw+=dt*0.14;
   cam.yaw+=(goal.yaw-cam.yaw)*m; cam.pitch+=(goal.pitch-cam.pitch)*m; cam.zoom+=(goal.zoom-cam.zoom)*m;
   let tx=0,ty=2.8,tz=-0.2;
-  if(focus&&!menuOpen){ tx+=focus.position.x*0.35; tz+=focus.position.z*0.35; ty+=(focus.position.y-3.2)*0.45; }
+  if(isTopDown){
+    tx=0; tz=0; ty=3.5;
+  }else if(focus&&!menuOpen){
+    tx+=focus.position.x*0.35; tz+=focus.position.z*0.35; ty+=(focus.position.y-3.2)*0.45;
+  }
   const f=m*0.6;
   camTarget.x+=(tx-camTarget.x)*f; camTarget.y+=(ty-camTarget.y)*f; camTarget.z+=(tz-camTarget.z)*f;
   const dist=baseDist*cam.zoom,cp=Math.cos(cam.pitch);

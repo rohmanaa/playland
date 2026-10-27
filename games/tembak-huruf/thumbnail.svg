@@ -1,0 +1,30 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 300" width="100%" height="100%">
+  <defs>
+    <linearGradient id="skyGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#4834d4"/>
+      <stop offset="100%" stop-color="#686de0"/>
+    </linearGradient>
+    <filter id="shadow">
+      <feDropShadow dx="0" dy="6" stdDeviation="5" flood-color="#000" flood-opacity="0.3"/>
+    </filter>
+  </defs>
+  <rect width="400" height="300" rx="22" fill="url(#skyGrad)"/>
+
+  <!-- Balloon Target -->
+  <g transform="translate(200, 110)" filter="url(#shadow)">
+    <ellipse cx="0" cy="0" rx="65" ry="75" fill="#e74c3c"/>
+    <text x="0" y="16" font-family="'Amiri', serif" font-weight="bold" font-size="70" fill="#ffffff" text-anchor="middle">ج</text>
+  </g>
+
+  <!-- Arrow -->
+  <g transform="translate(130, 210) rotate(-35)" filter="url(#shadow)">
+    <rect x="-10" y="-3" width="90" height="6" fill="#f1c40f"/>
+    <polygon points="80,-10 100,0 80,10" fill="#e67e22"/>
+  </g>
+
+  <!-- Bottom Title Banner -->
+  <rect x="50" y="235" width="300" height="44" rx="22" fill="#130f40" stroke="#ffffff" stroke-width="3" filter="url(#shadow)"/>
+  <text x="200" y="264" font-family="sans-serif" font-weight="bold" font-size="20" fill="#ffffff" text-anchor="middle">
+    PANAH &amp; <tspan fill="#f1c40f">TEMBAK HURUF</tspan>
+  </text>
+</svg>

@@ -1,0 +1,389 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no">
+  <title>Runner Kebaikan 3D — PlayLand</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600;700&family=Amiri:wght@700&display=swap" rel="stylesheet">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; user-select: none; }
+    html, body { width: 100%; height: 100%; overflow: hidden; font-family: 'Fredoka', sans-serif; background: #81ecec; touch-action: none; }
+    #gl { width: 100%; height: 100%; display: block; }
+    #hud {
+      position: fixed; top: 14px; left: 14px; right: 14px;
+      display: flex; justify-content: space-between; align-items: center;
+      pointer-events: none; z-index: 10;
+    }
+    .badge {
+      background: rgba(255, 255, 255, 0.95);
+      border: 3px solid #fff; border-radius: 999px;
+      padding: 8px 18px; font-weight: 700; font-size: 16px; color: #1e355b;
+      box-shadow: 0 6px 14px rgba(0,0,0,0.15); pointer-events: auto;
+    }
+    #controlsGuide {
+      position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%);
+      background: rgba(255,255,255,0.92); border: 2px solid #fff; border-radius: 999px;
+      padding: 8px 24px; font-weight: 700; font-size: 14px; color: #1e355b;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.15); pointer-events: none; z-index: 10;
+    }
+    /* Modals */
+    .modal-overlay {
+      position: fixed; inset: 0; background: rgba(15, 35, 70, 0.75);
+      backdrop-filter: blur(4px); display: none; align-items: center; justify-content: center;
+      z-index: 100; padding: 16px;
+    }
+    .modal-overlay.active { display: flex; }
+    .modal-card {
+      background: #ffffff; border-radius: 26px; border: 4px solid #fff;
+      padding: 26px; text-align: center; max-width: 420px; width: 100%;
+      box-shadow: 0 16px 36px rgba(0,0,0,0.3);
+      animation: popIn 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+    }
+    @keyframes popIn { from { transform: scale(0.8); opacity: 0; } to { transform: scale(1); opacity: 1; } }
+    .btn {
+      font-family: inherit; font-weight: 700; font-size: 18px;
+      padding: 12px 32px; border-radius: 14px; border: 3px solid #fff; color: #fff;
+      background: linear-gradient(180deg, #38e178, #27ae60);
+      box-shadow: 0 5px 0 #1e8449; cursor: pointer; margin-top: 14px;
+    }
+  </style>
+</head>
+<body>
+  <div id="hud">
+    <div class="badge">⭐ Kebaikan: <span id="scoreVal">0</span></div>
+    <div class="badge">🏃 Jarak: <span id="distVal">0</span>m</div>
+    <div class="badge">❤️ Nyawa: <span id="lifeVal">3</span></div>
+  </div>
+
+  <canvas id="gl"></canvas>
+
+  <div id="controlsGuide">Geser Kiri/Kanan & Tekan SPASI untuk Melompat!</div>
+
+  <!-- Game Over Modal -->
+  <div class="modal-overlay" id="modalOver">
+    <div class="modal-card">
+      <div style="font-size:52px;">🌟</div>
+      <h2 style="font-size:28px; color:#27ae60; margin-bottom:6px;">LARI BERKAH SELESAI</h2>
+      <p style="color:#636e72; font-weight:600;">Alhamdulillah! Kamu telah mengumpulkan banyak bekal kebaikan di sepanjang jalan!</p>
+      <div style="background:#f1f2f6; border-radius:14px; padding:12px; margin:14px 0; font-weight:700;">
+        Poin Kebaikan: <span id="finalScoreVal">0</span> | Jarak: <span id="finalDistVal">0</span>m
+      </div>
+      <button class="btn" id="btnPlayAgain">Lari Lagi ▶</button>
+    </div>
+  </div>
+
+  <script>
+    // Audio
+    const AudioCtx = window.AudioContext || window.webkitAudioContext;
+    let actx = null;
+    function getAudio() {
+      if (!actx) actx = new AudioCtx();
+      if (actx.state === 'suspended') actx.resume();
+      return actx;
+    }
+    function playTone(f, type, dur) {
+      try {
+        const ctx = getAudio();
+        const o = ctx.createOscillator();
+        const g = ctx.createGain();
+        o.type = type;
+        o.frequency.setValueAtTime(f, ctx.currentTime);
+        g.gain.setValueAtTime(0.2, ctx.currentTime);
+        g.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + dur);
+        o.connect(g);
+        g.connect(ctx.destination);
+        o.start();
+        o.stop(ctx.currentTime + dur);
+      } catch(e){}
+    }
+    function sfxJump() { playTone(350, 'sine', 0.12); }
+    function sfxCoin() { playTone(880, 'triangle', 0.1); setTimeout(() => playTone(1320, 'triangle', 0.15), 60); }
+    function sfxHit() { playTone(180, 'square', 0.2); }
+    function sfxOver() { [400, 320, 240].forEach((f, i) => setTimeout(() => playTone(f, 'sine', 0.2), i * 140)); }
+
+    // Three.js Scene Setup
+    let scene, camera, renderer, player;
+    let lane = 0; // -1, 0, 1
+    const laneWidth = 2.4;
+    let playerY = 0;
+    let playerVy = 0;
+    let isJumping = false;
+
+    let obstacles = [];
+    let coins = [];
+    let speed = 22;
+    let distance = 0;
+    let score = 0;
+    let lives = 3;
+    let isGameOver = false;
+
+    function init() {
+      const canvas = document.getElementById('gl');
+      scene = new THREE.Scene();
+      scene.background = new THREE.Color(0x7ed6df);
+      scene.fog = new THREE.Fog(0x7ed6df, 20, 90);
+
+      camera = new THREE.PerspectiveCamera(60, window.innerWidth / window.innerHeight, 0.1, 150);
+      camera.position.set(0, 4.5, 9);
+      camera.lookAt(0, 1.2, 0);
+
+      renderer = new THREE.WebGLRenderer({ canvas, antialias: true });
+      renderer.setSize(window.innerWidth, window.innerHeight);
+      renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+      renderer.shadowMap.enabled = true;
+
+      // Lights
+      const hemi = new THREE.HemisphereLight(0xffffff, 0x445566, 0.8);
+      scene.add(hemi);
+      const dir = new THREE.DirectionalLight(0xfff7e6, 1.0);
+      dir.position.set(10, 20, 15);
+      dir.castShadow = true;
+      scene.add(dir);
+
+      // Running Track
+      const trackGeo = new THREE.BoxGeometry(laneWidth * 3.4, 0.5, 200);
+      const trackMat = new THREE.MeshStandardMaterial({ color: 0x27ae60, roughness: 0.6 });
+      const track = new THREE.Mesh(trackGeo, trackMat);
+      track.position.set(0, -0.25, -70);
+      track.receiveShadow = true;
+      scene.add(track);
+
+      // Cobblestone center path
+      const pathGeo = new THREE.BoxGeometry(laneWidth * 3.0, 0.52, 200);
+      const pathMat = new THREE.MeshStandardMaterial({ color: 0xe67e22, roughness: 0.7 });
+      const path = new THREE.Mesh(pathGeo, pathMat);
+      path.position.set(0, -0.24, -70);
+      path.receiveShadow = true;
+      scene.add(path);
+
+      // Player Avatar (Cute 3D Character)
+      const pGroup = new THREE.Group();
+      // Body (Thobe)
+      const bodyGeo = new THREE.CylinderGeometry(0.45, 0.65, 1.4, 12);
+      const bodyMat = new THREE.MeshStandardMaterial({ color: 0xffffff, roughness: 0.5 });
+      const body = new THREE.Mesh(bodyGeo, bodyMat);
+      body.position.y = 0.7;
+      body.castShadow = true;
+      pGroup.add(body);
+
+      // Head
+      const headGeo = new THREE.SphereGeometry(0.42, 16, 16);
+      const headMat = new THREE.MeshStandardMaterial({ color: 0xffd1b3 });
+      const head = new THREE.Mesh(headGeo, headMat);
+      head.position.y = 1.7;
+      head.castShadow = true;
+      pGroup.add(head);
+
+      // Peci / Songkok
+      const peciGeo = new THREE.CylinderGeometry(0.43, 0.43, 0.35, 16);
+      const peciMat = new THREE.MeshStandardMaterial({ color: 0x111111 });
+      const peci = new THREE.Mesh(peciGeo, peciMat);
+      peci.position.y = 1.95;
+      pGroup.add(peci);
+
+      player = pGroup;
+      scene.add(player);
+
+      spawnInitialTrackElements();
+      setupControls();
+      window.addEventListener('resize', onResize);
+    }
+
+    function onResize() {
+      camera.aspect = window.innerWidth / window.innerHeight;
+      camera.updateProjectionMatrix();
+      renderer.setSize(window.innerWidth, window.innerHeight);
+    }
+
+    function spawnInitialTrackElements() {
+      for (let z = -20; z > -120; z -= 14) {
+        if (Math.random() < 0.6) spawnObstacle(z);
+        if (Math.random() < 0.8) spawnCoin(z - 5);
+      }
+    }
+
+    function spawnObstacle(z) {
+      const l = Math.floor(Math.random() * 3) - 1;
+      const geo = new THREE.BoxGeometry(1.4, 1.1, 1.2);
+      const mat = new THREE.MeshStandardMaterial({ color: 0x7f8c8d, roughness: 0.9 });
+      const obs = new THREE.Mesh(geo, mat);
+      obs.position.set(l * laneWidth, 0.55, z);
+      obs.castShadow = true;
+      scene.add(obs);
+      obstacles.push(obs);
+    }
+
+    function spawnCoin(z) {
+      const l = Math.floor(Math.random() * 3) - 1;
+      const geo = new THREE.CylinderGeometry(0.4, 0.4, 0.15, 12);
+      const mat = new THREE.MeshStandardMaterial({ color: 0xffd700, roughness: 0.2, metalness: 0.8 });
+      const coin = new THREE.Mesh(geo, mat);
+      coin.rotation.x = Math.PI / 2;
+      coin.position.set(l * laneWidth, 1.2, z);
+      coin.castShadow = true;
+      scene.add(coin);
+      coins.push(coin);
+    }
+
+    function setupControls() {
+      window.addEventListener('keydown', (e) => {
+        if (isGameOver) return;
+        if (e.code === 'ArrowLeft' || e.code === 'KeyA') {
+          if (lane > -1) lane--;
+        } else if (e.code === 'ArrowRight' || e.code === 'KeyD') {
+          if (lane < 1) lane++;
+        } else if ((e.code === 'Space' || e.code === 'ArrowUp' || e.code === 'KeyW') && !isJumping) {
+          isJumping = true;
+          playerVy = 13.0;
+          sfxJump();
+        }
+      });
+
+      // Swipe support
+      let startX = 0, startY = 0;
+      window.addEventListener('touchstart', (e) => {
+        startX = e.touches[0].clientX;
+        startY = e.touches[0].clientY;
+      });
+      window.addEventListener('touchend', (e) => {
+        if (isGameOver) return;
+        const dx = e.changedTouches[0].clientX - startX;
+        const dy = e.changedTouches[0].clientY - startY;
+        if (Math.abs(dx) > Math.abs(dy)) {
+          if (dx < -30 && lane > -1) lane--;
+          else if (dx > 30 && lane < 1) lane++;
+        } else {
+          if (dy < -30 && !isJumping) {
+            isJumping = true;
+            playerVy = 13.0;
+            sfxJump();
+          }
+        }
+      });
+    }
+
+    function resetGame() {
+      obstacles.forEach(o => scene.remove(o));
+      coins.forEach(c => scene.remove(c));
+      obstacles = [];
+      coins = [];
+      lane = 0;
+      playerY = 0;
+      playerVy = 0;
+      isJumping = false;
+      score = 0;
+      distance = 0;
+      lives = 3;
+      isGameOver = false;
+
+      document.getElementById('scoreVal').textContent = '0';
+      document.getElementById('distVal').textContent = '0';
+      document.getElementById('lifeVal').textContent = '3';
+      document.getElementById('modalOver').classList.remove('active');
+
+      spawnInitialTrackElements();
+    }
+
+    let lastTime = performance.now();
+    function animate() {
+      requestAnimationFrame(animate);
+      const now = performance.now();
+      let dt = (now - lastTime) / 1000;
+      lastTime = now;
+      if (dt > 0.05) dt = 0.05;
+
+      if (!isGameOver) {
+        distance += speed * dt;
+        document.getElementById('distVal').textContent = Math.floor(distance);
+
+        // Player physics
+        if (isJumping) {
+          playerVy -= 32 * dt;
+          playerY += playerVy * dt;
+          if (playerY <= 0) {
+            playerY = 0;
+            playerVy = 0;
+            isJumping = false;
+          }
+        }
+
+        const targetX = lane * laneWidth;
+        player.position.x += (targetX - player.position.x) * 14 * dt;
+        player.position.y = playerY;
+
+        // Run bobbing animation
+        if (!isJumping) {
+          player.rotation.z = Math.sin(now * 0.015) * 0.06;
+          player.position.y += Math.abs(Math.sin(now * 0.015)) * 0.12;
+        }
+
+        // Move obstacles
+        for (let i = obstacles.length - 1; i >= 0; i--) {
+          const obs = obstacles[i];
+          obs.position.z += speed * dt;
+
+          // Collision Check
+          if (Math.abs(obs.position.z - player.position.z) < 1.0 &&
+              Math.abs(obs.position.x - player.position.x) < 1.0 &&
+              playerY < 1.0) {
+            scene.remove(obs);
+            obstacles.splice(i, 1);
+            sfxHit();
+            lives--;
+            document.getElementById('lifeVal').textContent = lives;
+            if (lives <= 0) {
+              isGameOver = true;
+              sfxOver();
+              document.getElementById('finalScoreVal').textContent = score;
+              document.getElementById('finalDistVal').textContent = Math.floor(distance);
+              document.getElementById('modalOver').classList.add('active');
+            }
+            continue;
+          }
+
+          if (obs.position.z > 8) {
+            scene.remove(obs);
+            obstacles.splice(i, 1);
+            spawnObstacle(-110 - Math.random() * 20);
+          }
+        }
+
+        // Move coins
+        for (let i = coins.length - 1; i >= 0; i--) {
+          const c = coins[i];
+          c.position.z += speed * dt;
+          c.rotation.z += 3 * dt;
+
+          // Pickup check
+          if (Math.abs(c.position.z - player.position.z) < 1.2 &&
+              Math.abs(c.position.x - player.position.x) < 1.0 &&
+              Math.abs(c.position.y - playerY) < 1.4) {
+            scene.remove(c);
+            coins.splice(i, 1);
+            sfxCoin();
+            score += 15;
+            document.getElementById('scoreVal').textContent = score;
+            spawnCoin(-110 - Math.random() * 20);
+            continue;
+          }
+
+          if (c.position.z > 8) {
+            scene.remove(c);
+            coins.splice(i, 1);
+            spawnCoin(-110 - Math.random() * 20);
+          }
+        }
+      }
+
+      renderer.render(scene, camera);
+    }
+
+    document.getElementById('btnPlayAgain').onclick = resetGame;
+    init();
+    animate();
+  </script>
+</body>
+</html>

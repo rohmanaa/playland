@@ -1,0 +1,218 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no">
+  <title>Toko Karakter Hijaiyah — PlayLand</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600;700&family=Amiri:wght@700&display=swap" rel="stylesheet">
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; user-select: none; }
+    body {
+      font-family: 'Fredoka', sans-serif;
+      background: linear-gradient(135deg, #a29bfe, #fd79a8);
+      min-height: 100vh; display: flex; flex-direction: column; align-items: center; justify-content: space-between;
+      color: #1e355b; padding: 14px;
+    }
+    .topbar {
+      width: 100%; max-width: 600px;
+      display: flex; justify-content: space-between; align-items: center;
+      background: rgba(255,255,255,0.95); padding: 8px 18px; border-radius: 999px;
+      border: 3px solid #fff; box-shadow: 0 6px 14px rgba(0,0,0,0.15); font-weight: 700; font-size: 16px;
+    }
+    h1 {
+      font-size: clamp(22px, 5.5vw, 32px); color: #fff;
+      -webkit-text-stroke: 4px #6c5ce7; paint-order: stroke fill;
+      text-shadow: 0 4px 0 #6c5ce7; text-align: center; margin: 6px 0;
+    }
+    .studio-layout {
+      width: 100%; max-width: 680px; display: flex; gap: 14px; align-items: center; justify-content: center;
+      flex-wrap: wrap; margin: auto 0;
+    }
+    /* Avatar Preview Card */
+    .avatar-card {
+      width: 240px; height: 310px; background: radial-gradient(circle at center, #ffffff 0%, #f1f2f6 100%);
+      border: 4px solid #fff; border-radius: 28px; box-shadow: 0 12px 28px rgba(0,0,0,0.2);
+      display: flex; flex-direction: column; align-items: center; justify-content: center;
+      position: relative; overflow: hidden;
+    }
+    .avatar-char { font-size: 96px; filter: drop-shadow(0 6px 12px rgba(0,0,0,0.25)); animation: floatBob 2s infinite ease-in-out; }
+    @keyframes floatBob { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-8px); } }
+    .avatar-accessory {
+      position: absolute; font-size: 38px;
+    }
+    .avatar-name-badge {
+      position: absolute; bottom: 12px; background: #6c5ce7; color: #fff;
+      padding: 4px 16px; border-radius: 999px; font-weight: 700; font-size: 14px;
+    }
+    /* Wardrobe Options */
+    .wardrobe-panel {
+      background: rgba(255,255,255,0.95); border: 4px solid #fff; border-radius: 24px;
+      padding: 16px; width: 100%; max-width: 380px; box-shadow: 0 10px 24px rgba(0,0,0,0.15);
+    }
+    .wardrobe-tabs { display: flex; gap: 6px; margin-bottom: 12px; }
+    .tab-btn {
+      flex: 1; padding: 6px; border: none; border-radius: 10px; background: #dfe6e9;
+      font-family: inherit; font-size: 13px; font-weight: 700; cursor: pointer; color: #636e72;
+    }
+    .tab-btn.active { background: #6c5ce7; color: #fff; }
+    .items-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
+    .item-box {
+      aspect-ratio: 1; border: 2px solid #dcdde1; border-radius: 14px; background: #f8f9fa;
+      display: flex; flex-direction: column; align-items: center; justify-content: center;
+      cursor: pointer; font-size: 26px; transition: transform 0.1s, border-color 0.1s;
+    }
+    .item-box:hover { border-color: #6c5ce7; transform: scale(1.05); }
+    .item-box.equipped { border-color: #2ed573; background: #eafff2; box-shadow: 0 0 0 2px #2ed573; }
+    .item-name { font-size: 11px; font-weight: 700; color: #2d3436; margin-top: 2px; }
+    .btn-act {
+      font-family: inherit; font-size: 16px; font-weight: 700; padding: 10px 24px;
+      border-radius: 12px; border: 2px solid #fff; color: #fff; background: #2ed573;
+      box-shadow: 0 4px 0 #26af5f; cursor: pointer; margin-top: 10px; width: 100%;
+    }
+  </style>
+</head>
+<body>
+  <div class="topbar">
+    <div>🪙 Koin Berkah: <span id="coinsVal">500</span></div>
+    <div>✨ Gaya: <span id="stylePoints">100%</span></div>
+    <div style="font-size:14px; color:#6c5ce7;">PlayLand Studio</div>
+  </div>
+
+  <div>
+    <h1>TOKO KARAKTER <span>HIJAIYAH</span></h1>
+    <div style="text-align:center; color:#fff; font-size:14px; font-weight:600; text-shadow:0 1px 3px rgba(0,0,0,0.3);">
+      Hias Sahabat Hijaiyah Kesayanganmu!
+    </div>
+  </div>
+
+  <div class="studio-layout">
+    <div class="avatar-card">
+      <div class="avatar-accessory" id="headAccessory" style="top:32px;">👑</div>
+      <div class="avatar-char" id="mainAvatar">👦</div>
+      <div class="avatar-accessory" id="handAccessory" style="bottom:55px; right:35px;">📿</div>
+      <div class="avatar-name-badge" id="avatarNameBadge">Ahmad Santun</div>
+    </div>
+
+    <div class="wardrobe-panel">
+      <div class="wardrobe-tabs">
+        <button class="tab-btn active" data-tab="avatar">Karakter</button>
+        <button class="tab-btn" data-tab="head">Peci/Topi</button>
+        <button class="tab-btn" data-tab="item">Aksesoris</button>
+      </div>
+
+      <div class="items-grid" id="itemsContainer"></div>
+
+      <button class="btn-act" id="btnSalinGaya">Alhamdulillah, Simpan Gaya! ✓</button>
+    </div>
+  </div>
+
+  <div style="color:#ffffff; font-size:13px; font-weight:700; text-shadow:0 1px 3px rgba(0,0,0,0.3);">
+    Tampil rapi & bersih adalah bagian dari kebaikan Islam!
+  </div>
+
+  <script>
+    const AudioCtx = window.AudioContext || window.webkitAudioContext;
+    let actx = null;
+    function playSfx(f, t, d) {
+      try {
+        if (!actx) actx = new AudioCtx();
+        if (actx.state === 'suspended') actx.resume();
+        const o = actx.createOscillator();
+        const g = actx.createGain();
+        o.type = t;
+        o.frequency.setValueAtTime(f, actx.currentTime);
+        g.gain.setValueAtTime(0.2, actx.currentTime);
+        g.gain.exponentialRampToValueAtTime(0.001, actx.currentTime + d);
+        o.connect(g);
+        o.connect(actx.destination);
+        o.start();
+        o.stop(actx.currentTime + d);
+      } catch(e){}
+    }
+
+    const CATALOG = {
+      avatar: [
+        { icon: '👦', name: 'Ahmad', title: 'Ahmad Santun' },
+        { icon: '👧', name: 'Fatimah', title: 'Fatimah Ceria' },
+        { icon: '🧒', name: 'Zaid', title: 'Zaid Rajin' },
+        { icon: '🧕', name: 'Aisyah', title: 'Aisyah Sholehah' },
+        { icon: '👳', name: 'Sultan', title: 'Pangeran Bijak' },
+        { icon: '🐱', name: 'Muezza', title: 'Kucing Muezza' }
+      ],
+      head: [
+        { icon: '👑', name: 'Mahkota' },
+        { icon: '🎩', name: 'Peci Songkok' },
+        { icon: '⭐', name: 'Bintang Nur' },
+        { icon: '🌙', name: 'Bulan Sabit' },
+        { icon: '🧢', name: 'Topi Ceria' },
+        { icon: '🎀', name: 'Pita Cantik' }
+      ],
+      item: [
+        { icon: '📿', name: 'Tasbih Kayu' },
+        { icon: '📖', name: 'Al-Qur\'an' },
+        { icon: '✨', name: 'Aura Cahaya' },
+        { icon: '🕊️', name: 'Burung Putih' },
+        { icon: '🏮', name: 'Lentera Nur' },
+        { icon: '🌴', name: 'Daun Kurma' }
+      ]
+    };
+
+    let activeTab = 'avatar';
+    let equipped = {
+      avatar: '👦',
+      head: '👑',
+      item: '📿'
+    };
+
+    function renderItems() {
+      const list = CATALOG[activeTab];
+      const wrap = document.getElementById('itemsContainer');
+      wrap.innerHTML = '';
+
+      list.forEach(it => {
+        const box = document.createElement('div');
+        const isEq = equipped[activeTab] === it.icon;
+        box.className = `item-box ${isEq ? 'equipped' : ''}`;
+        box.innerHTML = `
+          <span>${it.icon}</span>
+          <span class="item-name">${it.name}</span>
+        `;
+        box.onclick = () => {
+          playSfx(580, 'triangle', 0.12);
+          equipped[activeTab] = it.icon;
+          if (activeTab === 'avatar') {
+            document.getElementById('mainAvatar').textContent = it.icon;
+            document.getElementById('avatarNameBadge').textContent = it.title;
+          } else if (activeTab === 'head') {
+            document.getElementById('headAccessory').textContent = it.icon;
+          } else if (activeTab === 'item') {
+            document.getElementById('handAccessory').textContent = it.icon;
+          }
+          renderItems();
+        };
+        wrap.appendChild(box);
+      });
+    }
+
+    document.querySelectorAll('.tab-btn').forEach(btn => {
+      btn.onclick = () => {
+        playSfx(440, 'sine', 0.08);
+        document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        activeTab = btn.dataset.tab;
+        renderItems();
+      };
+    });
+
+    document.getElementById('btnSalinGaya').onclick = () => {
+      playSfx(659, 'triangle', 0.2);
+      setTimeout(() => playSfx(880, 'triangle', 0.3), 100);
+      alert('Masya Allah! Gaya kostum karaktermu berhasil disimpan!');
+    };
+
+    renderItems();
+  </script>
+</body>
+</html>

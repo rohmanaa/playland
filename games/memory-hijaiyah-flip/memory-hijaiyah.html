@@ -1,0 +1,370 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no">
+  <title>Memory Hijaiyah Flip — PlayLand</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600;700&family=Amiri:wght@700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg: #74b9ff;
+      --card-back: #1b4b84;
+      --card-front: #ffffff;
+      --accent: #2ecc71;
+      --gold: #f1c40f;
+      --ink: #1e355b;
+      --panel: rgba(255, 255, 255, 0.94);
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; user-select: none; -webkit-user-select: none; }
+    body {
+      font-family: 'Fredoka', system-ui, sans-serif;
+      background: #81ecec linear-gradient(180deg, #74b9ff, #a29bfe);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: space-between;
+      color: var(--ink);
+      overflow-x: hidden;
+      touch-action: manipulation;
+      padding: 14px 16px;
+    }
+    .topbar {
+      width: 100%;
+      max-width: 680px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      background: var(--panel);
+      padding: 10px 18px;
+      border-radius: 999px;
+      box-shadow: 0 6px 16px rgba(0,0,0,0.12);
+      border: 3px solid #fff;
+    }
+    .stat-badge {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      font-weight: 700;
+      font-size: 16px;
+      color: var(--ink);
+    }
+    .btn {
+      font-family: inherit;
+      font-weight: 700;
+      font-size: 15px;
+      padding: 8px 16px;
+      border-radius: 12px;
+      border: 2px solid #fff;
+      color: #fff;
+      cursor: pointer;
+      background: linear-gradient(180deg, #38e178, #27ae60);
+      box-shadow: 0 4px 0 #1e8449;
+      transition: transform 0.08s;
+    }
+    .btn:active { transform: translateY(2px); box-shadow: 0 2px 0 #1e8449; }
+    .btn-blue { background: linear-gradient(180deg, #54a0ff, #2e86de); box-shadow: 0 4px 0 #1b62a6; }
+    
+    .game-title-wrap {
+      text-align: center;
+      margin: 10px 0;
+    }
+    h1 {
+      font-size: clamp(26px, 6vw, 36px);
+      color: #fff;
+      -webkit-text-stroke: 5px #1b4b84;
+      paint-order: stroke fill;
+      text-shadow: 0 5px 0 #10325e;
+      line-height: 1;
+    }
+    .sub {
+      font-family: 'Amiri', serif;
+      font-size: 20px;
+      color: #ffeaa7;
+      text-shadow: 0 2px 4px rgba(0,0,0,0.4);
+      margin-top: 4px;
+    }
+
+    /* Grid of 3D Cards */
+    .grid-container {
+      width: 100%;
+      max-width: 640px;
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 12px;
+      perspective: 1000px;
+      margin: auto 0;
+    }
+    .card {
+      aspect-ratio: 1;
+      position: relative;
+      cursor: pointer;
+      transform-style: preserve-3d;
+      transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    }
+    .card.flipped, .card.matched {
+      transform: rotateY(180deg);
+    }
+    .card.matched {
+      animation: matchBounce 0.5s ease-out;
+    }
+    @keyframes matchBounce {
+      0%, 100% { transform: rotateY(180deg) scale(1); }
+      50% { transform: rotateY(180deg) scale(1.08); }
+    }
+    .card-face {
+      position: absolute;
+      inset: 0;
+      backface-visibility: hidden;
+      border-radius: 18px;
+      border: 3px solid #fff;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 0 8px 18px rgba(0,0,0,0.15);
+    }
+    .card-back {
+      background: linear-gradient(135deg, #1e3799, #0984e3);
+      color: #ffeaa7;
+      font-size: 32px;
+    }
+    .card-back::after {
+      content: '☪';
+      font-size: 38px;
+      filter: drop-shadow(0 2px 4px rgba(0,0,0,0.3));
+    }
+    .card-front {
+      background: linear-gradient(180deg, #ffffff, #f1f2f6);
+      transform: rotateY(180deg);
+    }
+    .arabic-char {
+      font-family: 'Amiri', serif;
+      font-size: clamp(38px, 9vw, 52px);
+      font-weight: 700;
+      color: #2c3e50;
+      line-height: 1;
+    }
+    .char-latin {
+      font-size: 13px;
+      font-weight: 700;
+      color: #747d8c;
+      margin-top: 2px;
+    }
+
+    /* Modal Victory */
+    .modal-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(10, 30, 60, 0.7);
+      backdrop-filter: blur(4px);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      z-index: 100;
+      padding: 16px;
+    }
+    .modal-overlay.active { display: flex; }
+    .modal-card {
+      background: #ffffff;
+      border: 4px solid #fff;
+      border-radius: 26px;
+      padding: 26px;
+      text-align: center;
+      max-width: 420px;
+      width: 100%;
+      box-shadow: 0 16px 36px rgba(0,0,0,0.3);
+      animation: popIn 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+    }
+    @keyframes popIn {
+      from { transform: scale(0.8); opacity: 0; }
+      to { transform: scale(1); opacity: 1; }
+    }
+    .modal-card h2 {
+      font-size: 30px;
+      color: #27ae60;
+      margin-bottom: 6px;
+    }
+    .stars { font-size: 42px; color: #f1c40f; margin: 10px 0; }
+  </style>
+</head>
+<body>
+  <div class="topbar">
+    <div class="stat-badge">⏱️ <span id="timerVal">00:00</span></div>
+    <div class="stat-badge">🎯 Langkah: <span id="movesVal">0</span></div>
+    <div class="stat-badge">✨ Pasangan: <span id="pairsVal">0/8</span></div>
+    <button class="btn btn-blue" id="btnRestart">Ulangi</button>
+  </div>
+
+  <div class="game-title-wrap">
+    <h1>MEMORY <span>HIJAIYAH</span> FLIP</h1>
+    <div class="sub">Temukan Pasangan Huruf Al-Qur'an</div>
+  </div>
+
+  <div class="grid-container" id="gridContainer"></div>
+
+  <div style="font-size:13px; font-weight:700; color:#fff; text-shadow:0 1px 3px rgba(0,0,0,0.4); text-align:center;">
+    Cocokkan semua huruf untuk mengasah ingatan & cinta Al-Qur'an!
+  </div>
+
+  <!-- Victory Modal -->
+  <div class="modal-overlay" id="modalVictory">
+    <div class="modal-card">
+      <div style="font-size:48px;">🎉</div>
+      <h2>MUMTAZ! HEBAT!</h2>
+      <p style="color:#57606f; font-weight:600;">Alhamdulillah, kamu berhasil mengingat semua huruf Hijaiyah!</p>
+      <div class="stars">★★★</div>
+      <div style="background:#f1f2f6; border-radius:14px; padding:12px; margin:14px 0; font-weight:700;">
+        Waktu: <span id="finalTime">00:00</span> | Langkah: <span id="finalMoves">0</span>
+      </div>
+      <button class="btn" id="btnPlayAgain" style="font-size:18px; padding:12px 28px;">Main Lagi ▶</button>
+    </div>
+  </div>
+
+  <script>
+    // Audio Synth
+    const AudioCtx = window.AudioContext || window.webkitAudioContext;
+    let actx = null;
+    function getAudio() {
+      if (!actx) actx = new AudioCtx();
+      if (actx.state === 'suspended') actx.resume();
+      return actx;
+    }
+    function playTone(freq, type, duration) {
+      try {
+        const ctx = getAudio();
+        const o = ctx.createOscillator();
+        const g = ctx.createGain();
+        o.type = type;
+        o.frequency.setValueAtTime(freq, ctx.currentTime);
+        g.gain.setValueAtTime(0.2, ctx.currentTime);
+        g.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + duration);
+        o.connect(g);
+        g.connect(ctx.destination);
+        o.start();
+        o.stop(ctx.currentTime + duration);
+      } catch(e){}
+    }
+    function sfxFlip() { playTone(440, 'sine', 0.1); }
+    function sfxMatch() {
+      playTone(523.25, 'triangle', 0.15);
+      setTimeout(() => playTone(659.25, 'triangle', 0.15), 100);
+      setTimeout(() => playTone(783.99, 'triangle', 0.25), 200);
+    }
+    function sfxWin() {
+      [523.25, 659.25, 783.99, 1046.5].forEach((f, i) => {
+        setTimeout(() => playTone(f, 'triangle', 0.3), i * 120);
+      });
+    }
+
+    const LETTERS = [
+      { ar: 'ا', id: 'Alif' },
+      { ar: 'ب', id: 'Ba' },
+      { ar: 'ت', id: 'Ta' },
+      { ar: 'ث', id: 'Tsa' },
+      { ar: 'ج', id: 'Jim' },
+      { ar: 'ح', id: 'Ha' },
+      { ar: 'خ', id: 'Kho' },
+      { ar: 'د', id: 'Dal' }
+    ];
+
+    let cards = [];
+    let flippedCards = [];
+    let matchedPairs = 0;
+    let moves = 0;
+    let timer = 0;
+    let timerInterval = null;
+    let isLocked = false;
+
+    function initGame() {
+      const grid = document.getElementById('gridContainer');
+      grid.innerHTML = '';
+      flippedCards = [];
+      matchedPairs = 0;
+      moves = 0;
+      timer = 0;
+      isLocked = false;
+      clearInterval(timerInterval);
+      document.getElementById('timerVal').textContent = '00:00';
+      document.getElementById('movesVal').textContent = '0';
+      document.getElementById('pairsVal').textContent = '0/8';
+      document.getElementById('modalVictory').classList.remove('active');
+
+      timerInterval = setInterval(() => {
+        timer++;
+        const mins = String(Math.floor(timer / 60)).padStart(2, '0');
+        const secs = String(timer % 60).padStart(2, '0');
+        document.getElementById('timerVal').textContent = `${mins}:${secs}`;
+      }, 1000);
+
+      // Duplicate and shuffle
+      const deck = [...LETTERS, ...LETTERS];
+      deck.sort(() => Math.random() - 0.5);
+
+      deck.forEach((item, idx) => {
+        const card = document.createElement('div');
+        card.className = 'card';
+        card.dataset.id = item.id;
+        card.innerHTML = `
+          <div class="card-face card-back"></div>
+          <div class="card-face card-front">
+            <span class="arabic-char">${item.ar}</span>
+            <span class="char-latin">${item.id}</span>
+          </div>
+        `;
+        card.addEventListener('click', () => handleCardClick(card));
+        grid.appendChild(card);
+      });
+    }
+
+    function handleCardClick(card) {
+      if (isLocked || card.classList.contains('flipped') || card.classList.contains('matched')) return;
+      sfxFlip();
+      card.classList.add('flipped');
+      flippedCards.push(card);
+
+      if (flippedCards.length === 2) {
+        moves++;
+        document.getElementById('movesVal').textContent = moves;
+        isLocked = true;
+
+        const [c1, c2] = flippedCards;
+        if (c1.dataset.id === c2.dataset.id) {
+          setTimeout(() => {
+            sfxMatch();
+            c1.classList.add('matched');
+            c2.classList.add('matched');
+            matchedPairs++;
+            document.getElementById('pairsVal').textContent = `${matchedPairs}/8`;
+            flippedCards = [];
+            isLocked = false;
+
+            if (matchedPairs === 8) {
+              clearInterval(timerInterval);
+              setTimeout(() => {
+                sfxWin();
+                document.getElementById('finalTime').textContent = document.getElementById('timerVal').textContent;
+                document.getElementById('finalMoves').textContent = moves;
+                document.getElementById('modalVictory').classList.add('active');
+              }, 400);
+            }
+          }, 350);
+        } else {
+          setTimeout(() => {
+            c1.classList.remove('flipped');
+            c2.classList.remove('flipped');
+            flippedCards = [];
+            isLocked = false;
+          }, 900);
+        }
+      }
+    }
+
+    document.getElementById('btnRestart').onclick = initGame;
+    document.getElementById('btnPlayAgain').onclick = initGame;
+    window.addEventListener('DOMContentLoaded', initGame);
+  </script>
+</body>
+</html>

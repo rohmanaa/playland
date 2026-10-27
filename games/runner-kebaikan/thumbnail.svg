@@ -1,0 +1,33 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 300" width="100%" height="100%">
+  <defs>
+    <linearGradient id="runBg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#48dbfb"/>
+      <stop offset="100%" stop-color="#0abde3"/>
+    </linearGradient>
+    <filter id="shadow">
+      <feDropShadow dx="0" dy="6" stdDeviation="5" flood-color="#000" flood-opacity="0.3"/>
+    </filter>
+  </defs>
+  <rect width="400" height="300" rx="22" fill="url(#runBg)"/>
+
+  <!-- Path perspective -->
+  <polygon points="120,300 280,300 220,130 180,130" fill="#2ed573"/>
+  <polygon points="150,300 250,300 210,130 190,130" fill="#ffa502"/>
+
+  <!-- Running Character silhouette / icon -->
+  <g transform="translate(200, 150)" filter="url(#shadow)">
+    <!-- Body -->
+    <ellipse cx="0" cy="10" rx="24" ry="32" fill="#ffffff"/>
+    <circle cx="0" cy="-30" r="18" fill="#ffd1b3"/>
+    <rect x="-16" y="-48" width="32" height="18" rx="4" fill="#111111"/>
+    <!-- Star coins -->
+    <circle cx="50" cy="-10" r="14" fill="#ffd32a" stroke="#fff" stroke-width="2"/>
+    <circle cx="-50" cy="15" r="12" fill="#ffd32a" stroke="#fff" stroke-width="2"/>
+  </g>
+
+  <!-- Title Banner -->
+  <rect x="50" y="235" width="300" height="44" rx="22" fill="#10ac84" stroke="#ffffff" stroke-width="3" filter="url(#shadow)"/>
+  <text x="200" y="264" font-family="sans-serif" font-weight="bold" font-size="20" fill="#ffffff" text-anchor="middle">
+    RUNNER <tspan fill="#ffd32a">KEBAIKAN 3D</tspan>
+  </text>
+</svg>

@@ -1,0 +1,2462 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no">
+  <title>Slice Master Islami 3D — PlayLand</title>
+  <meta name="description" content="Game Slice Master 3D versi Islami: Balikkan pisau berkah, potong buah halal segar (kurma, tin, zaitun), tancapkan bilah di sasaran, dan raih jackpot berkah!">
+  
+  <!-- Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;500;600;700&family=Amiri:wght@700&display=swap" rel="stylesheet">
+  
+  <!-- Three.js r128 -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+
+  <style>
+    :root {
+      --bg: #80d0ff;
+      --panel: rgba(255, 255, 255, 0.94);
+      --panel2: #eef7ff;
+      --ink: #1e355b;
+      --mute: #627d9e;
+      --accent: #27ae60;
+      --accent-d: #1e8449;
+      --blue: #238bf7;
+      --blue-d: #136cc7;
+      --gold: #f39c12;
+      --gold-d: #d68910;
+      --bad: #e74c3c;
+      --bad-d: #c0392b;
+      --purple: #8e44ad;
+      --radius: 20px;
+      --s: 1;
+      box-sizing: border-box;
+      padding-top: env(safe-area-inset-top, 0px);
+      padding-bottom: env(safe-area-inset-bottom, 0px);
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      -webkit-tap-highlight-color: transparent;
+      user-select: none;
+      -webkit-user-select: none;
+    }
+
+    html, body {
+      width: 100%;
+      height: 100%;
+      overflow: hidden;
+      background: #75c6fc;
+      font-family: 'Fredoka', system-ui, -apple-system, sans-serif;
+      font-weight: 500;
+      color: var(--ink);
+      touch-action: none;
+    }
+
+    #canvas-container {
+      position: fixed;
+      inset: 0;
+      display: block;
+      z-index: 1;
+    }
+
+    #game-canvas {
+      width: 100%;
+      height: 100%;
+      display: block;
+    }
+
+    /* SVG Helpers */
+    .ico {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      vertical-align: middle;
+      line-height: 1;
+    }
+    .ico svg {
+      width: 1.25em;
+      height: 1.25em;
+      fill: currentColor;
+    }
+
+    /* 3D Bevel Buttons */
+    .btn {
+      font-family: inherit;
+      font-weight: 700;
+      font-size: 19px;
+      padding: 13px 26px;
+      border-radius: 16px;
+      border: 3px solid #ffffff;
+      color: #ffffff;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      background: linear-gradient(180deg, #38e178, var(--accent));
+      box-shadow: 0 6px 0 var(--accent-d), 0 10px 18px rgba(0, 0, 0, 0.15), inset 0 2px 0 rgba(255, 255, 255, 0.5);
+      text-shadow: 0 2px 0 rgba(0, 0, 0, 0.25);
+      transition: transform 0.08s ease, box-shadow 0.08s ease;
+      position: relative;
+    }
+    .btn:active {
+      transform: translateY(4px);
+      box-shadow: 0 2px 0 var(--accent-d), 0 4px 10px rgba(0, 0, 0, 0.15), inset 0 2px 0 rgba(255, 255, 255, 0.5);
+    }
+    .btn.b-blue {
+      background: linear-gradient(180deg, #53aefb, var(--blue));
+      box-shadow: 0 6px 0 var(--blue-d), 0 10px 18px rgba(0, 0, 0, 0.15), inset 0 2px 0 rgba(255, 255, 255, 0.5);
+    }
+    .btn.b-blue:active {
+      box-shadow: 0 2px 0 var(--blue-d);
+    }
+    .btn.b-gold {
+      background: linear-gradient(180deg, #ffd34e, var(--gold));
+      box-shadow: 0 6px 0 var(--gold-d), 0 10px 18px rgba(0, 0, 0, 0.15), inset 0 2px 0 rgba(255, 255, 255, 0.5);
+    }
+    .btn.b-gold:active {
+      box-shadow: 0 2px 0 var(--gold-d);
+    }
+    .btn.b-bad {
+      background: linear-gradient(180deg, #ff6b6b, var(--bad));
+      box-shadow: 0 6px 0 var(--bad-d), 0 10px 18px rgba(0, 0, 0, 0.15), inset 0 2px 0 rgba(255, 255, 255, 0.5);
+    }
+    .btn.b-bad:active {
+      box-shadow: 0 2px 0 var(--bad-d);
+    }
+    .btn.disabled, .btn:disabled {
+      opacity: 0.55;
+      filter: grayscale(0.8);
+      pointer-events: none;
+    }
+    .btn-sm {
+      font-size: 15px;
+      padding: 8px 16px;
+      border-radius: 12px;
+      box-shadow: 0 4px 0 var(--accent-d);
+    }
+    .btn-sm:active {
+      box-shadow: 0 1px 0 var(--accent-d);
+    }
+
+    /* Icon Buttons */
+    .ibtn {
+      width: 48px;
+      height: 48px;
+      border-radius: 15px;
+      border: 3px solid #ffffff;
+      background: linear-gradient(180deg, #ffd24d, #f39c12);
+      color: #ffffff;
+      box-shadow: 0 5px 0 #c77b06, 0 8px 14px rgba(0, 0, 0, 0.15);
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      font-size: 24px;
+      transition: transform 0.08s ease, box-shadow 0.08s ease;
+      pointer-events: auto;
+    }
+    .ibtn:active {
+      transform: translateY(3px);
+      box-shadow: 0 2px 0 #c77b06;
+    }
+    .ibtn.blue {
+      background: linear-gradient(180deg, #60b5ff, #238bf7);
+      box-shadow: 0 5px 0 #1168c4;
+    }
+    .ibtn.blue:active { box-shadow: 0 2px 0 #1168c4; }
+
+    /* Resource Chips */
+    .chip {
+      display: inline-flex;
+      align-items: center;
+      gap: 7px;
+      padding: 6px 14px 6px 10px;
+      border-radius: 999px;
+      background: rgba(255, 255, 255, 0.95);
+      border: 2px solid #ffffff;
+      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.12);
+      font-weight: 700;
+      font-size: 16px;
+      color: var(--ink);
+      font-variant-numeric: tabular-nums;
+    }
+    .chip .chip-icon {
+      width: 24px;
+      height: 24px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 14px;
+      color: #fff;
+    }
+    .chip .chip-icon.c-gold { background: linear-gradient(135deg, #ffd24d, #f39c12); }
+    .chip .chip-icon.c-gem { background: linear-gradient(135deg, #a855f7, #7c3aed); }
+
+    /* HUD Overlay */
+    #hud {
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      z-index: 10;
+      display: none;
+      flex-direction: column;
+      justify-content: space-between;
+      padding: calc(env(safe-area-inset-top, 0px) + 14px) 16px calc(env(safe-area-inset-bottom, 0px) + 16px);
+    }
+    .hud-top {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      pointer-events: auto;
+    }
+    .hud-center-top {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 4px;
+    }
+    .hud-level-badge {
+      background: linear-gradient(180deg, #ffffff, #e6f3ff);
+      border: 3px solid #fff;
+      padding: 4px 18px;
+      border-radius: 999px;
+      font-weight: 700;
+      font-size: 17px;
+      color: var(--blue-d);
+      box-shadow: 0 5px 12px rgba(0, 0, 0, 0.15);
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .hud-score {
+      font-size: 40px;
+      font-weight: 700;
+      color: #ffffff;
+      -webkit-text-stroke: 6px #1b4b84;
+      paint-order: stroke fill;
+      text-shadow: 0 5px 0 #153c6d;
+      line-height: 1;
+    }
+    .hud-streak {
+      font-size: 16px;
+      font-weight: 700;
+      color: #ffd447;
+      background: rgba(20, 48, 88, 0.85);
+      padding: 3px 12px;
+      border-radius: 999px;
+      border: 2px solid #ffd447;
+      display: none;
+    }
+    .hud-bot {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 10px;
+      pointer-events: none;
+    }
+    .hud-instruction {
+      background: rgba(255, 255, 255, 0.92);
+      border: 3px solid #fff;
+      border-radius: 999px;
+      padding: 10px 24px;
+      font-weight: 700;
+      font-size: 16px;
+      color: var(--ink);
+      box-shadow: 0 6px 16px rgba(0, 0, 0, 0.15);
+      animation: tapPulse 1.2s infinite ease-in-out;
+    }
+    @keyframes tapPulse {
+      0%, 100% { transform: translateY(0) scale(1); }
+      50% { transform: translateY(-6px) scale(1.04); }
+    }
+    .hud-progress-bar {
+      width: 100%;
+      max-width: 380px;
+      height: 16px;
+      background: rgba(255, 255, 255, 0.85);
+      border: 3px solid #fff;
+      border-radius: 999px;
+      overflow: hidden;
+      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.15);
+      position: relative;
+    }
+    .hud-progress-fill {
+      height: 100%;
+      width: 0%;
+      background: linear-gradient(90deg, #38e178, #27ae60);
+      border-radius: 999px;
+      transition: width 0.15s ease-out;
+    }
+
+    /* Floating Score Popups */
+    .pop-text {
+      position: fixed;
+      font-weight: 700;
+      font-size: 28px;
+      color: #ffd34e;
+      -webkit-text-stroke: 5px #1e355b;
+      paint-order: stroke fill;
+      text-shadow: 0 4px 0 #152642;
+      pointer-events: none;
+      z-index: 25;
+      transform: translate(-50%, -50%);
+      animation: floatUp 0.85s cubic-bezier(0.18, 0.89, 0.32, 1.28) forwards;
+      white-space: nowrap;
+    }
+    @keyframes floatUp {
+      0% { opacity: 0; transform: translate(-50%, 0) scale(0.5); }
+      20% { opacity: 1; transform: translate(-50%, -15px) scale(1.2); }
+      100% { opacity: 0; transform: translate(-50%, -60px) scale(0.9); }
+    }
+
+    /* Screen Modals / Overlay */
+    .screen-overlay {
+      position: fixed;
+      inset: 0;
+      background: radial-gradient(circle at center, rgba(30, 95, 175, 0.4), rgba(10, 35, 75, 0.85));
+      display: none;
+      align-items: center;
+      justify-content: center;
+      z-index: 30;
+      padding: 16px;
+      backdrop-filter: blur(4px);
+      -webkit-backdrop-filter: blur(4px);
+    }
+    .screen-overlay.active {
+      display: flex;
+    }
+
+    .modal-card {
+      width: 100%;
+      max-width: 440px;
+      background: linear-gradient(180deg, #ffffff, #f2f8ff);
+      border: 4px solid #ffffff;
+      border-radius: 26px;
+      padding: 24px;
+      box-shadow: 0 16px 36px rgba(0, 0, 0, 0.3), 0 6px 0 rgba(19, 66, 128, 0.3);
+      text-align: center;
+      position: relative;
+      animation: modalPop 0.32s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+      max-height: 90vh;
+      overflow-y: auto;
+    }
+    @keyframes modalPop {
+      0% { opacity: 0; transform: translateY(30px) scale(0.85); }
+      100% { opacity: 1; transform: translateY(0) scale(1); }
+    }
+
+    .modal-title {
+      font-size: 32px;
+      font-weight: 700;
+      color: #fff;
+      -webkit-text-stroke: 6px #1e457e;
+      paint-order: stroke fill;
+      text-shadow: 0 5px 0 #163663;
+      margin-bottom: 8px;
+    }
+    .modal-subtitle {
+      font-size: 15px;
+      color: var(--mute);
+      margin-bottom: 20px;
+      font-weight: 600;
+    }
+
+    /* Splash / Main Menu Screen */
+    #menu-screen {
+      position: fixed;
+      inset: 0;
+      z-index: 20;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      padding: calc(env(safe-area-inset-top, 0px) + 20px) 20px calc(env(safe-area-inset-bottom, 0px) + 26px);
+      background: linear-gradient(180deg, rgba(22, 60, 115, 0.35) 0%, transparent 40%, transparent 60%, rgba(15, 45, 90, 0.5) 100%);
+      pointer-events: none;
+    }
+    .menu-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      pointer-events: auto;
+    }
+    .menu-title-box {
+      text-align: center;
+      pointer-events: none;
+      margin-top: 10px;
+    }
+    .game-logo {
+      font-size: clamp(42px, 11vw, 68px);
+      font-weight: 700;
+      color: #fff;
+      -webkit-text-stroke: 8px #18529e;
+      paint-order: stroke fill;
+      text-shadow: 0 8px 0 #103b73;
+      line-height: 1.05;
+      letter-spacing: 0.5px;
+    }
+    .game-logo span {
+      color: #ffd34e;
+      -webkit-text-stroke-color: #d68910;
+      text-shadow: 0 8px 0 #b36e08;
+    }
+    .game-tagline {
+      font-family: 'Amiri', serif;
+      font-size: 24px;
+      font-weight: 700;
+      color: #ffffff;
+      text-shadow: 0 3px 6px rgba(0, 0, 0, 0.4);
+      margin-top: 2px;
+    }
+    .menu-footer {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 16px;
+      pointer-events: auto;
+    }
+    .menu-actions {
+      display: flex;
+      gap: 14px;
+      justify-content: center;
+      flex-wrap: wrap;
+    }
+
+    /* Level Stars & Results */
+    .star-row {
+      display: flex;
+      justify-content: center;
+      gap: 10px;
+      margin: 12px 0 16px;
+    }
+    .star-item {
+      font-size: 48px;
+      color: #d1dced;
+      transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+    }
+    .star-item.active {
+      color: #ffd447;
+      filter: drop-shadow(0 4px 0 #d98e0c);
+      animation: starPop 0.45s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+    }
+    @keyframes starPop {
+      0% { transform: scale(0) rotate(-45deg); }
+      70% { transform: scale(1.3) rotate(15deg); }
+      100% { transform: scale(1) rotate(0deg); }
+    }
+
+    .stat-box {
+      background: var(--panel2);
+      border: 2px solid #dbe8f7;
+      border-radius: 16px;
+      padding: 12px 16px;
+      margin: 12px 0 18px;
+      display: flex;
+      justify-content: space-around;
+      align-items: center;
+    }
+    .stat-item {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+    .stat-label {
+      font-size: 13px;
+      color: var(--mute);
+      font-weight: 600;
+    }
+    .stat-val {
+      font-size: 24px;
+      font-weight: 700;
+      color: var(--ink);
+    }
+
+    /* Knife Shop Carousel / Grid */
+    .shop-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 12px;
+      max-height: 52vh;
+      overflow-y: auto;
+      padding: 6px;
+      margin-bottom: 16px;
+    }
+    .shop-item {
+      background: var(--panel2);
+      border: 3px solid #dce8f8;
+      border-radius: 18px;
+      padding: 12px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 8px;
+      cursor: pointer;
+      position: relative;
+      transition: transform 0.15s, border-color 0.15s, box-shadow 0.15s;
+    }
+    .shop-item:hover {
+      transform: translateY(-2px);
+      border-color: var(--blue);
+      box-shadow: 0 6px 14px rgba(35, 139, 247, 0.2);
+    }
+    .shop-item.selected {
+      border-color: var(--accent);
+      background: #eafff2;
+      box-shadow: 0 0 0 2px var(--accent);
+    }
+    .shop-item-preview {
+      width: 72px;
+      height: 72px;
+      border-radius: 14px;
+      background: #ffffff;
+      border: 2px solid #e1ecf8;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 38px;
+      box-shadow: inset 0 2px 6px rgba(0, 0, 0, 0.05);
+    }
+    .shop-item-name {
+      font-size: 14px;
+      font-weight: 700;
+      color: var(--ink);
+      line-height: 1.2;
+    }
+    .shop-item-badge {
+      font-size: 11px;
+      padding: 2px 8px;
+      border-radius: 999px;
+      font-weight: 700;
+      background: #38e178;
+      color: #fff;
+    }
+
+    /* Levels Grid */
+    .level-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 10px;
+      max-height: 55vh;
+      overflow-y: auto;
+      padding: 6px;
+      margin-bottom: 16px;
+    }
+    .level-node {
+      background: var(--panel2);
+      border: 3px solid #dce8f8;
+      border-radius: 16px;
+      aspect-ratio: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      font-weight: 700;
+      font-size: 20px;
+      color: var(--ink);
+      position: relative;
+      box-shadow: 0 4px 0 #cadbf0;
+      transition: transform 0.1s, box-shadow 0.1s;
+    }
+    .level-node:active {
+      transform: translateY(3px);
+      box-shadow: 0 1px 0 #cadbf0;
+    }
+    .level-node.locked {
+      opacity: 0.5;
+      filter: grayscale(1);
+      cursor: not-allowed;
+    }
+    .level-node.current {
+      background: linear-gradient(180deg, #ffffff, #dff0ff);
+      border-color: var(--blue);
+      box-shadow: 0 4px 0 var(--blue-d);
+      color: var(--blue-d);
+    }
+    .level-stars {
+      display: flex;
+      gap: 2px;
+      font-size: 10px;
+      color: #ffd447;
+      margin-top: 4px;
+    }
+
+    /* Hadiah Islami / Quotes */
+    .hadits-pill {
+      background: #fdf5e6;
+      border-left: 5px solid var(--gold);
+      border-radius: 10px;
+      padding: 10px 14px;
+      margin: 12px 0;
+      font-size: 13.5px;
+      color: #5c4314;
+      line-height: 1.45;
+      text-align: left;
+    }
+    .hadits-pill b {
+      display: block;
+      color: var(--gold-d);
+      margin-bottom: 2px;
+    }
+
+    /* Toast Notification */
+    #toast {
+      position: fixed;
+      top: calc(env(safe-area-inset-top, 0px) + 20px);
+      left: 50%;
+      transform: translateX(-50%) translateY(-80px);
+      background: #1e355b;
+      color: #fff;
+      border: 2px solid #53aefb;
+      padding: 10px 22px;
+      border-radius: 999px;
+      font-weight: 700;
+      font-size: 15px;
+      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.25);
+      z-index: 50;
+      pointer-events: none;
+      transition: transform 0.3s cubic-bezier(0.18, 0.89, 0.32, 1.28);
+      white-space: nowrap;
+    }
+    #toast.show {
+      transform: translateX(-50%) translateY(0);
+    }
+
+    /* Responsive scaling */
+    @media (max-width: 480px) {
+      .game-logo { font-size: 46px; -webkit-text-stroke: 6px #18529e; }
+      .btn { font-size: 17px; padding: 11px 22px; }
+      .ibtn { width: 42px; height: 42px; font-size: 20px; }
+      .hud-score { font-size: 34px; }
+      .shop-grid { grid-template-columns: repeat(2, 1fr); }
+      .level-grid { grid-template-columns: repeat(3, 1fr); }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Three.js Canvas Container -->
+  <div id="canvas-container">
+    <canvas id="game-canvas"></canvas>
+  </div>
+
+  <!-- HUD In-Game -->
+  <div id="hud">
+    <div class="hud-top">
+      <button class="ibtn blue" id="btn-pause" aria-label="Jeda">
+        <span class="ico">
+          <svg viewBox="0 0 24 24"><path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"/></svg>
+        </span>
+      </button>
+
+      <div class="hud-center-top">
+        <div class="hud-level-badge">
+          <span>Level <b id="hud-level-num">1</b></span>
+        </div>
+        <div class="hud-score" id="hud-score-val">0</div>
+        <div class="hud-streak" id="hud-streak-box">COMBO x2!</div>
+      </div>
+
+      <div class="chip">
+        <div class="chip-icon c-gold">
+          <span class="ico"><svg viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8zm.31-8.86c-1.77-.45-2.34-.94-2.34-1.67 0-.84.79-1.43 2.1-1.43 1.38 0 1.9.66 1.94 1.64h1.71c-.05-1.34-.87-2.57-2.49-2.97V5H10.9v1.69c-1.51.32-2.72 1.3-2.72 2.81 0 1.79 1.49 2.69 3.66 3.21 1.95.46 2.34 1.15 2.34 1.87 0 .53-.39 1.39-2.1 1.39-1.6 0-2.23-.72-2.32-1.64H8.04c.1 1.7 1.36 2.66 2.86 2.97V19h2.34v-1.67c1.52-.29 2.72-1.16 2.73-2.77-.01-2.2-1.9-2.96-3.66-3.42z"/></svg></span>
+        </div>
+        <span id="hud-coins">0</span>
+      </div>
+    </div>
+
+    <div class="hud-bot">
+      <div class="hud-instruction" id="hud-hint">Ketuk Layar / Tekan SPASI untuk Membalik Pisau!</div>
+      <div class="hud-progress-bar">
+        <div class="hud-progress-fill" id="hud-progress-fill"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Main Menu / Splash Overlay -->
+  <div id="menu-screen">
+    <div class="menu-header">
+      <div class="chip">
+        <div class="chip-icon c-gold">
+          <span class="ico"><svg viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8zm.31-8.86c-1.77-.45-2.34-.94-2.34-1.67 0-.84.79-1.43 2.1-1.43 1.38 0 1.9.66 1.94 1.64h1.71c-.05-1.34-.87-2.57-2.49-2.97V5H10.9v1.69c-1.51.32-2.72 1.3-2.72 2.81 0 1.79 1.49 2.69 3.66 3.21 1.95.46 2.34 1.15 2.34 1.87 0 .53-.39 1.39-2.1 1.39-1.6 0-2.23-.72-2.32-1.64H8.04c.1 1.7 1.36 2.66 2.86 2.97V19h2.34v-1.67c1.52-.29 2.72-1.16 2.73-2.77-.01-2.2-1.9-2.96-3.66-3.42z"/></svg></span>
+        </div>
+        <span id="menu-coins">0</span>
+      </div>
+
+      <div style="display:flex; gap:10px;">
+        <button class="ibtn" id="btn-sound" aria-label="Suara">
+          <span class="ico" id="icon-sound">
+            <svg viewBox="0 0 24 24"><path d="M3 9v6h4l5 5V4L7 9H3zm13.5 3c0-1.77-1.02-3.29-2.5-4.03v8.05c1.48-.73 2.5-2.25 2.5-4.02zM14 3.23v2.06c2.89.86 5 3.54 5 6.71s-2.11 5.85-5 6.71v2.06c4.01-.91 7-4.49 7-8.77s-2.99-7.86-7-8.77z"/></svg>
+          </span>
+        </button>
+        <button class="ibtn blue" id="btn-settings-open" aria-label="Pengaturan">
+          <span class="ico">
+            <svg viewBox="0 0 24 24"><path d="M19.14 12.94c.04-.3.06-.61.06-.94 0-.32-.02-.64-.07-.94l2.03-1.58c.18-.14.23-.41.12-.61l-1.92-3.32c-.12-.22-.37-.29-.59-.22l-2.39.96c-.5-.38-1.03-.7-1.62-.94l-.36-2.54c-.04-.24-.24-.41-.48-.41h-3.84c-.24 0-.43.17-.47.41l-.36 2.54c-.59.24-1.13.57-1.62.94l-2.39-.96c-.22-.08-.47 0-.59.22L2.74 8.87c-.12.21-.08.47.12.61l2.03 1.58c-.05.3-.09.63-.09.94s.02.64.07.94l-2.03 1.58c-.18.14-.23.41-.12.61l1.92 3.32c.12.22.37.29.59.22l2.39-.96c.5.38 1.03.7 1.62.94l.36 2.54c.05.24.24.41.48.41h3.84c.24 0 .44-.17.47-.41l.36-2.54c.59-.24 1.13-.56 1.62-.94l2.39.96c.22.08.47 0 .59-.22l1.92-3.32c.12-.22.07-.47-.12-.61l-2.01-1.58zM12 15.6c-1.98 0-3.6-1.62-3.6-3.6s1.62-3.6 3.6-3.6 3.6 1.62 3.6 3.6-1.62 3.6-3.6 3.6z"/></svg>
+          </span>
+        </button>
+      </div>
+    </div>
+
+    <div class="menu-title-box">
+      <div class="game-logo">SLICE <span>MASTER</span></div>
+      <div class="game-tagline">بِسْمِ اللَّهِ — Petualangan Iris Berkah 3D</div>
+    </div>
+
+    <div class="menu-footer">
+      <button class="btn" id="btn-play-now" style="font-size: 24px; padding: 16px 48px;">
+        <span class="ico"><svg viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg></span>
+        MAIN SEKARANG
+      </button>
+
+      <div class="menu-actions">
+        <button class="btn b-blue btn-sm" id="btn-levels-open">
+          <span class="ico"><svg viewBox="0 0 24 24"><path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-5 14H7v-2h7v2zm3-4H7v-2h10v2zm0-4H7V7h10v2z"/></svg></span>
+          Pilih Level
+        </button>
+        <button class="btn b-gold btn-sm" id="btn-shop-open">
+          <span class="ico"><svg viewBox="0 0 24 24"><path d="M19 6h-2c0-2.76-2.24-5-5-5S7 3.24 7 6H5c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V8c0-1.1-.9-2-2-2zm-7-3c1.66 0 3 1.34 3 3H9c0-1.66 1.34-3 3-3zm7 17H5V8h14v12z"/></svg></span>
+          Toko Pisau
+        </button>
+        <button class="btn b-blue btn-sm" id="btn-daily-open">
+          <span class="ico"><svg viewBox="0 0 24 24"><path d="M20 6h-2.18c.11-.31.18-.65.18-1 0-1.66-1.34-3-3-3-1.05 0-1.96.54-2.5 1.35l-.5.67-.5-.68C10.96 2.54 10.05 2 9 2 7.34 2 6 3.34 6 5c0 .35.07.69.18 1H4c-1.11 0-1.99.89-1.99 2L2 19c0 1.11.89 2 2 2h16c1.11 0 2-.89 2-2V8c0-1.11-.89-2-2-2zm-5-2c.55 0 1 .45 1 1s-.45 1-1 1-1-.45-1-1 .45-1 1-1zM9 4c.55 0 1 .45 1 1s-.45 1-1 1-1-.45-1-1 .45-1 1-1zm11 15H4v-2h16v2zm0-5H4V8h5.08L7 10.83 8.62 12 11 8.76V8h2v.76L15.38 12 17 10.83 14.92 8H20v6z"/></svg></span>
+          Hadiah Harian
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal: Pause -->
+  <div class="screen-overlay" id="modal-pause">
+    <div class="modal-card">
+      <div class="modal-title">GAME DIJEDA</div>
+      <p class="modal-subtitle">Istirahat sejenak sambil mengingat kebaikan</p>
+      
+      <div class="hadits-pill">
+        <b>Kutipan Berkah:</b>
+        "Makanlah dari rezeki yang halal lagi baik yang telah Kami berikan kepadamu." (QS. Al-Baqarah: 172)
+      </div>
+
+      <div style="display:flex; flex-direction:column; gap:12px; margin-top:16px;">
+        <button class="btn" id="btn-resume">Lanjutkan Main</button>
+        <button class="btn b-blue" id="btn-restart-pause">Ulangi Level</button>
+        <button class="btn b-bad" id="btn-quit-menu">Kembali ke Menu</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal: Victory (Menang) -->
+  <div class="screen-overlay" id="modal-victory">
+    <div class="modal-card">
+      <div class="modal-title" style="color:#ffd34e; -webkit-text-stroke-color:#b36e08;">BERKAH! LEVEL SELESAI</div>
+      <p class="modal-subtitle">Alhamdulillah! Kamu berhasil menancapkan pisau di sasaran!</p>
+
+      <div class="star-row">
+        <span class="star-item" id="star-1">★</span>
+        <span class="star-item" id="star-2">★</span>
+        <span class="star-item" id="star-3">★</span>
+      </div>
+
+      <div class="stat-box">
+        <div class="stat-item">
+          <span class="stat-label">Irisan Berkah</span>
+          <span class="stat-val" id="res-slices">0</span>
+        </div>
+        <div class="stat-item">
+          <span class="stat-label">Multiplier</span>
+          <span class="stat-val" id="res-multi" style="color:var(--gold);">x1</span>
+        </div>
+        <div class="stat-item">
+          <span class="stat-label">Koin Didapat</span>
+          <span class="stat-val" id="res-coins" style="color:var(--accent);">+0</span>
+        </div>
+      </div>
+
+      <div style="display:flex; gap:10px; justify-content:center;">
+        <button class="btn b-blue" id="btn-retry-win">Ulangi</button>
+        <button class="btn" id="btn-next-level">Level Lanjut</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal: Defeat (Kalah / Gagal) -->
+  <div class="screen-overlay" id="modal-defeat">
+    <div class="modal-card">
+      <div class="modal-title" style="color:#ff6b6b; -webkit-text-stroke-color:#a82828;">HAMPIR BERHASIL!</div>
+      <p class="modal-subtitle">Pisau terjatuh atau mengenai batu tajam. Jangan menyerah, coba lagi!</p>
+
+      <div class="stat-box">
+        <div class="stat-item">
+          <span class="stat-label">Skor Akhir</span>
+          <span class="stat-val" id="res-fail-score">0</span>
+        </div>
+        <div class="stat-item">
+          <span class="stat-label">Benda Teriris</span>
+          <span class="stat-val" id="res-fail-slices">0</span>
+        </div>
+      </div>
+
+      <div style="display:flex; flex-direction:column; gap:12px;">
+        <button class="btn" id="btn-retry-fail">Coba Lagi</button>
+        <button class="btn b-blue" id="btn-menu-fail">Menu Utama</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal: Levels Selector -->
+  <div class="screen-overlay" id="modal-levels">
+    <div class="modal-card">
+      <div class="modal-title">PILIH LEVEL</div>
+      <p class="modal-subtitle">Selesaikan level untuk membuka petualangan baru</p>
+
+      <div class="level-grid" id="level-grid-container"></div>
+
+      <button class="btn b-bad btn-sm" id="btn-close-levels">Tutup</button>
+    </div>
+  </div>
+
+  <!-- Modal: Toko Pisau (Shop) -->
+  <div class="screen-overlay" id="modal-shop">
+    <div class="modal-card" style="max-width:480px;">
+      <div class="modal-title">TOKO PISAU BERKAH</div>
+      <p class="modal-subtitle">Beli dan gunakan berbagai bilah pisau legendaris!</p>
+
+      <div class="shop-grid" id="shop-grid-container"></div>
+
+      <button class="btn b-bad btn-sm" id="btn-close-shop">Tutup</button>
+    </div>
+  </div>
+
+  <!-- Modal: Hadiah Harian -->
+  <div class="screen-overlay" id="modal-daily">
+    <div class="modal-card">
+      <div class="modal-title">HADIAH HARIAN</div>
+      <p class="modal-subtitle">Masuk setiap hari untuk mendapatkan koin dan hadiah berkah!</p>
+
+      <div style="display:grid; grid-template-columns: repeat(4, 1fr); gap:8px; margin:16px 0;" id="daily-grid-container">
+        <!-- populated via js -->
+      </div>
+
+      <button class="btn" id="btn-claim-daily">Klaim Hadiah Hari Ini!</button>
+      <div style="margin-top:12px;">
+        <button class="btn b-bad btn-sm" id="btn-close-daily">Tutup</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal: Settings -->
+  <div class="screen-overlay" id="modal-settings">
+    <div class="modal-card">
+      <div class="modal-title">PENGATURAN</div>
+      <p class="modal-subtitle">Sesuaikan kenyamanan bermain kamu</p>
+
+      <div style="display:flex; flex-direction:column; gap:14px; text-align:left; margin:16px 0;">
+        <div style="display:flex; justify-content:space-between; align-items:center;">
+          <b>Efek Suara & Musik</b>
+          <button class="btn btn-sm" id="btn-toggle-sound-setting">NYALA</button>
+        </div>
+        <div style="display:flex; justify-content:space-between; align-items:center;">
+          <b>Getar Layar (Screen Shake)</b>
+          <button class="btn btn-sm" id="btn-toggle-shake-setting">NYALA</button>
+        </div>
+        <div style="display:flex; justify-content:space-between; align-items:center;">
+          <b>Kualitas Grafis 3D</b>
+          <button class="btn b-blue btn-sm" id="btn-toggle-gfx-setting">TINGGI</button>
+        </div>
+      </div>
+
+      <button class="btn b-bad btn-sm" id="btn-close-settings">Tutup</button>
+    </div>
+  </div>
+
+  <!-- Toast Notification -->
+  <div id="toast">Notifikasi Berkah</div>
+
+  <!-- GAME SCRIPT -->
+  <script>
+  /*============================================================================
+    SLICE MASTER ISLAMI 3D — PlayLand Edition
+    Built with Three.js r128, WebAudio Procedural Synth, & Physics Slicing Engine
+  ============================================================================*/
+
+  // --- 1. CONFIGURATION & BALANCE ---
+  const CONFIG = {
+    physics: {
+      gravity: -36.0,
+      jumpImpulseY: 15.5,
+      jumpImpulseX: 11.2,
+      angularVelocity: 16.8, // rotation speed per flip (radians/sec)
+      bladeHitBounceY: 3.5,
+      bladeHitBounceX: 5.5,
+      terminalVelY: -32.0,
+      dragX: 0.985
+    },
+    camera: {
+      offsetX: -4.5,
+      offsetY: 4.8,
+      offsetZ: 14.5,
+      lookAheadX: 5.0,
+      lerpSpeed: 0.12
+    },
+    track: {
+      groundY: -4.0,
+      killY: -10.0,
+      defaultPlatformLength: 100
+    }
+  };
+
+  // --- 2. AUDIO SYNTHESIZER (WebAudio procedural - zero external audio assets) ---
+  class SoundManager {
+    constructor() {
+      this.ctx = null;
+      this.enabled = true;
+      this.bgmGain = null;
+      this.bgmOsc = null;
+      this.bgmStep = 0;
+      this.bgmTimer = null;
+    }
+
+    init() {
+      if (!this.ctx) {
+        const AudioCtx = window.AudioContext || window.webkitAudioContext;
+        this.ctx = new AudioCtx();
+      }
+      if (this.ctx && this.ctx.state === 'suspended') {
+        this.ctx.resume();
+      }
+      this.startBGM();
+    }
+
+    playSlice() {
+      if (!this.enabled || !this.ctx) return;
+      const t = this.ctx.currentTime;
+      const osc = this.ctx.createOscillator();
+      const gain = this.ctx.createGain();
+      const filter = this.ctx.createBiquadFilter();
+
+      filter.type = 'highpass';
+      filter.frequency.setValueAtTime(800, t);
+      filter.frequency.exponentialRampToValueAtTime(3200, t + 0.08);
+
+      osc.type = 'triangle';
+      osc.frequency.setValueAtTime(600 + Math.random() * 300, t);
+      osc.frequency.exponentialRampToValueAtTime(1600 + Math.random() * 400, t + 0.06);
+
+      gain.gain.setValueAtTime(0.35, t);
+      gain.gain.exponentialRampToValueAtTime(0.01, t + 0.09);
+
+      osc.connect(filter);
+      filter.connect(gain);
+      gain.connect(this.ctx.destination);
+
+      osc.start(t);
+      osc.stop(t + 0.1);
+    }
+
+    playStick() {
+      if (!this.enabled || !this.ctx) return;
+      const t = this.ctx.currentTime;
+      // Solid wood impact: sub thump + noise transient
+      const osc = this.ctx.createOscillator();
+      const gain = this.ctx.createGain();
+
+      osc.type = 'sine';
+      osc.frequency.setValueAtTime(260, t);
+      osc.frequency.exponentialRampToValueAtTime(60, t + 0.15);
+
+      gain.gain.setValueAtTime(0.45, t);
+      gain.gain.exponentialRampToValueAtTime(0.01, t + 0.16);
+
+      osc.connect(gain);
+      gain.connect(this.ctx.destination);
+
+      osc.start(t);
+      osc.stop(t + 0.17);
+    }
+
+    playFlip() {
+      if (!this.enabled || !this.ctx) return;
+      const t = this.ctx.currentTime;
+      const osc = this.ctx.createOscillator();
+      const gain = this.ctx.createGain();
+
+      osc.type = 'sine';
+      osc.frequency.setValueAtTime(220, t);
+      osc.frequency.exponentialRampToValueAtTime(450, t + 0.12);
+
+      gain.gain.setValueAtTime(0.18, t);
+      gain.gain.exponentialRampToValueAtTime(0.01, t + 0.14);
+
+      osc.connect(gain);
+      gain.connect(this.ctx.destination);
+
+      osc.start(t);
+      osc.stop(t + 0.15);
+    }
+
+    playBounce() {
+      if (!this.enabled || !this.ctx) return;
+      const t = this.ctx.currentTime;
+      const osc = this.ctx.createOscillator();
+      const gain = this.ctx.createGain();
+
+      osc.type = 'square';
+      osc.frequency.setValueAtTime(440, t);
+      osc.frequency.exponentialRampToValueAtTime(220, t + 0.1);
+
+      gain.gain.setValueAtTime(0.2, t);
+      gain.gain.exponentialRampToValueAtTime(0.01, t + 0.12);
+
+      osc.connect(gain);
+      gain.connect(this.ctx.destination);
+
+      osc.start(t);
+      osc.stop(t + 0.12);
+    }
+
+    playCoin() {
+      if (!this.enabled || !this.ctx) return;
+      const t = this.ctx.currentTime;
+      [1046.5, 1318.5].forEach((freq, idx) => {
+        const osc = this.ctx.createOscillator();
+        const gain = this.ctx.createGain();
+        osc.type = 'sine';
+        osc.frequency.setValueAtTime(freq, t + idx * 0.06);
+        gain.gain.setValueAtTime(0.22, t + idx * 0.06);
+        gain.gain.exponentialRampToValueAtTime(0.005, t + idx * 0.06 + 0.18);
+        osc.connect(gain);
+        gain.connect(this.ctx.destination);
+        osc.start(t + idx * 0.06);
+        osc.stop(t + idx * 0.06 + 0.19);
+      });
+    }
+
+    playWin() {
+      if (!this.enabled || !this.ctx) return;
+      const notes = [523.25, 659.25, 783.99, 1046.50];
+      const t = this.ctx.currentTime;
+      notes.forEach((freq, idx) => {
+        const osc = this.ctx.createOscillator();
+        const gain = this.ctx.createGain();
+        osc.type = 'triangle';
+        osc.frequency.setValueAtTime(freq, t + idx * 0.11);
+        gain.gain.setValueAtTime(0.25, t + idx * 0.11);
+        gain.gain.exponentialRampToValueAtTime(0.005, t + idx * 0.11 + 0.35);
+        osc.connect(gain);
+        gain.connect(this.ctx.destination);
+        osc.start(t + idx * 0.11);
+        osc.stop(t + idx * 0.11 + 0.38);
+      });
+    }
+
+    playFail() {
+      if (!this.enabled || !this.ctx) return;
+      const notes = [392.00, 349.23, 293.66, 261.63];
+      const t = this.ctx.currentTime;
+      notes.forEach((freq, idx) => {
+        const osc = this.ctx.createOscillator();
+        const gain = this.ctx.createGain();
+        osc.type = 'sine';
+        osc.frequency.setValueAtTime(freq, t + idx * 0.14);
+        gain.gain.setValueAtTime(0.22, t + idx * 0.14);
+        gain.gain.exponentialRampToValueAtTime(0.01, t + idx * 0.14 + 0.28);
+        osc.connect(gain);
+        gain.connect(this.ctx.destination);
+        osc.start(t + idx * 0.14);
+        osc.stop(t + idx * 0.14 + 0.3);
+      });
+    }
+
+    startBGM() {
+      if (this.bgmTimer) return;
+      // Gentle uplifting Arabian pentatonic music sequence
+      const melody = [
+        392.0, 440.0, 493.88, 523.25, 659.25, 783.99,
+        659.25, 523.25, 493.88, 440.0, 392.0, 329.63
+      ];
+      this.bgmStep = 0;
+      this.bgmTimer = setInterval(() => {
+        if (!this.enabled || !this.ctx || this.ctx.state !== 'running') return;
+        const freq = melody[this.bgmStep % melody.length];
+        this.bgmStep++;
+
+        const t = this.ctx.currentTime;
+        const osc = this.ctx.createOscillator();
+        const gain = this.ctx.createGain();
+
+        osc.type = 'sine';
+        osc.frequency.setValueAtTime(freq, t);
+
+        gain.gain.setValueAtTime(0.04, t);
+        gain.gain.exponentialRampToValueAtTime(0.001, t + 0.55);
+
+        osc.connect(gain);
+        gain.connect(this.ctx.destination);
+
+        osc.start(t);
+        osc.stop(t + 0.6);
+      }, 450);
+    }
+  }
+
+  const Audio = new SoundManager();
+
+  // --- 3. STORAGE & STATE ---
+  const SAVE_KEY = 'g_slicemasterislami_v1';
+  let STATE = {
+    coins: 100,
+    gems: 5,
+    currentLevel: 1,
+    unlockedLevel: 1,
+    levelStars: {},
+    activeSkin: 'chef_damascus',
+    ownedSkins: ['kitchen_basic', 'chef_damascus'],
+    settings: {
+      sound: true,
+      shake: true,
+      quality: 'high'
+    },
+    lastDailyClaim: 0,
+    dailyStreak: 0
+  };
+
+  function loadState() {
+    try {
+      const data = localStorage.getItem(SAVE_KEY);
+      if (data) {
+        const parsed = JSON.parse(data);
+        STATE = Object.assign(STATE, parsed);
+      }
+    } catch (e) {
+      console.warn("Storage not accessible:", e);
+    }
+  }
+
+  function saveState() {
+    try {
+      localStorage.setItem(SAVE_KEY, JSON.stringify(STATE));
+    } catch (e) {
+      console.warn("Save failed:", e);
+    }
+    updateUIElements();
+  }
+
+  // Knife Skins Collection
+  const SKINS = [
+    {
+      id: 'kitchen_basic',
+      name: 'Pisau Dapur Santai',
+      price: 0,
+      icon: '🔪',
+      bladeColor: 0xcccccc,
+      handleColor: 0x8b5a2b,
+      glowColor: 0xffffff,
+      desc: 'Pisau dapur andalan keluarga ceria.'
+    },
+    {
+      id: 'chef_damascus',
+      name: 'Chef Damascus Biru',
+      price: 250,
+      icon: '🗡️',
+      bladeColor: 0x4aa3df,
+      handleColor: 0x1f2937,
+      glowColor: 0x00d2ff,
+      desc: 'Baja damaskus pola bergelombang elok.'
+    },
+    {
+      id: 'golok_kayu',
+      name: 'Golok Ukir Kayu',
+      price: 450,
+      icon: '🪓',
+      bladeColor: 0x95a5a6,
+      handleColor: 0x6e2c00,
+      glowColor: 0xd35400,
+      desc: 'Golok tradisional dengan ukiran daun.'
+    },
+    {
+      id: 'belati_sultan',
+      name: 'Belati Emas Sultan',
+      price: 750,
+      icon: '👑',
+      bladeColor: 0xffd700,
+      handleColor: 0x7d0633,
+      glowColor: 0xffea00,
+      desc: 'Berlapiskan emas 24 karat yang anggun.'
+    },
+    {
+      id: 'zulfiqar_mini',
+      name: 'Pedang Zulfiqar Berkah',
+      price: 1200,
+      icon: '⚔️',
+      bladeColor: 0x2ecc71,
+      handleColor: 0x145a32,
+      glowColor: 0x27ae60,
+      isDoubleTip: true,
+      desc: 'Bilah ksatria legendaris dengan ujung bercabang dua.'
+    },
+    {
+      id: 'kristal_safir',
+      name: 'Bilah Kristal Madinah',
+      price: 2000,
+      icon: '💎',
+      bladeColor: 0x9b59b6,
+      handleColor: 0x2c3e50,
+      glowColor: 0xe056fd,
+      desc: 'Kristal prisma yang memancarkan aura cahaya.'
+    }
+  ];
+
+  // --- 4. THREE.JS 3D WORLD & ENGINE ---
+  let scene, camera, renderer;
+  let knifeGroup, knifeBladeMesh, knifeHandleMesh, knifeTrailMesh;
+  let worldObjects = [];
+  let slicedPieces = [];
+  let particlesPool = [];
+  let screenShakeAmount = 0;
+
+  // Game Loop & Play State
+  let gameState = 'MENU'; // MENU, PLAYING, PAUSED, VICTORY, DEFEAT
+  let knifePos = new THREE.Vector3(0, 2, 0);
+  let knifeVel = new THREE.Vector2(0, 0);
+  let knifeRot = 0; // rotation angle around Z
+  let isStuck = true;
+  let currentLevelScore = 0;
+  let currentLevelSlices = 0;
+  let currentCombo = 0;
+  let lastSliceTime = 0;
+  let levelLength = 120;
+  let levelMultiplierTowerX = 120;
+  let trailPoints = [];
+
+  function initThree() {
+    const canvas = document.getElementById('game-canvas');
+    scene = new THREE.Scene();
+    scene.background = new THREE.Color(0x84d4fd);
+    scene.fog = new THREE.FogExp2(0x84d4fd, 0.015);
+
+    camera = new THREE.PerspectiveCamera(50, window.innerWidth / window.innerHeight, 0.1, 1000);
+    camera.position.set(CONFIG.camera.offsetX, CONFIG.camera.offsetY, CONFIG.camera.offsetZ);
+
+    renderer = new THREE.WebGLRenderer({
+      canvas: canvas,
+      antialias: true,
+      powerPreference: 'high-performance'
+    });
+    renderer.setSize(window.innerWidth, window.innerHeight);
+    renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+    renderer.shadowMap.enabled = true;
+    renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+
+    // Lights
+    const hemiLight = new THREE.HemisphereLight(0xffffff, 0x446688, 0.75);
+    scene.add(hemiLight);
+
+    const dirLight = new THREE.DirectionalLight(0xfffaed, 1.1);
+    dirLight.position.set(20, 40, 25);
+    dirLight.castShadow = true;
+    dirLight.shadow.mapSize.width = 1024;
+    dirLight.shadow.mapSize.height = 1024;
+    dirLight.shadow.camera.near = 0.5;
+    dirLight.shadow.camera.far = 120;
+    dirLight.shadow.camera.left = -30;
+    dirLight.shadow.camera.right = 30;
+    dirLight.shadow.camera.top = 30;
+    dirLight.shadow.camera.bottom = -30;
+    scene.add(dirLight);
+
+    // Build Environment (Clouds, Floating Islamic Arches, Background Islands)
+    buildBackgroundEnvironment();
+
+    // Create 3D Knife
+    createKnife();
+
+    // Resize Handler
+    window.addEventListener('resize', onWindowResize, false);
+  }
+
+  function onWindowResize() {
+    camera.aspect = window.innerWidth / window.innerHeight;
+    camera.updateProjectionMatrix();
+    renderer.setSize(window.innerWidth, window.innerHeight);
+  }
+
+  // --- 5. PROCEDURAL 3D ASSETS (Knife, Fruits, Halal Items, Multiplier Tower) ---
+  function createKnife() {
+    if (knifeGroup) scene.remove(knifeGroup);
+    knifeGroup = new THREE.Group();
+
+    const skin = SKINS.find(s => s.id === STATE.activeSkin) || SKINS[0];
+
+    // Handle
+    const handleGeo = new THREE.CylinderGeometry(0.2, 0.24, 1.4, 12);
+    const handleMat = new THREE.MeshStandardMaterial({
+      color: skin.handleColor,
+      roughness: 0.6,
+      metalness: 0.1
+    });
+    knifeHandleMesh = new THREE.Mesh(handleGeo, handleMat);
+    knifeHandleMesh.position.set(0, -0.65, 0);
+    knifeHandleMesh.castShadow = true;
+    knifeGroup.add(knifeHandleMesh);
+
+    // Bolster / Guard (Gold/Brass accent)
+    const guardGeo = new THREE.CylinderGeometry(0.32, 0.3, 0.22, 12);
+    const guardMat = new THREE.MeshStandardMaterial({
+      color: 0xf1c40f,
+      roughness: 0.3,
+      metalness: 0.8
+    });
+    const guardMesh = new THREE.Mesh(guardGeo, guardMat);
+    guardMesh.position.set(0, 0.05, 0);
+    guardMesh.castShadow = true;
+    knifeGroup.add(guardMesh);
+
+    // Blade
+    let bladeGeo;
+    if (skin.isDoubleTip) {
+      // Zulfiqar bifurcated blade design
+      bladeGeo = createZulfiqarBladeGeometry();
+    } else {
+      bladeGeo = createStandardBladeGeometry();
+    }
+
+    const bladeMat = new THREE.MeshStandardMaterial({
+      color: skin.bladeColor,
+      roughness: 0.2,
+      metalness: 0.9,
+      emissive: skin.glowColor,
+      emissiveIntensity: 0.12
+    });
+    knifeBladeMesh = new THREE.Mesh(bladeGeo, bladeMat);
+    knifeBladeMesh.position.set(0, 0.15, 0);
+    knifeBladeMesh.castShadow = true;
+    knifeGroup.add(knifeBladeMesh);
+
+    scene.add(knifeGroup);
+    resetKnifePosition();
+  }
+
+  function createStandardBladeGeometry() {
+    const shape = new THREE.Shape();
+    shape.moveTo(-0.16, 0);
+    shape.lineTo(-0.24, 1.8);
+    shape.lineTo(0.0, 2.5); // Sharp point
+    shape.lineTo(0.24, 0.4); // Curved edge
+    shape.lineTo(0.18, 0);
+    shape.closePath();
+
+    const extrudeSettings = {
+      depth: 0.08,
+      bevelEnabled: true,
+      bevelSegments: 2,
+      steps: 1,
+      bevelSize: 0.03,
+      bevelThickness: 0.03
+    };
+    const geo = new THREE.ExtrudeGeometry(shape, extrudeSettings);
+    geo.center();
+    geo.translate(0, 1.25, 0);
+    return geo;
+  }
+
+  function createZulfiqarBladeGeometry() {
+    const shape = new THREE.Shape();
+    shape.moveTo(-0.18, 0);
+    shape.lineTo(-0.25, 1.6);
+    shape.lineTo(-0.18, 2.6); // Left tip
+    shape.lineTo(-0.02, 2.1); // Inner notch
+    shape.lineTo(0.18, 2.6);  // Right tip
+    shape.lineTo(0.26, 1.6);
+    shape.lineTo(0.18, 0);
+    shape.closePath();
+
+    const extrudeSettings = {
+      depth: 0.08,
+      bevelEnabled: true,
+      bevelSegments: 2,
+      steps: 1,
+      bevelSize: 0.03,
+      bevelThickness: 0.03
+    };
+    const geo = new THREE.ExtrudeGeometry(shape, extrudeSettings);
+    geo.center();
+    geo.translate(0, 1.3, 0);
+    return geo;
+  }
+
+  function buildBackgroundEnvironment() {
+    // Floating Fluffy Clouds
+    const cloudGeo = new THREE.DodecahedronGeometry(2.5, 1);
+    const cloudMat = new THREE.MeshLambertMaterial({
+      color: 0xffffff,
+      transparent: true,
+      opacity: 0.85
+    });
+
+    for (let i = 0; i < 28; i++) {
+      const cloud = new THREE.Mesh(cloudGeo, cloudMat);
+      cloud.position.set(
+        -30 + (i * 12) + (Math.random() * 8),
+        8 + Math.random() * 14,
+        -18 - Math.random() * 25
+      );
+      const scale = 1.2 + Math.random() * 2.0;
+      cloud.scale.set(scale * 1.8, scale * 0.9, scale);
+      scene.add(cloud);
+    }
+
+    // Floating Green Minarets / Decorative Distant Islamic Domes
+    const domeMat = new THREE.MeshStandardMaterial({
+      color: 0x27ae60,
+      roughness: 0.3,
+      metalness: 0.4
+    });
+    const goldMat = new THREE.MeshStandardMaterial({
+      color: 0xffd700,
+      roughness: 0.2,
+      metalness: 0.85
+    });
+
+    for (let i = 0; i < 8; i++) {
+      const domeGroup = new THREE.Group();
+      const baseGeo = new THREE.CylinderGeometry(2.2, 2.5, 6, 16);
+      const baseMesh = new THREE.Mesh(baseGeo, new THREE.MeshStandardMaterial({ color: 0xfff9e6 }));
+      domeGroup.add(baseMesh);
+
+      const domeGeo = new THREE.SphereGeometry(2.3, 16, 16, 0, Math.PI * 2, 0, Math.PI / 2);
+      const domeMesh = new THREE.Mesh(domeGeo, domeMat);
+      domeMesh.position.y = 3;
+      domeGroup.add(domeMesh);
+
+      const crescentGeo = new THREE.TorusGeometry(0.6, 0.12, 8, 16, Math.PI * 1.5);
+      const crescent = new THREE.Mesh(crescentGeo, goldMat);
+      crescent.position.y = 5.6;
+      domeGroup.add(crescent);
+
+      domeGroup.position.set(i * 26 + 10, -10 + Math.random() * 4, -28 - Math.random() * 10);
+      domeGroup.scale.set(1.5, 1.5, 1.5);
+      scene.add(domeGroup);
+    }
+  }
+
+  // --- 6. LEVEL GENERATOR & TRACK OBJECTS ---
+  function buildLevel(levelNum) {
+    // Clear old objects
+    worldObjects.forEach(obj => {
+      scene.remove(obj.mesh);
+    });
+    worldObjects = [];
+
+    slicedPieces.forEach(p => scene.remove(p.mesh));
+    slicedPieces = [];
+
+    // Track length scales with level
+    levelLength = 80 + levelNum * 20;
+    levelMultiplierTowerX = levelLength;
+
+    // Start Pad (Wooden table / platform where knife is safely stuck at the beginning)
+    createStartPlatform();
+
+    // Procedural Item Generation along track
+    let currentX = 14;
+    const itemTypes = ['kurma', 'tin', 'zaitun', 'delima', 'semangka', 'roti', 'koin', 'batu'];
+
+    while (currentX < levelLength - 14) {
+      const step = 6.5 + Math.random() * 4.5;
+      currentX += step;
+
+      // Seeded random distribution
+      const rand = Math.random();
+      if (rand < 0.25) {
+        // Wooden Post (safe to stick)
+        createWoodenPost(currentX, -1.5 + Math.random() * 1.5);
+      } else if (rand < 0.45) {
+        // Halal Fruit 1: Kurma Berkah
+        createSliceableFruit('kurma', currentX, 0.5 + Math.sin(currentX) * 1.2);
+      } else if (rand < 0.65) {
+        // Halal Fruit 2: Semangka Segar / Delima
+        const fruit = (rand < 0.55) ? 'semangka' : 'delima';
+        createSliceableFruit(fruit, currentX, 0.2 + Math.cos(currentX) * 1.4);
+      } else if (rand < 0.8) {
+        // Halal Bread / Zaitun / Buah Tin
+        const choice = (rand < 0.72) ? 'tin' : 'zaitun';
+        createSliceableFruit(choice, currentX, 0.4 + Math.sin(currentX * 0.8) * 1.2);
+      } else if (rand < 0.92) {
+        // Berkah Coin Cluster
+        createGoldCoin(currentX, 1.0 + Math.random() * 1.5);
+      } else {
+        // Hazard: Pink Spike / Stone Anvil (Handle hit or Dull hit triggers bounce/fail)
+        if (levelNum > 1) {
+          createHazardStone(currentX, -0.5 + Math.random() * 1.0);
+        } else {
+          createWoodenPost(currentX, -1.0);
+        }
+      }
+    }
+
+    // Build the Multiplier Tower at the finish line!
+    buildMultiplierTower(levelMultiplierTowerX);
+
+    // Reset Knife to Start Platform
+    resetKnifePosition();
+  }
+
+  function createStartPlatform() {
+    const geo = new THREE.BoxGeometry(10, 3, 4);
+    const mat = new THREE.MeshStandardMaterial({
+      color: 0x8b5a2b,
+      roughness: 0.7
+    });
+    const mesh = new THREE.Mesh(geo, mat);
+    mesh.position.set(0, -1.5, 0);
+    mesh.receiveShadow = true;
+    scene.add(mesh);
+
+    worldObjects.push({
+      type: 'STICK_PLATFORM',
+      mesh: mesh,
+      bounds: new THREE.Box3().setFromObject(mesh)
+    });
+  }
+
+  function createWoodenPost(x, y) {
+    const height = 4.0 + Math.random() * 2.0;
+    const geo = new THREE.CylinderGeometry(0.8, 0.9, height, 16);
+    const mat = new THREE.MeshStandardMaterial({
+      color: 0x935116,
+      roughness: 0.8
+    });
+    const mesh = new THREE.Mesh(geo, mat);
+    mesh.position.set(x, y, 0);
+    mesh.castShadow = true;
+    mesh.receiveShadow = true;
+    scene.add(mesh);
+
+    // Decorative cork top
+    const topGeo = new THREE.CylinderGeometry(0.82, 0.82, 0.3, 16);
+    const topMat = new THREE.MeshStandardMaterial({ color: 0xd35400, roughness: 0.6 });
+    const topMesh = new THREE.Mesh(topGeo, topMat);
+    topMesh.position.y = height / 2;
+    mesh.add(topMesh);
+
+    worldObjects.push({
+      type: 'STICK_POST',
+      mesh: mesh,
+      bounds: new THREE.Box3().setFromObject(mesh)
+    });
+  }
+
+  function createSliceableFruit(kind, x, y) {
+    const group = new THREE.Group();
+    let meshColor = 0x8b4513;
+    let juiceColor = 0xff6b6b;
+    let pointVal = 10;
+    let nameText = 'Kurma';
+
+    if (kind === 'kurma') {
+      nameText = 'Kurma Ajwa';
+      meshColor = 0x3d1a04;
+      juiceColor = 0x5c2b08;
+      pointVal = 15;
+      const geo = new THREE.SphereGeometry(0.7, 16, 16);
+      geo.scale(1.4, 0.8, 0.8);
+      const mat = new THREE.MeshStandardMaterial({ color: meshColor, roughness: 0.5 });
+      const m = new THREE.Mesh(geo, mat);
+      group.add(m);
+    } else if (kind === 'tin') {
+      nameText = 'Buah Tin';
+      meshColor = 0x6c3483;
+      juiceColor = 0xaf7ac5;
+      pointVal = 20;
+      const geo = new THREE.ConeGeometry(0.8, 1.4, 16);
+      const mat = new THREE.MeshStandardMaterial({ color: meshColor, roughness: 0.4 });
+      const m = new THREE.Mesh(geo, mat);
+      m.rotation.x = Math.PI;
+      group.add(m);
+    } else if (kind === 'zaitun') {
+      nameText = 'Zaitun Hijau';
+      meshColor = 0x52be80;
+      juiceColor = 0x27ae60;
+      pointVal = 20;
+      const geo = new THREE.SphereGeometry(0.65, 14, 14);
+      geo.scale(1.2, 0.8, 0.8);
+      const mat = new THREE.MeshStandardMaterial({ color: meshColor, roughness: 0.3 });
+      const m = new THREE.Mesh(geo, mat);
+      group.add(m);
+    } else if (kind === 'semangka') {
+      nameText = 'Semangka Manis';
+      meshColor = 0x27ae60;
+      juiceColor = 0xe74c3c;
+      pointVal = 25;
+      const geo = new THREE.SphereGeometry(1.1, 16, 16);
+      const mat = new THREE.MeshStandardMaterial({ color: meshColor, roughness: 0.4 });
+      const m = new THREE.Mesh(geo, mat);
+      group.add(m);
+    } else if (kind === 'delima') {
+      nameText = 'Delima Berkah';
+      meshColor = 0xc0392b;
+      juiceColor = 0xe74c3c;
+      pointVal = 30;
+      const geo = new THREE.DodecahedronGeometry(0.85, 1);
+      const mat = new THREE.MeshStandardMaterial({ color: meshColor, roughness: 0.35 });
+      const m = new THREE.Mesh(geo, mat);
+      group.add(m);
+    }
+
+    group.position.set(x, y, 0);
+    group.castShadow = true;
+    scene.add(group);
+
+    worldObjects.push({
+      type: 'SLICEABLE',
+      subKind: kind,
+      name: nameText,
+      points: pointVal,
+      juiceColor: juiceColor,
+      mesh: group,
+      isCut: false,
+      bounds: new THREE.Box3().setFromObject(group)
+    });
+  }
+
+  function createGoldCoin(x, y) {
+    const geo = new THREE.CylinderGeometry(0.5, 0.5, 0.15, 16);
+    const mat = new THREE.MeshStandardMaterial({
+      color: 0xffd700,
+      roughness: 0.2,
+      metalness: 0.9,
+      emissive: 0xffc82a,
+      emissiveIntensity: 0.2
+    });
+    const mesh = new THREE.Mesh(geo, mat);
+    mesh.rotation.x = Math.PI / 2;
+    mesh.position.set(x, y, 0);
+    mesh.castShadow = true;
+    scene.add(mesh);
+
+    worldObjects.push({
+      type: 'COIN',
+      mesh: mesh,
+      isCut: false,
+      bounds: new THREE.Box3().setFromObject(mesh)
+    });
+  }
+
+  function createHazardStone(x, y) {
+    const geo = new THREE.BoxGeometry(1.5, 1.8, 2.0);
+    const mat = new THREE.MeshStandardMaterial({
+      color: 0x566573,
+      roughness: 0.9
+    });
+    const mesh = new THREE.Mesh(geo, mat);
+    mesh.position.set(x, y, 0);
+    mesh.castShadow = true;
+
+    // Red warning spikes on top
+    const spikeGeo = new THREE.ConeGeometry(0.25, 0.7, 8);
+    const spikeMat = new THREE.MeshStandardMaterial({ color: 0xe74c3c, roughness: 0.3 });
+    [-0.4, 0.4].forEach(offX => {
+      const spike = new THREE.Mesh(spikeGeo, spikeMat);
+      spike.position.set(offX, 1.1, 0);
+      mesh.add(spike);
+    });
+
+    scene.add(mesh);
+
+    worldObjects.push({
+      type: 'HAZARD',
+      mesh: mesh,
+      bounds: new THREE.Box3().setFromObject(mesh)
+    });
+  }
+
+  function buildMultiplierTower(startX) {
+    const tiers = [
+      { multi: 1.5, color: 0x3498db, label: 'x1.5' },
+      { multi: 2.0, color: 0x2ecc71, label: 'x2' },
+      { multi: 3.0, color: 0xf1c40f, label: 'x3' },
+      { multi: 5.0, color: 0xe67e22, label: 'x5' },
+      { multi: 10.0, color: 0x9b59b6, label: 'x10' },
+      { multi: 50.0, color: 0xe74c3c, label: 'x50' },
+      { multi: 100.0, color: 0xffd700, label: 'x100 JACKPOT!' }
+    ];
+
+    const stepWidth = 4.0;
+    const baseHeight = 2.0;
+
+    tiers.forEach((t, i) => {
+      const h = baseHeight + i * 2.2;
+      const x = startX + i * stepWidth;
+      const geo = new THREE.BoxGeometry(stepWidth - 0.4, h, 3.5);
+      const mat = new THREE.MeshStandardMaterial({
+        color: t.color,
+        roughness: 0.4,
+        metalness: 0.2
+      });
+      const mesh = new THREE.Mesh(geo, mat);
+      mesh.position.set(x, -2 + h / 2, 0);
+      mesh.castShadow = true;
+      mesh.receiveShadow = true;
+      scene.add(mesh);
+
+      // Label Billboard Texture on front
+      const canvas = document.createElement('canvas');
+      canvas.width = 256;
+      canvas.height = 128;
+      const ctx = canvas.getContext('2d');
+      ctx.fillStyle = '#ffffff';
+      ctx.fillRect(0, 0, 256, 128);
+      ctx.fillStyle = '#1e355b';
+      ctx.font = 'bold 44px sans-serif';
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+      ctx.fillText(t.label, 128, 64);
+
+      const texture = new THREE.CanvasTexture(canvas);
+      const labelMat = new THREE.MeshBasicMaterial({ map: texture });
+      const labelGeo = new THREE.PlaneGeometry(2.6, 1.3);
+      const labelMesh = new THREE.Mesh(labelGeo, labelMat);
+      labelMesh.position.set(0, h / 2 - 1.0, 1.8);
+      mesh.add(labelMesh);
+
+      worldObjects.push({
+        type: 'MULTIPLIER_TARGET',
+        multiplier: t.multi,
+        label: t.label,
+        mesh: mesh,
+        bounds: new THREE.Box3().setFromObject(mesh)
+      });
+    });
+  }
+
+  // --- 7. SLICING & CUT PHYSICS (3D Splitting + Particles) ---
+  function sliceObject(item) {
+    if (item.isCut) return;
+    item.isCut = true;
+
+    // Sound & Juice
+    Audio.playSlice();
+    if (navigator.vibrate) navigator.vibrate(35);
+    triggerScreenShake(0.25);
+
+    // Score & Streak
+    currentLevelSlices++;
+    const now = performance.now();
+    if (now - lastSliceTime < 1800) {
+      currentCombo++;
+    } else {
+      currentCombo = 1;
+    }
+    lastSliceTime = now;
+
+    const points = item.points * (currentCombo > 1 ? currentCombo : 1);
+    currentLevelScore += points;
+    STATE.coins += Math.max(1, Math.floor(points / 5));
+
+    // Floating text popup
+    const popupText = currentCombo > 2 ? `COMBO x${currentCombo}! +${points}` : `+${points}`;
+    showFloatingText(popupText, knifeGroup.position);
+
+    // Particle burst
+    spawnFruitJuiceParticles(item.mesh.position, item.juiceColor);
+
+    // Remove original mesh from scene
+    scene.remove(item.mesh);
+
+    // Create 2 sliced halves tumbling away
+    createSlicedHalves(item.mesh, item.juiceColor);
+
+    // Knife slight forward boost on clean slice
+    knifeVel.x = Math.max(knifeVel.x, CONFIG.physics.jumpImpulseX * 0.75);
+    knifeVel.y = Math.max(knifeVel.y, 4.0);
+  }
+
+  function createSlicedHalves(sourceMesh, innerColor) {
+    const pos = sourceMesh.position.clone();
+
+    for (let side = -1; side <= 1; side += 2) {
+      const halfGeo = new THREE.SphereGeometry(0.7, 12, 12, 0, Math.PI);
+      const halfMat = new THREE.MeshStandardMaterial({
+        color: innerColor,
+        roughness: 0.5
+      });
+      const halfMesh = new THREE.Mesh(halfGeo, halfMat);
+      halfMesh.position.copy(pos);
+      halfMesh.position.x += side * 0.2;
+      halfMesh.rotation.y = (side === 1) ? 0 : Math.PI;
+
+      scene.add(halfMesh);
+
+      slicedPieces.push({
+        mesh: halfMesh,
+        velX: side * (3.0 + Math.random() * 2.0),
+        velY: 4.0 + Math.random() * 3.0,
+        velZ: (Math.random() - 0.5) * 4.0,
+        rotSpeed: side * 8.0,
+        life: 2.2
+      });
+    }
+  }
+
+  function spawnFruitJuiceParticles(pos, colorHex) {
+    for (let i = 0; i < 14; i++) {
+      const geo = new THREE.SphereGeometry(0.12 + Math.random() * 0.08, 6, 6);
+      const mat = new THREE.MeshBasicMaterial({ color: colorHex });
+      const pMesh = new THREE.Mesh(geo, mat);
+      pMesh.position.copy(pos);
+      scene.add(pMesh);
+
+      particlesPool.push({
+        mesh: pMesh,
+        velX: (Math.random() - 0.5) * 8.0,
+        velY: 2.0 + Math.random() * 6.0,
+        velZ: (Math.random() - 0.5) * 8.0,
+        life: 0.8 + Math.random() * 0.5
+      });
+    }
+  }
+
+  // --- 8. KNIFE CONTROLLER & PHYSICS UPDATE ---
+  function resetKnifePosition() {
+    knifePos.set(0, 1.2, 0);
+    knifeVel.set(0, 0);
+    knifeRot = 0;
+    isStuck = true;
+    currentCombo = 0;
+
+    if (knifeGroup) {
+      knifeGroup.position.copy(knifePos);
+      knifeGroup.rotation.z = knifeRot;
+    }
+  }
+
+  function flipKnife() {
+    if (gameState !== 'PLAYING') return;
+
+    // Jump Impulse
+    isStuck = false;
+    knifeVel.x = CONFIG.physics.jumpImpulseX;
+    knifeVel.y = CONFIG.physics.jumpImpulseY;
+    knifeRot += 0.15; // break stick angle
+
+    Audio.playFlip();
+
+    // Hide instruction hint after first tap
+    document.getElementById('hud-hint').style.display = 'none';
+  }
+
+  function updateKnifePhysics(dt) {
+    if (isStuck) return;
+
+    // Apply Gravity & Drag
+    knifeVel.y += CONFIG.physics.gravity * dt;
+    if (knifeVel.y < CONFIG.physics.terminalVelY) knifeVel.y = CONFIG.physics.terminalVelY;
+    knifeVel.x *= CONFIG.physics.dragX;
+
+    // Integrate Position & Rotation
+    knifePos.x += knifeVel.x * dt;
+    knifePos.y += knifeVel.y * dt;
+    knifeRot -= CONFIG.physics.angularVelocity * dt; // Clockwise flip
+
+    knifeGroup.position.copy(knifePos);
+    knifeGroup.rotation.z = knifeRot;
+
+    // Knife Tip & Edge Coordinates in World Space
+    const tipOffset = new THREE.Vector3(0, 2.5, 0).applyAxisAngle(new THREE.Vector3(0, 0, 1), knifeRot);
+    const tipPos = knifePos.clone().add(tipOffset);
+
+    const handleOffset = new THREE.Vector3(0, -1.2, 0).applyAxisAngle(new THREE.Vector3(0, 0, 1), knifeRot);
+    const handlePos = knifePos.clone().add(handleOffset);
+
+    // Collision Check with World Objects
+    checkKnifeCollisions(tipPos, handlePos);
+
+    // Abyss Fall Check
+    if (knifePos.y < CONFIG.track.killY) {
+      handleGameOver(false);
+    }
+  }
+
+  function checkKnifeCollisions(tipPos, handlePos) {
+    const tipSphere = new THREE.Sphere(tipPos, 0.45);
+    const handleSphere = new THREE.Sphere(handlePos, 0.35);
+
+    for (let i = 0; i < worldObjects.length; i++) {
+      const obj = worldObjects[i];
+      if (obj.isCut) continue;
+
+      // Sliceable Items (Kurma, Semangka, etc.)
+      if (obj.type === 'SLICEABLE') {
+        const itemSphere = new THREE.Sphere(obj.mesh.position, 1.1);
+        if (tipSphere.intersectsSphere(itemSphere)) {
+          sliceObject(obj);
+        }
+      }
+      // Coins
+      else if (obj.type === 'COIN') {
+        const coinSphere = new THREE.Sphere(obj.mesh.position, 0.9);
+        if (tipSphere.intersectsSphere(coinSphere) || handleSphere.intersectsSphere(coinSphere)) {
+          obj.isCut = true;
+          scene.remove(obj.mesh);
+          STATE.coins += 5;
+          currentLevelScore += 50;
+          Audio.playCoin();
+          showFloatingText('+5 Koin Berkah', obj.mesh.position);
+          spawnFruitJuiceParticles(obj.mesh.position, 0xffd700);
+        }
+      }
+      // Wooden Stick Platforms / Posts
+      else if (obj.type === 'STICK_PLATFORM' || obj.type === 'STICK_POST') {
+        if (obj.bounds.containsPoint(tipPos)) {
+          // Sharp tip hit surface! Stick firmly!
+          stickKnifeIntoSurface(tipPos, obj);
+          return;
+        } else if (obj.bounds.containsPoint(handlePos)) {
+          // Dull handle hit: bounce off awkwardly
+          knifeVel.y = Math.abs(knifeVel.y) * 0.6 + 3.0;
+          knifeVel.x *= -0.3;
+          Audio.playBounce();
+          triggerScreenShake(0.3);
+        }
+      }
+      // Hazards (Spikes, stone anvil)
+      else if (obj.type === 'HAZARD') {
+        if (obj.bounds.containsPoint(tipPos) || obj.bounds.containsPoint(handlePos)) {
+          Audio.playBounce();
+          triggerScreenShake(0.5);
+          handleGameOver(false);
+          return;
+        }
+      }
+      // Finish Multiplier Target
+      else if (obj.type === 'MULTIPLIER_TARGET') {
+        if (obj.bounds.containsPoint(tipPos)) {
+          // STUCK IN MULTIPLIER! VICTORY!
+          stickKnifeIntoSurface(tipPos, obj);
+          handleLevelVictory(obj.multiplier);
+          return;
+        }
+      }
+    }
+  }
+
+  function stickKnifeIntoSurface(contactPos, targetObj) {
+    isStuck = true;
+    knifeVel.set(0, 0);
+
+    // Snap knife slightly so blade penetrates surface
+    Audio.playStick();
+    triggerScreenShake(0.18);
+    if (navigator.vibrate) navigator.vibrate(50);
+
+    // Particle wood dust
+    spawnFruitJuiceParticles(contactPos, 0xd4ac0d);
+  }
+
+  // --- 9. SLICED PIECES & PARTICLES SIMULATION ---
+  function updateParticlesAndPieces(dt) {
+    // Sliced fruit halves
+    for (let i = slicedPieces.length - 1; i >= 0; i--) {
+      const p = slicedPieces[i];
+      p.velY += CONFIG.physics.gravity * 0.8 * dt;
+      p.mesh.position.x += p.velX * dt;
+      p.mesh.position.y += p.velY * dt;
+      p.mesh.position.z += p.velZ * dt;
+      p.mesh.rotation.z += p.rotSpeed * dt;
+      p.life -= dt;
+
+      if (p.life <= 0 || p.mesh.position.y < CONFIG.track.killY) {
+        scene.remove(p.mesh);
+        slicedPieces.splice(i, 1);
+      }
+    }
+
+    // Juice splash particles
+    for (let i = particlesPool.length - 1; i >= 0; i--) {
+      const pt = particlesPool[i];
+      pt.velY += CONFIG.physics.gravity * 0.7 * dt;
+      pt.mesh.position.x += pt.velX * dt;
+      pt.mesh.position.y += pt.velY * dt;
+      pt.mesh.position.z += pt.velZ * dt;
+      pt.life -= dt;
+
+      if (pt.life <= 0) {
+        scene.remove(pt.mesh);
+        particlesPool.splice(i, 1);
+      }
+    }
+  }
+
+  // --- 10. CAMERA & SCREEN SHAKE ---
+  function updateCamera() {
+    let targetX = knifePos.x + CONFIG.camera.offsetX + CONFIG.camera.lookAheadX;
+    let targetY = Math.max(1.5, knifePos.y + CONFIG.camera.offsetY);
+    let targetZ = CONFIG.camera.offsetZ;
+
+    camera.position.x += (targetX - camera.position.x) * CONFIG.camera.lerpSpeed;
+    camera.position.y += (targetY - camera.position.y) * CONFIG.camera.lerpSpeed;
+    camera.position.z += (targetZ - camera.position.z) * CONFIG.camera.lerpSpeed;
+
+    // Apply Screen Shake
+    if (screenShakeAmount > 0) {
+      camera.position.x += (Math.random() - 0.5) * screenShakeAmount;
+      camera.position.y += (Math.random() - 0.5) * screenShakeAmount;
+      screenShakeAmount *= 0.88;
+      if (screenShakeAmount < 0.01) screenShakeAmount = 0;
+    }
+
+    camera.lookAt(knifePos.x + 2.0, knifePos.y + 0.5, 0);
+  }
+
+  function triggerScreenShake(amount) {
+    if (!STATE.settings.shake) return;
+    screenShakeAmount = Math.max(screenShakeAmount, amount);
+  }
+
+  // --- 11. UI POPUPS, TOASTS & FLOATING TEXTS ---
+  function showFloatingText(text, pos3D) {
+    const vector = pos3D.clone().project(camera);
+    const screenX = (vector.x * 0.5 + 0.5) * window.innerWidth;
+    const screenY = (-(vector.y * 0.5) + 0.5) * window.innerHeight;
+
+    const el = document.createElement('div');
+    el.className = 'pop-text';
+    el.innerText = text;
+    el.style.left = `${screenX}px`;
+    el.style.top = `${screenY}px`;
+    document.body.appendChild(el);
+
+    setTimeout(() => {
+      if (el.parentNode) el.parentNode.removeChild(el);
+    }, 850);
+  }
+
+  function showToast(msg) {
+    const toast = document.getElementById('toast');
+    toast.innerText = msg;
+    toast.classList.add('show');
+    setTimeout(() => {
+      toast.classList.remove('show');
+    }, 2200);
+  }
+
+  // --- 12. GAME FLOW & STATE MACHINE ---
+  function startGame(level) {
+    Audio.init();
+    gameState = 'PLAYING';
+    STATE.currentLevel = level || STATE.currentLevel;
+
+    // Reset session variables
+    currentLevelScore = 0;
+    currentLevelSlices = 0;
+    currentCombo = 0;
+
+    // Build the 3D level
+    buildLevel(STATE.currentLevel);
+
+    // Hide Menus & Show HUD
+    document.getElementById('menu-screen').style.display = 'none';
+    closeAllModals();
+    document.getElementById('hud').style.display = 'flex';
+    document.getElementById('hud-hint').style.display = 'block';
+
+    updateUIElements();
+  }
+
+  function handleGameOver(won, multiplier = 1) {
+    if (gameState !== 'PLAYING') return;
+
+    if (won) {
+      gameState = 'VICTORY';
+      Audio.playWin();
+
+      // Multiplier effect
+      const finalScore = Math.floor(currentLevelScore * multiplier);
+      const earnedCoins = Math.floor(finalScore / 4);
+      STATE.coins += earnedCoins;
+
+      // Unlock next level
+      if (STATE.currentLevel === STATE.unlockedLevel) {
+        STATE.unlockedLevel++;
+      }
+
+      // Star calculation
+      let stars = 1;
+      if (currentLevelSlices >= 8) stars = 2;
+      if (currentLevelSlices >= 15 && multiplier >= 3) stars = 3;
+      STATE.levelStars[STATE.currentLevel] = Math.max(STATE.levelStars[STATE.currentLevel] || 0, stars);
+
+      saveState();
+
+      // Populate Victory Modal
+      document.getElementById('res-slices').innerText = currentLevelSlices;
+      document.getElementById('res-multi').innerText = `x${multiplier}`;
+      document.getElementById('res-coins').innerText = `+${earnedCoins}`;
+
+      for (let s = 1; s <= 3; s++) {
+        const starEl = document.getElementById(`star-${s}`);
+        starEl.classList.toggle('active', s <= stars);
+      }
+
+      openModal('modal-victory');
+    } else {
+      gameState = 'DEFEAT';
+      Audio.playFail();
+
+      document.getElementById('res-fail-score').innerText = currentLevelScore;
+      document.getElementById('res-fail-slices').innerText = currentLevelSlices;
+
+      openModal('modal-defeat');
+    }
+  }
+
+  function handleLevelVictory(multiplier) {
+    handleGameOver(true, multiplier);
+  }
+
+  function openModal(id) {
+    closeAllModals();
+    const modal = document.getElementById(id);
+    if (modal) modal.classList.add('active');
+  }
+
+  function closeAllModals() {
+    document.querySelectorAll('.screen-overlay').forEach(m => m.classList.remove('active'));
+  }
+
+  function updateUIElements() {
+    // Coins
+    document.getElementById('hud-coins').innerText = STATE.coins;
+    document.getElementById('menu-coins').innerText = STATE.coins;
+
+    // HUD Level & Score
+    document.getElementById('hud-level-num').innerText = STATE.currentLevel;
+    document.getElementById('hud-score-val').innerText = currentLevelScore;
+
+    // Streak badge
+    const streakEl = document.getElementById('hud-streak-box');
+    if (currentCombo > 1) {
+      streakEl.innerText = `COMBO x${currentCombo}!`;
+      streakEl.style.display = 'block';
+    } else {
+      streakEl.style.display = 'none';
+    }
+
+    // Progress bar towards finish line
+    const progress = Math.min(100, Math.max(0, (knifePos.x / levelMultiplierTowerX) * 100));
+    document.getElementById('hud-progress-fill').style.width = `${progress}%`;
+  }
+
+  // --- 13. SHOP, LEVELS & DAILY REWARDS UI ---
+  function renderShop() {
+    const container = document.getElementById('shop-grid-container');
+    container.innerHTML = '';
+
+    SKINS.forEach(skin => {
+      const isOwned = STATE.ownedSkins.includes(skin.id);
+      const isEquipped = STATE.activeSkin === skin.id;
+
+      const itemEl = document.createElement('div');
+      itemEl.className = `shop-item ${isEquipped ? 'selected' : ''}`;
+      itemEl.innerHTML = `
+        <div class="shop-item-preview">${skin.icon}</div>
+        <div class="shop-item-name">${skin.name}</div>
+        <div style="font-size:12px; color:var(--mute);">${skin.desc}</div>
+        <div style="margin-top:auto;">
+          ${isEquipped ? '<span class="shop-item-badge">DIGUNAKAN</span>' :
+            isOwned ? '<button class="btn b-blue btn-sm btn-equip">Pakai</button>' :
+            `<button class="btn b-gold btn-sm btn-buy" ${STATE.coins < skin.price ? 'disabled' : ''}>Beli ${skin.price} Koin</button>`}
+        </div>
+      `;
+
+      // Equip action
+      const equipBtn = itemEl.querySelector('.btn-equip');
+      if (equipBtn) {
+        equipBtn.onclick = (e) => {
+          e.stopPropagation();
+          STATE.activeSkin = skin.id;
+          saveState();
+          createKnife();
+          renderShop();
+          showToast(`Pisau ${skin.name} siap digunakan!`);
+        };
+      }
+
+      // Buy action
+      const buyBtn = itemEl.querySelector('.btn-buy');
+      if (buyBtn) {
+        buyBtn.onclick = (e) => {
+          e.stopPropagation();
+          if (STATE.coins >= skin.price) {
+            STATE.coins -= skin.price;
+            STATE.ownedSkins.push(skin.id);
+            STATE.activeSkin = skin.id;
+            saveState();
+            createKnife();
+            renderShop();
+            Audio.playCoin();
+            showToast(`Alhamdulillah! Berhasil membeli ${skin.name}`);
+          }
+        };
+      }
+
+      container.appendChild(itemEl);
+    });
+  }
+
+  function renderLevels() {
+    const container = document.getElementById('level-grid-container');
+    container.innerHTML = '';
+
+    const totalLevels = 20;
+    for (let i = 1; i <= totalLevels; i++) {
+      const isUnlocked = i <= STATE.unlockedLevel;
+      const isCurrent = i === STATE.currentLevel;
+      const stars = STATE.levelStars[i] || 0;
+
+      const node = document.createElement('div');
+      node.className = `level-node ${!isUnlocked ? 'locked' : ''} ${isCurrent ? 'current' : ''}`;
+      node.innerHTML = `
+        <span>${isUnlocked ? i : '🔒'}</span>
+        ${isUnlocked && stars > 0 ? `<div class="level-stars">${'★'.repeat(stars)}</div>` : ''}
+      `;
+
+      if (isUnlocked) {
+        node.onclick = () => {
+          closeAllModals();
+          startGame(i);
+        };
+      }
+
+      container.appendChild(node);
+    }
+  }
+
+  function renderDailyRewards() {
+    const container = document.getElementById('daily-grid-container');
+    container.innerHTML = '';
+
+    const rewards = [50, 100, 150, 200, 300, 500, 1000];
+    const today = new Date().toDateString();
+    const canClaim = STATE.lastDailyClaim !== today;
+
+    rewards.forEach((val, idx) => {
+      const dayNum = idx + 1;
+      const isClaimed = idx < STATE.dailyStreak && !canClaim;
+      const isToday = idx === (STATE.dailyStreak % 7);
+
+      const box = document.createElement('div');
+      box.style.background = isToday ? '#fff8e7' : 'var(--panel2)';
+      box.style.border = isToday ? '2px solid var(--gold)' : '2px solid #dce8f8';
+      box.style.borderRadius = '12px';
+      box.style.padding = '8px 4px';
+      box.style.fontSize = '13px';
+      box.innerHTML = `
+        <div style="font-weight:700;">Hari ${dayNum}</div>
+        <div style="font-size:20px; margin:4px 0;">🎁</div>
+        <div style="color:var(--gold-d); font-weight:700;">+${val}</div>
+      `;
+      container.appendChild(box);
+    });
+
+    const claimBtn = document.getElementById('btn-claim-daily');
+    claimBtn.disabled = !canClaim;
+    claimBtn.innerText = canClaim ? 'Klaim Hadiah Hari Ini!' : 'Sudah Diklaim Hari Ini ✓';
+  }
+
+  // --- 14. EVENT LISTENERS & INPUTS ---
+  function setupInputs() {
+    // Tap anywhere to flip knife
+    window.addEventListener('pointerdown', (e) => {
+      // Ignore click if clicking UI buttons/modals
+      if (e.target.closest('button') || e.target.closest('.modal-card')) return;
+      if (gameState === 'PLAYING') {
+        flipKnife();
+      }
+    });
+
+    // Spacebar to flip knife
+    window.addEventListener('keydown', (e) => {
+      if (e.code === 'Space') {
+        e.preventDefault();
+        if (gameState === 'PLAYING') {
+          flipKnife();
+        }
+      } else if (e.code === 'KeyP' || e.code === 'Escape') {
+        if (gameState === 'PLAYING') {
+          gameState = 'PAUSED';
+          openModal('modal-pause');
+        } else if (gameState === 'PAUSED') {
+          closeAllModals();
+          gameState = 'PLAYING';
+        }
+      }
+    });
+
+    // Top HUD buttons
+    document.getElementById('btn-pause').onclick = (e) => {
+      e.stopPropagation();
+      gameState = 'PAUSED';
+      openModal('modal-pause');
+    };
+
+    // Main Menu Buttons
+    document.getElementById('btn-play-now').onclick = () => {
+      startGame(STATE.currentLevel);
+    };
+
+    document.getElementById('btn-levels-open').onclick = () => {
+      renderLevels();
+      openModal('modal-levels');
+    };
+
+    document.getElementById('btn-shop-open').onclick = () => {
+      renderShop();
+      openModal('modal-shop');
+    };
+
+    document.getElementById('btn-daily-open').onclick = () => {
+      renderDailyRewards();
+      openModal('modal-daily');
+    };
+
+    document.getElementById('btn-settings-open').onclick = () => {
+      openModal('modal-settings');
+    };
+
+    document.getElementById('btn-sound').onclick = toggleSound;
+
+    // Modal Close buttons
+    document.getElementById('btn-close-levels').onclick = () => closeAllModals();
+    document.getElementById('btn-close-shop').onclick = () => closeAllModals();
+    document.getElementById('btn-close-daily').onclick = () => closeAllModals();
+    document.getElementById('btn-close-settings').onclick = () => closeAllModals();
+
+    // Pause Modal Buttons
+    document.getElementById('btn-resume').onclick = () => {
+      closeAllModals();
+      gameState = 'PLAYING';
+    };
+    document.getElementById('btn-restart-pause').onclick = () => {
+      startGame(STATE.currentLevel);
+    };
+    document.getElementById('btn-quit-menu').onclick = () => {
+      closeAllModals();
+      gameState = 'MENU';
+      document.getElementById('hud').style.display = 'none';
+      document.getElementById('menu-screen').style.display = 'flex';
+      buildLevel(1);
+    };
+
+    // Result Buttons
+    document.getElementById('btn-retry-win').onclick = () => startGame(STATE.currentLevel);
+    document.getElementById('btn-next-level').onclick = () => {
+      STATE.currentLevel = Math.min(20, STATE.currentLevel + 1);
+      startGame(STATE.currentLevel);
+    };
+    document.getElementById('btn-retry-fail').onclick = () => startGame(STATE.currentLevel);
+    document.getElementById('btn-menu-fail').onclick = () => {
+      closeAllModals();
+      gameState = 'MENU';
+      document.getElementById('hud').style.display = 'none';
+      document.getElementById('menu-screen').style.display = 'flex';
+      buildLevel(1);
+    };
+
+    // Daily Claim Action
+    document.getElementById('btn-claim-daily').onclick = () => {
+      const today = new Date().toDateString();
+      if (STATE.lastDailyClaim !== today) {
+        const rewards = [50, 100, 150, 200, 300, 500, 1000];
+        const gift = rewards[STATE.dailyStreak % 7];
+        STATE.coins += gift;
+        STATE.dailyStreak++;
+        STATE.lastDailyClaim = today;
+        saveState();
+        renderDailyRewards();
+        Audio.playWin();
+        showToast(`Alhamdulillah! Berkah +${gift} koin berhasil diklaim!`);
+      }
+    };
+
+    // Settings Toggles
+    document.getElementById('btn-toggle-sound-setting').onclick = function() {
+      STATE.settings.sound = !STATE.settings.sound;
+      Audio.enabled = STATE.settings.sound;
+      this.innerText = STATE.settings.sound ? 'NYALA' : 'MATI';
+      saveState();
+    };
+    document.getElementById('btn-toggle-shake-setting').onclick = function() {
+      STATE.settings.shake = !STATE.settings.shake;
+      this.innerText = STATE.settings.shake ? 'NYALA' : 'MATI';
+      saveState();
+    };
+    document.getElementById('btn-toggle-gfx-setting').onclick = function() {
+      const modes = ['TINGGI', 'SEDANG', 'HEMAT'];
+      let idx = (modes.indexOf(this.innerText) + 1) % modes.length;
+      this.innerText = modes[idx];
+      renderer.setPixelRatio(idx === 0 ? Math.min(window.devicePixelRatio, 2) : 1);
+      showToast(`Kualitas Grafis: ${modes[idx]}`);
+    };
+  }
+
+  function toggleSound() {
+    Audio.init();
+    STATE.settings.sound = !STATE.settings.sound;
+    Audio.enabled = STATE.settings.sound;
+    const iconEl = document.getElementById('icon-sound');
+    if (STATE.settings.sound) {
+      iconEl.innerHTML = `<svg viewBox="0 0 24 24"><path d="M3 9v6h4l5 5V4L7 9H3zm13.5 3c0-1.77-1.02-3.29-2.5-4.03v8.05c1.48-.73 2.5-2.25 2.5-4.02zM14 3.23v2.06c2.89.86 5 3.54 5 6.71s-2.11 5.85-5 6.71v2.06c4.01-.91 7-4.49 7-8.77s-2.99-7.86-7-8.77z"/></svg>`;
+      showToast('Suara: Nyala');
+    } else {
+      iconEl.innerHTML = `<svg viewBox="0 0 24 24"><path d="M16.5 12c0-1.77-1.02-3.29-2.5-4.03v2.21l2.45 2.45c.03-.2.05-.41.05-.63zm2.5 0c0 .94-.2 1.82-.54 2.64l1.51 1.51C20.63 14.91 21 13.5 21 12c0-4.28-2.99-7.86-7-8.77v2.06c2.89.86 5 3.54 5 6.71zM4.27 3L3 4.27 7.73 9H3v6h4l5 5v-6.73l4.25 4.25c-.67.52-1.42.93-2.25 1.18v2.06c1.38-.31 2.63-.95 3.69-1.81L19.73 21 21 19.73l-9-9L4.27 3zM12 4L9.91 6.09 12 8.18V4z"/></svg>`;
+      showToast('Suara: Hening');
+    }
+    saveState();
+  }
+
+  // --- 15. MAIN ANIMATION LOOP (Fixed timestep 60Hz accumulator) ---
+  let lastTime = performance.now();
+
+  function animate() {
+    requestAnimationFrame(animate);
+
+    const now = performance.now();
+    let dt = (now - lastTime) / 1000;
+    lastTime = now;
+    if (dt > 0.05) dt = 0.05; // clamp delta time for stability
+
+    if (gameState === 'PLAYING') {
+      updateKnifePhysics(dt);
+      updateParticlesAndPieces(dt);
+      updateCamera();
+      updateUIElements();
+    } else if (gameState === 'MENU') {
+      // Gentle floating knife in menu
+      knifeGroup.position.set(0, 1.2 + Math.sin(now * 0.003) * 0.25, 0);
+      knifeGroup.rotation.y = now * 0.0015;
+      camera.position.set(-2, 3.5, 12);
+      camera.lookAt(0, 1.2, 0);
+    }
+
+    renderer.render(scene, camera);
+  }
+
+  // --- 16. BOOTSTRAP ---
+  window.addEventListener('DOMContentLoaded', () => {
+    loadState();
+    initThree();
+    buildLevel(1);
+    setupInputs();
+    updateUIElements();
+    animate();
+  });
+  </script>
+</body>
+</html>

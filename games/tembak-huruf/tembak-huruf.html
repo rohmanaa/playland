@@ -1,0 +1,433 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no">
+  <title>Panah & Tembak Huruf Hijaiyah — PlayLand</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600;700&family=Amiri:wght@700&display=swap" rel="stylesheet">
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; user-select: none; }
+    html, body { width: 100%; height: 100%; overflow: hidden; font-family: 'Fredoka', sans-serif; background: #686de0; }
+    #canvas { width: 100%; height: 100%; display: block; touch-action: none; }
+    #hud {
+      position: fixed;
+      top: 14px;
+      left: 14px;
+      right: 14px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      pointer-events: none;
+      z-index: 10;
+    }
+    .badge {
+      background: rgba(255, 255, 255, 0.95);
+      padding: 8px 18px;
+      border-radius: 999px;
+      border: 3px solid #fff;
+      font-weight: 700;
+      font-size: 17px;
+      color: #1e355b;
+      box-shadow: 0 6px 14px rgba(0,0,0,0.15);
+      pointer-events: auto;
+    }
+    #targetPrompt {
+      position: fixed;
+      top: 76px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: linear-gradient(180deg, #ffffff, #fff3cd);
+      border: 4px solid #f1c40f;
+      border-radius: 20px;
+      padding: 10px 28px;
+      text-align: center;
+      box-shadow: 0 8px 20px rgba(0,0,0,0.2);
+      pointer-events: none;
+      z-index: 10;
+      animation: promptPulse 1.5s infinite alternate;
+    }
+    @keyframes promptPulse {
+      from { transform: translateX(-50%) scale(1); }
+      to { transform: translateX(-50%) scale(1.04); }
+    }
+    #targetPrompt h2 { font-size: 15px; color: #7f8c8d; text-transform: uppercase; margin-bottom: 2px; }
+    #targetPrompt .letter { font-family: 'Amiri', serif; font-size: 42px; color: #2c3e50; line-height: 1.1; font-weight: 700; }
+    #targetPrompt .name { font-size: 18px; font-weight: 700; color: #e67e22; }
+
+    /* Modal */
+    .modal-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(10, 25, 55, 0.75);
+      backdrop-filter: blur(4px);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      z-index: 100;
+      padding: 16px;
+    }
+    .modal-overlay.active { display: flex; }
+    .modal-card {
+      background: #ffffff;
+      border-radius: 26px;
+      border: 4px solid #fff;
+      padding: 26px;
+      text-align: center;
+      max-width: 400px;
+      width: 100%;
+      box-shadow: 0 16px 36px rgba(0,0,0,0.3);
+      animation: popIn 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+    }
+    @keyframes popIn {
+      from { transform: scale(0.8); opacity: 0; }
+      to { transform: scale(1); opacity: 1; }
+    }
+    .btn {
+      font-family: inherit;
+      font-weight: 700;
+      font-size: 18px;
+      padding: 12px 28px;
+      border-radius: 14px;
+      border: 3px solid #fff;
+      color: #fff;
+      cursor: pointer;
+      background: linear-gradient(180deg, #38e178, #27ae60);
+      box-shadow: 0 5px 0 #1e8449;
+      margin-top: 14px;
+    }
+  </style>
+</head>
+<body>
+  <div id="hud">
+    <div class="badge">🏹 Skor: <span id="scoreVal">0</span></div>
+    <div class="badge">🎯 Target: <span id="roundVal">1/10</span></div>
+    <button class="badge" id="btnRestartHud" style="cursor:pointer; background:#e74c3c; color:#fff;">Ulangi</button>
+  </div>
+
+  <div id="targetPrompt">
+    <h2>BIDIK DAN TEMBAK HURUF</h2>
+    <div class="letter" id="promptLetter">ج</div>
+    <div class="name" id="promptName">Huruf: JIM</div>
+  </div>
+
+  <canvas id="canvas"></canvas>
+
+  <div class="modal-overlay" id="modalVictory">
+    <div class="modal-card">
+      <div style="font-size:52px;">🏆</div>
+      <h2 style="font-size:28px; color:#27ae60; margin-bottom:6px;">PENEMBAK JITU!</h2>
+      <p style="color:#636e72; font-weight:600;">Masya Allah! Kamu berhasil membidik seluruh huruf Hijaiyah dengan tepat!</p>
+      <div style="font-size:40px; color:#f1c40f; margin:10px 0;">★★★</div>
+      <div style="background:#f1f2f6; border-radius:14px; padding:12px; font-weight:700;">
+        Skor Akhir: <span id="finalScore">0</span>
+      </div>
+      <button class="btn" id="btnPlayAgain">Main Lagi ▶</button>
+    </div>
+  </div>
+
+  <script>
+    // Procedural Audio
+    const AudioCtx = window.AudioContext || window.webkitAudioContext;
+    let actx = null;
+    function getAudio() {
+      if (!actx) actx = new AudioCtx();
+      if (actx.state === 'suspended') actx.resume();
+      return actx;
+    }
+    function playSfx(freq, type, dur) {
+      try {
+        const ctx = getAudio();
+        const o = ctx.createOscillator();
+        const g = ctx.createGain();
+        o.type = type;
+        o.frequency.setValueAtTime(freq, ctx.currentTime);
+        g.gain.setValueAtTime(0.25, ctx.currentTime);
+        g.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + dur);
+        o.connect(g);
+        g.connect(ctx.destination);
+        o.start();
+        o.stop(ctx.currentTime + dur);
+      } catch(e){}
+    }
+    function sfxShoot() { playSfx(600, 'sine', 0.15); }
+    function sfxHit() {
+      playSfx(523, 'triangle', 0.1);
+      setTimeout(() => playSfx(784, 'triangle', 0.2), 80);
+    }
+    function sfxWrong() { playSfx(220, 'square', 0.25); }
+    function sfxWin() {
+      [523, 659, 784, 1046].forEach((f, i) => setTimeout(() => playSfx(f, 'triangle', 0.3), i * 120));
+    }
+
+    const LETTERS_DB = [
+      { ar: 'ا', id: 'ALIF' },
+      { ar: 'ب', id: 'BA' },
+      { ar: 'ت', id: 'TA' },
+      { ar: 'ث', id: 'TSA' },
+      { ar: 'ج', id: 'JIM' },
+      { ar: 'ح', id: 'HA' },
+      { ar: 'خ', id: 'KHO' },
+      { ar: 'د', id: 'DAL' },
+      { ar: 'ذ', id: 'DZAL' },
+      { ar: 'ر', id: 'RO' }
+    ];
+
+    const canvas = document.getElementById('canvas');
+    const ctx = canvas.getContext('2d');
+
+    let W, H;
+    function resize() {
+      W = canvas.width = window.innerWidth;
+      H = canvas.height = window.innerHeight;
+    }
+    window.addEventListener('resize', resize);
+    resize();
+
+    let score = 0;
+    let round = 1;
+    let maxRounds = 10;
+    let currentTarget = null;
+    let balloons = [];
+    let arrows = [];
+    let particles = [];
+
+    // Bow position (bottom center)
+    const bow = { x: 0, y: 0, angle: -Math.PI / 2, isDragging: false };
+
+    function initGame() {
+      score = 0;
+      round = 1;
+      arrows = [];
+      particles = [];
+      document.getElementById('scoreVal').textContent = score;
+      document.getElementById('roundVal').textContent = `${round}/${maxRounds}`;
+      document.getElementById('modalVictory').classList.remove('active');
+      setupRound();
+    }
+
+    function setupRound() {
+      // Pick target
+      currentTarget = LETTERS_DB[(round - 1) % LETTERS_DB.length];
+      document.getElementById('promptLetter').textContent = currentTarget.ar;
+      document.getElementById('promptName').textContent = `Huruf: ${currentTarget.id}`;
+
+      // Spawn 4 floating balloons: 1 correct, 3 wrong
+      balloons = [];
+      const choices = [currentTarget];
+      while (choices.length < 4) {
+        const rand = LETTERS_DB[Math.floor(Math.random() * LETTERS_DB.length)];
+        if (!choices.includes(rand)) choices.push(rand);
+      }
+      choices.sort(() => Math.random() - 0.5);
+
+      const colors = ['#e74c3c', '#3498db', '#2ecc71', '#9b59b6'];
+      choices.forEach((item, idx) => {
+        const spacing = W / 5;
+        balloons.push({
+          x: spacing * (idx + 1),
+          y: 200 + Math.random() * 60,
+          targetY: 200 + Math.random() * 60,
+          r: 44,
+          item: item,
+          color: colors[idx % colors.length],
+          wobble: Math.random() * Math.PI,
+          speed: 1.5 + Math.random()
+        });
+      });
+    }
+
+    // Input Handling (Aim & Shoot)
+    window.addEventListener('pointerdown', (e) => {
+      if (e.target.closest('#hud') || e.target.closest('.modal-card')) return;
+      bow.isDragging = true;
+      aimAt(e.clientX, e.clientY);
+    });
+
+    window.addEventListener('pointermove', (e) => {
+      if (bow.isDragging) aimAt(e.clientX, e.clientY);
+    });
+
+    window.addEventListener('pointerup', () => {
+      if (bow.isDragging) {
+        bow.isDragging = false;
+        shootArrow();
+      }
+    });
+
+    function aimAt(cx, cy) {
+      bow.angle = Math.atan2(cy - bow.y, cx - bow.x);
+    }
+
+    function shootArrow() {
+      sfxShoot();
+      const speed = 18;
+      arrows.push({
+        x: bow.x,
+        y: bow.y,
+        vx: Math.cos(bow.angle) * speed,
+        vy: Math.sin(bow.angle) * speed,
+        angle: bow.angle,
+        life: 80
+      });
+    }
+
+    function spawnParticles(x, y, color) {
+      for (let i = 0; i < 18; i++) {
+        particles.push({
+          x, y,
+          vx: (Math.random() - 0.5) * 8,
+          vy: (Math.random() - 0.5) * 8,
+          r: 3 + Math.random() * 3,
+          color,
+          alpha: 1
+        });
+      }
+    }
+
+    // Loop
+    function loop() {
+      requestAnimationFrame(loop);
+
+      bow.x = W / 2;
+      bow.y = H - 60;
+
+      // Draw Sky & Clouds
+      ctx.fillStyle = '#74b9ff';
+      ctx.fillRect(0, 0, W, H);
+
+      // Balloons Update & Draw
+      balloons.forEach((b) => {
+        b.wobble += 0.04;
+        b.y = b.targetY + Math.sin(b.wobble) * 15;
+
+        // Balloon body
+        ctx.save();
+        ctx.shadowColor = 'rgba(0,0,0,0.2)';
+        ctx.shadowBlur = 10;
+        ctx.fillStyle = b.color;
+        ctx.beginPath();
+        ctx.ellipse(b.x, b.y, b.r, b.r * 1.15, 0, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.restore();
+
+        // Arabic Letter
+        ctx.fillStyle = '#ffffff';
+        ctx.font = 'bold 42px Amiri, serif';
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'middle';
+        ctx.fillText(b.item.ar, b.x, b.y - 2);
+
+        // String
+        ctx.strokeStyle = '#ffffff';
+        ctx.lineWidth = 2;
+        ctx.beginPath();
+        ctx.moveTo(b.x, b.y + b.r * 1.15);
+        ctx.lineTo(b.x, b.y + b.r * 1.15 + 24);
+        ctx.stroke();
+      });
+
+      // Arrows Update & Draw
+      for (let i = arrows.length - 1; i >= 0; i--) {
+        const a = arrows[i];
+        a.x += a.vx;
+        a.y += a.vy;
+        a.life--;
+
+        // Draw Arrow
+        ctx.save();
+        ctx.translate(a.x, a.y);
+        ctx.rotate(a.angle);
+        ctx.fillStyle = '#2c3e50';
+        ctx.fillRect(-24, -3, 48, 6);
+        ctx.fillStyle = '#f1c40f';
+        ctx.beginPath();
+        ctx.moveTo(24, 0);
+        ctx.lineTo(14, -8);
+        ctx.lineTo(14, 8);
+        ctx.fill();
+        ctx.restore();
+
+        // Check Hit with Balloons
+        balloons.forEach((b, bIdx) => {
+          const dist = Math.hypot(a.x - b.x, a.y - b.y);
+          if (dist < b.r + 10) {
+            spawnParticles(b.x, b.y, b.color);
+            arrows.splice(i, 1);
+
+            if (b.item.id === currentTarget.id) {
+              sfxHit();
+              score += 100;
+              document.getElementById('scoreVal').textContent = score;
+
+              round++;
+              if (round > maxRounds) {
+                setTimeout(() => {
+                  sfxWin();
+                  document.getElementById('finalScore').textContent = score;
+                  document.getElementById('modalVictory').classList.add('active');
+                }, 300);
+              } else {
+                document.getElementById('roundVal').textContent = `${round}/${maxRounds}`;
+                setTimeout(setupRound, 400);
+              }
+            } else {
+              sfxWrong();
+              score = Math.max(0, score - 20);
+              document.getElementById('scoreVal').textContent = score;
+            }
+          }
+        });
+
+        if (a.life <= 0 && arrows[i]) arrows.splice(i, 1);
+      }
+
+      // Particles
+      for (let pIdx = particles.length - 1; pIdx >= 0; pIdx--) {
+        const p = particles[pIdx];
+        p.x += p.vx;
+        p.y += p.vy;
+        p.alpha -= 0.025;
+        if (p.alpha <= 0) {
+          particles.splice(pIdx, 1);
+          continue;
+        }
+        ctx.globalAlpha = p.alpha;
+        ctx.fillStyle = p.color;
+        ctx.beginPath();
+        ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.globalAlpha = 1;
+      }
+
+      // Draw Bow at Bottom Center
+      ctx.save();
+      ctx.translate(bow.x, bow.y);
+      ctx.rotate(bow.angle);
+
+      // Bow Arc
+      ctx.strokeStyle = '#d35400';
+      ctx.lineWidth = 6;
+      ctx.beginPath();
+      ctx.arc(0, 0, 44, -Math.PI / 2.5, Math.PI / 2.5);
+      ctx.stroke();
+
+      // String
+      ctx.strokeStyle = '#ecf0f1';
+      ctx.lineWidth = 2;
+      ctx.beginPath();
+      ctx.moveTo(Math.cos(-Math.PI / 2.5) * 44, Math.sin(-Math.PI / 2.5) * 44);
+      ctx.lineTo(0, 0);
+      ctx.lineTo(Math.cos(Math.PI / 2.5) * 44, Math.sin(Math.PI / 2.5) * 44);
+      ctx.stroke();
+      ctx.restore();
+    }
+
+    document.getElementById('btnRestartHud').onclick = initGame;
+    document.getElementById('btnPlayAgain').onclick = initGame;
+    initGame();
+    loop();
+  </script>
+</body>
+</html>

@@ -1,0 +1,34 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 300" width="100%" height="100%">
+  <defs>
+    <linearGradient id="bgGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#74b9ff"/>
+      <stop offset="60%" stop-color="#a29bfe"/>
+      <stop offset="60%" stop-color="#00b894"/>
+      <stop offset="100%" stop-color="#55efc4"/>
+    </linearGradient>
+    <filter id="shadow">
+      <feDropShadow dx="0" dy="5" stdDeviation="4" flood-color="#000" flood-opacity="0.25"/>
+    </filter>
+  </defs>
+  <rect width="400" height="300" rx="22" fill="url(#bgGrad)"/>
+
+  <!-- Rope & Ribbon -->
+  <line x1="50" y1="140" x2="350" y2="140" stroke="#d68910" stroke-width="12" stroke-linecap="round"/>
+  <rect x="190" y="125" width="20" height="36" rx="4" fill="#e74c3c" stroke="#ffffff" stroke-width="2" filter="url(#shadow)"/>
+
+  <!-- Characters Left & Right -->
+  <text x="80" y="145" font-size="52" filter="url(#shadow)">👦</text>
+  <text x="320" y="145" font-size="52" filter="url(#shadow)">🤖</text>
+
+  <!-- Hijaiyah Letter in center bubble -->
+  <g transform="translate(200, 75)" filter="url(#shadow)">
+    <circle cx="0" cy="0" r="32" fill="#ffffff" stroke="#0984e3" stroke-width="3"/>
+    <text x="0" y="12" font-family="'Amiri', serif" font-weight="bold" font-size="38" fill="#1e3799" text-anchor="middle">ب</text>
+  </g>
+
+  <!-- Banner -->
+  <rect x="50" y="235" width="300" height="44" rx="22" fill="#0984e3" stroke="#ffffff" stroke-width="3" filter="url(#shadow)"/>
+  <text x="200" y="264" font-family="sans-serif" font-weight="bold" font-size="20" fill="#ffffff" text-anchor="middle">
+    TARIK TAMBANG <tspan fill="#ffd32a">HIJAIYAH</tspan>
+  </text>
+</svg>

@@ -662,8 +662,8 @@
       box-shadow: 0 18px 45px rgba(21, 69, 134, 0.25);
       overflow: hidden;
       background: #80cdfc;
-      aspect-ratio: 988 / 636;
-      max-height: 460px;
+      aspect-ratio: 16 / 9;
+      max-height: 520px;
       width: 100%;
     }
 
@@ -1218,6 +1218,193 @@
       display: block;
     }
 
+    /* GAME SPLASH & LOADING SCREEN OVERLAY */
+    .game-splash-overlay {
+      position: absolute;
+      inset: 0;
+      background: radial-gradient(circle at center, #1b457a 0%, #0c1c33 100%);
+      z-index: 50;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 24px;
+      overflow: hidden;
+      transition: opacity 0.35s ease, visibility 0.35s ease;
+    }
+
+    .game-splash-overlay.hidden {
+      opacity: 0;
+      visibility: hidden;
+      pointer-events: none;
+    }
+
+    .splash-card {
+      width: 100%;
+      max-width: 480px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      text-align: center;
+      position: relative;
+      z-index: 2;
+    }
+
+    .splash-bismillah {
+      font-family: 'Amiri', serif;
+      font-size: 26px;
+      font-weight: 700;
+      color: #ffd447;
+      text-shadow: 0 2px 8px rgba(0, 0, 0, 0.5);
+      margin-bottom: 12px;
+      letter-spacing: 0.5px;
+    }
+
+    .splash-icon-wrapper {
+      position: relative;
+      width: 90px;
+      height: 90px;
+      margin-bottom: 14px;
+    }
+
+    .splash-game-icon {
+      width: 90px;
+      height: 90px;
+      border-radius: 24px;
+      object-fit: cover;
+      border: 4px solid #ffffff;
+      box-shadow: 0 10px 28px rgba(0, 0, 0, 0.35);
+      position: relative;
+      z-index: 2;
+      animation: splashIconBounce 2s infinite ease-in-out;
+    }
+
+    @keyframes splashIconBounce {
+      0%, 100% { transform: translateY(0) scale(1); }
+      50% { transform: translateY(-8px) scale(1.04); }
+    }
+
+    .splash-icon-pulse {
+      position: absolute;
+      inset: -8px;
+      border-radius: 30px;
+      background: rgba(35, 139, 247, 0.4);
+      filter: blur(8px);
+      z-index: 1;
+      animation: splashPulse 2s infinite ease-in-out;
+    }
+
+    @keyframes splashPulse {
+      0%, 100% { transform: scale(1); opacity: 0.4; }
+      50% { transform: scale(1.15); opacity: 0.8; }
+    }
+
+    .splash-game-title {
+      font-family: 'Fredoka', cursive, sans-serif;
+      font-size: 28px;
+      color: #ffffff;
+      -webkit-text-stroke: 4px #10325e;
+      paint-order: stroke fill;
+      text-shadow: 0 4px 10px rgba(0, 0, 0, 0.5);
+      margin-bottom: 6px;
+    }
+
+    .splash-badge-category {
+      display: inline-block;
+      background: rgba(255, 255, 255, 0.15);
+      border: 1px solid rgba(255, 255, 255, 0.3);
+      color: #7fdcff;
+      padding: 4px 14px;
+      border-radius: 999px;
+      font-size: 13px;
+      font-weight: 800;
+      margin-bottom: 14px;
+    }
+
+    .splash-quote-pill {
+      background: rgba(255, 255, 255, 0.1);
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      border-radius: 14px;
+      padding: 10px 16px;
+      color: #e3effd;
+      font-size: 13px;
+      font-weight: 700;
+      line-height: 1.4;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 20px;
+      max-width: 420px;
+    }
+
+    .splash-progress-container {
+      width: 100%;
+      max-width: 360px;
+      margin-bottom: 18px;
+    }
+
+    .splash-progress-track {
+      width: 100%;
+      height: 16px;
+      background: rgba(255, 255, 255, 0.15);
+      border: 2px solid rgba(255, 255, 255, 0.4);
+      border-radius: 999px;
+      overflow: hidden;
+      box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.3);
+      position: relative;
+    }
+
+    .splash-progress-bar {
+      height: 100%;
+      width: 0%;
+      background: linear-gradient(90deg, #2ecc71, #27ae60);
+      border-radius: 999px;
+      transition: width 0.15s ease-out;
+      box-shadow: 0 0 12px rgba(46, 204, 113, 0.8);
+    }
+
+    .splash-progress-info {
+      display: flex;
+      justify-content: space-between;
+      margin-top: 6px;
+      font-size: 12.5px;
+      font-weight: 800;
+      color: #bcd9fb;
+    }
+
+    .splash-play-btn {
+      display: none;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      background: linear-gradient(180deg, #38e178, #27ae60);
+      border: 3px solid #ffffff;
+      border-radius: 999px;
+      color: #ffffff;
+      font-family: 'Fredoka', cursive, sans-serif;
+      font-size: 18px;
+      font-weight: 700;
+      padding: 12px 32px;
+      cursor: pointer;
+      box-shadow: 0 8px 24px rgba(39, 174, 96, 0.5), 0 5px 0 #1b6d3b;
+      text-shadow: 0 2px 0 rgba(0, 0, 0, 0.25);
+      animation: splashBtnPop 0.4s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+      transition: transform 0.1s ease;
+    }
+
+    .splash-play-btn:hover {
+      transform: scale(1.04);
+    }
+
+    .splash-play-btn:active {
+      transform: translateY(3px);
+      box-shadow: 0 2px 0 #1b6d3b;
+    }
+
+    @keyframes splashBtnPop {
+      0% { opacity: 0; transform: scale(0.8); }
+      100% { opacity: 1; transform: scale(1); }
+    }
+
     /* Bloxd.io style interactive Toolbar right below game */
     .game-action-toolbar {
       padding: 14px 22px;
@@ -1688,6 +1875,11 @@
             <li class="nav-section-title">Kategori</li>
 
             <li>
+              <button class="nav-btn category-btn" data-nav="all-games" data-filter-cat="ketangkasan">
+                <span class="iconify" data-icon="fluent-color:sparkle-24"></span> Ketangkasan 3D
+              </button>
+            </li>
+            <li>
               <button class="nav-btn category-btn" data-nav="all-games" data-filter-cat="tajwid">
                 <span class="iconify" data-icon="fluent-color:book-open-24"></span> Tajwid & Hijaiyah
               </button>
@@ -1717,19 +1909,31 @@
                 <span class="iconify" data-icon="fluent-color:bookmark-24"></span> Hafalan Surah
               </button>
             </li>
+
+            <!-- Extra Categories (Collapsed if > 7 items) -->
+            <div id="extraCategoriesGroup" style="display: none; flex-direction: column; gap: 4px;">
+              <li>
+                <button class="nav-btn category-btn" data-nav="all-games" data-filter-cat="puzzle">
+                  <span class="iconify" data-icon="fluent-color:puzzle-piece-24"></span> Puzzle Islami
+                </button>
+              </li>
+              <li>
+                <button class="nav-btn category-btn" data-nav="all-games" data-filter-cat="kuis">
+                  <span class="iconify" data-icon="fluent-color:question-circle-24"></span> Kuis & Papan
+                </button>
+              </li>
+              <li>
+                <button class="nav-btn category-btn" data-nav="all-games" data-filter-cat="sejarah">
+                  <span class="iconify" data-icon="fluent-color:history-24"></span> Sirah & Sejarah
+                </button>
+              </li>
+            </div>
+
+            <!-- Button: Semua Kategori > -->
             <li>
-              <button class="nav-btn category-btn" data-nav="all-games" data-filter-cat="puzzle">
-                <span class="iconify" data-icon="fluent-color:puzzle-piece-24"></span> Puzzle Islami
-              </button>
-            </li>
-            <li>
-              <button class="nav-btn category-btn" data-nav="all-games" data-filter-cat="kuis">
-                <span class="iconify" data-icon="fluent-color:question-circle-24"></span> Kuis & Papan
-              </button>
-            </li>
-            <li>
-              <button class="nav-btn category-btn" data-nav="all-games" data-filter-cat="sejarah">
-                <span class="iconify" data-icon="fluent-color:history-24"></span> Sirah & Sejarah
+              <button class="nav-btn category-btn btn-toggle-cats" id="btnToggleAllCategories" style="color: var(--primary-blue); font-weight: 800; background: var(--sky-soft);">
+                <span class="iconify" id="iconToggleCats" data-icon="fluent-color:chevron-right-24"></span>
+                <span id="labelToggleCats">Semua Kategori &gt;</span>
               </button>
             </li>
           </ul>
@@ -1747,23 +1951,9 @@
              ==================================================================== -->
         <section class="view-panel active" id="homeView">
 
-          <!-- HERO FLOATING ISLAND -->
+          <!-- HERO FLOATING ISLAND (CLEAN IMAGE SHOWCASE) -->
           <div class="hero-island-showcase" aria-label="Dunia Petualangan PlayLand">
-            <span class="hero-floating-badge">
-              <span class="pulse-dot"></span> Game 3D: Petualangan Tajwid & Hijaiyah Sky Run
-            </span>
-
-            <img src="images/hero-island-full.png" alt="Dunia PlayLand Islami" class="hero-island-image">
-
-            <!-- Interactive Hotspots on Island -->
-            <div class="hotspot-sign hs-hijaiyah" data-open-game="hijaiyah" title="Mainkan Hijaiyah Sky Run 3D!"></div>
-            <div class="hotspot-sign hs-rukun" data-open-game="rukun" title="Rukun Islam Adventure"></div>
-            <div class="hotspot-sign hs-doa" data-open-game="doa" title="Doa Harian"></div>
-            <div class="hotspot-sign hs-adab" data-open-game="adab" title="Adab & Akhlak"></div>
-
-            <!-- Clickable 'Mulai Bermain' Hotspot -->
-            <div class="hs-mulai-bermain" id="btnHeroPlay" data-open-game="tajwid"
-              title="Mulai Bermain Petualangan Tajwid!"></div>
+            <img src="images/hero-island-new.jpg" alt="Dunia Petualangan PlayLand Islami" class="hero-island-image">
           </div>
 
           <!-- CAROUSEL: GAME PILIHAN -->
@@ -1819,6 +2009,7 @@
             <div class="catalog-controls">
               <div class="filter-chips-row" id="filterChipsRow">
                 <button class="filter-chip active" data-cat="all">Semua Kategori</button>
+                <button class="filter-chip" data-cat="ketangkasan">Ketangkasan 3D</button>
                 <button class="filter-chip" data-cat="tajwid">Tajwid & Hijaiyah</button>
                 <button class="filter-chip" data-cat="doa">Doa Harian</button>
                 <button class="filter-chip" data-cat="rukun">Rukun Islam</button>
@@ -1875,8 +2066,43 @@
               </div>
             </div>
 
-            <!-- Game Player Screen -->
+            <!-- Game Player Screen with Mandatory Splash & Loading Overlay -->
             <div class="game-screen-wrapper" id="gameScreenWrapper">
+              <!-- Loading / Splash Screen Overlay -->
+              <div class="game-splash-overlay" id="gameSplashOverlay">
+                <div class="splash-card">
+                  <div class="splash-bismillah">بِسْمِ اللَّهِ الرَّحْمَٰنِ الرَّحِيمِ</div>
+                  <div class="splash-icon-wrapper">
+                    <img id="splashGameIcon" src="games/tajwid/app.jpg" alt="Logo Game" class="splash-game-icon">
+                    <div class="splash-icon-pulse"></div>
+                  </div>
+                  <h2 id="splashGameTitle" class="splash-game-title">Petualangan Tajwid 3D</h2>
+                  <div class="splash-badge-category" id="splashGameCategory">🌟 Petualangan Islami 3D</div>
+
+                  <div class="splash-quote-pill">
+                    <span class="iconify" data-icon="fluent-color:lightbulb-24" style="font-size: 20px; flex-shrink: 0;"></span>
+                    <span id="splashQuoteText">"Menuntut ilmu adalah kewajiban bagi setiap muslim." (HR. Ibnu Majah)</span>
+                  </div>
+
+                  <!-- Animated Progress Bar -->
+                  <div class="splash-progress-container">
+                    <div class="splash-progress-track">
+                      <div class="splash-progress-bar" id="splashProgressBar"></div>
+                    </div>
+                    <div class="splash-progress-info">
+                      <span id="splashProgressStatus">Menyiapkan dunia 3D & audio...</span>
+                      <span id="splashProgressPercent">0%</span>
+                    </div>
+                  </div>
+
+                  <!-- Glowing Play Button -->
+                  <button class="splash-play-btn" id="splashPlayBtn">
+                    <span class="iconify" data-icon="fluent-color:play-24" style="font-size: 22px;"></span>
+                    <span>BISMILLAH, MAIN SEKARANG!</span>
+                  </button>
+                </div>
+              </div>
+
               <iframe id="detailGameIframe" class="game-iframe-player" src=""
                 allow="autoplay; fullscreen; xr-spatial-tracking" loading="lazy"></iframe>
             </div>
@@ -2012,35 +2238,6 @@
           <!-- Integrated banner inside right card -->
           <div class="sidebar-integrated-banner banner-right-bg" title="Jadi Anak Sholeh Itu Keren ❤️"></div>
         </section>
-
-        <!-- ISLAMIC VALUES: MISI KEBAIKAN HARIAN CHECKLIST -->
-        <section class="good-deeds-card">
-          <div class="deeds-header">
-            <span class="iconify" data-icon="fluent-color:star-24" style="font-size: 20px;"></span>
-            <h3>Misi Harian Anak Sholeh</h3>
-          </div>
-          <p style="font-size: 11.5px; color: var(--ink-soft); margin-bottom: 8px;">
-            Centang kebaikanmu hari ini untuk dapat bonus +10 ⭐:
-          </p>
-          <ul class="deeds-list">
-            <li class="deed-item" data-points="10">
-              <input type="checkbox" class="deed-checkbox">
-              <span>Shalat 5 waktu tepat waktu</span>
-            </li>
-            <li class="deed-item" data-points="10">
-              <input type="checkbox" class="deed-checkbox">
-              <span>Tersenyum & santun pada orang tua</span>
-            </li>
-            <li class="deed-item" data-points="10">
-              <input type="checkbox" class="deed-checkbox">
-              <span>Membaca doa sebelum makan & tidur</span>
-            </li>
-            <li class="deed-item" data-points="10">
-              <input type="checkbox" class="deed-checkbox">
-              <span>Belajar Al-Qur'an / Huruf Hijaiyah</span>
-            </li>
-          </ul>
-        </section>
       </aside>
 
     </div>
@@ -2080,6 +2277,20 @@
      // GAMES DATA (BOTH TAJWID & HIJAIYAH RUNNER 3D ARE PLAYABLE!)
      // =========================================================================
      const GAMES = [
+       {
+         id: 'slice-master',
+         title: 'Slice Master Islami 3D',
+         category: 'ketangkasan',
+         categoryLabel: 'Ketangkasan & Fisika 3D',
+         thumbnail: 'games/slice-master-islami/thumbnail.svg',
+         appIcon: 'games/slice-master-islami/thumbnail.svg',
+         plays: 18400,
+         playsLabel: '18.4k dimainkan',
+         rating: 4.9,
+         playable: true,
+         url: 'games/slice-master-islami/slice-master.html',
+         description: 'Game Slice Master 3D versi Islami PlayLand! Balikkan pisau berkah di udara, potong buah-buahan halal segar (kurma Ajwa, buah tin, zaitun, delima, semangka), tancapkan bilah di sasaran kayu, dan raih jackpot multiplier hingga x100!'
+       },
        {
         id: 'tajwid',
         title: 'Petualangan Tajwid',
@@ -2261,6 +2472,91 @@
         playable: true,
         url: 'games/monopoli/monopoli.html',
         description: 'Jadi juragan properti di Nusantara! Beli kota dari Banda Aceh sampai Jayapura, bangun landmark ikonik seperti Masjid Baiturrahman dan Monas, kelola uangmu, dan tumbu menjadi taipan terkaya. Belajar ekonomi & geografi Indonesia sambil bermain!'
+      },
+      {
+        id: 'memory-hijaiyah',
+        title: 'Memory Hijaiyah Flip',
+        category: 'tajwid',
+        categoryLabel: 'Tajwid & Hijaiyah',
+        thumbnail: 'games/memory-hijaiyah-flip/thumbnail.svg',
+        appIcon: 'games/memory-hijaiyah-flip/thumbnail.svg',
+        plays: 12500,
+        playsLabel: '12.5k dimainkan',
+        rating: 4.9,
+        playable: true,
+        url: 'games/memory-hijaiyah-flip/memory-hijaiyah.html',
+        description: 'Asah daya ingat dan hafalan huruf Al-Qur\'an dengan game tebak kartu 3D flip yang seru dan menenangkan! Cocokkan pasangan huruf Hijaiyah, kumpulkan skor tercepat, dan raih predikat Mumtaz!'
+      },
+      {
+        id: 'tembak-huruf',
+        title: 'Panah & Tembak Huruf',
+        category: 'ketangkasan',
+        categoryLabel: 'Ketangkasan 3D',
+        thumbnail: 'games/tembak-huruf/thumbnail.svg',
+        appIcon: 'games/tembak-huruf/thumbnail.svg',
+        plays: 11800,
+        playsLabel: '11.8k dimainkan',
+        rating: 4.8,
+        playable: true,
+        url: 'games/tembak-huruf/tembak-huruf.html',
+        description: 'Tarik busur, bidik sasaran balon udara dengan tepat, dan tembak huruf Hijaiyah yang diminta! Latih fokus dan ketangkasan memanah sesuai sunnah Rasulullah ﷺ.'
+      },
+      {
+        id: 'runner-kebaikan',
+        title: 'Runner Kebaikan 3D',
+        category: 'ketangkasan',
+        categoryLabel: 'Ketangkasan 3D',
+        thumbnail: 'games/runner-kebaikan/thumbnail.svg',
+        appIcon: 'games/runner-kebaikan/thumbnail.svg',
+        plays: 13900,
+        playsLabel: '13.9k dimainkan',
+        rating: 4.9,
+        playable: true,
+        url: 'games/runner-kebaikan/runner-kebaikan.html',
+        description: 'Lari 3D di jalanan berkah PlayLand! Lompat dan geser jalur untuk menghindari rintangan batu, sambil mengumpulkan koin sedekah, kurma, dan bekal kebaikan sebanyak mungkin.'
+      },
+
+      {
+        id: 'puzzle-huruf',
+        title: 'Puzzle Huruf & Kata',
+        category: 'puzzle',
+        categoryLabel: 'Puzzle Islami',
+        thumbnail: 'games/puzzle-huruf/thumbnail.svg',
+        appIcon: 'games/puzzle-huruf/thumbnail.svg',
+        plays: 9800,
+        playsLabel: '9.8k dimainkan',
+        rating: 4.8,
+        playable: true,
+        url: 'games/puzzle-huruf/puzzle-huruf.html',
+        description: 'Susun kepingan huruf Hijaiyah untuk membentuk kata-kata suci Islami seperti ALLAH, ISLAM, MASJID, dan QUR\'AN. Asah kosakata dan kemampuan membaca Al-Qur\'an sejak dini.'
+      },
+      {
+        id: 'tarik-tambang',
+        title: 'Tarik Tambang Cerdas',
+        category: 'kuis',
+        categoryLabel: 'Kuis & Papan',
+        thumbnail: 'games/tarik-tambang-huruf/thumbnail.svg',
+        appIcon: 'games/tarik-tambang-huruf/thumbnail.svg',
+        plays: 8900,
+        playsLabel: '8.9k dimainkan',
+        rating: 4.7,
+        playable: true,
+        url: 'games/tarik-tambang-huruf/tarik-tambang.html',
+        description: 'Pertandingan adu cepat tarik tambang cerdas! Jawab soal huruf dan tajwid dengan cepat untuk menarik tali tambang ke garis kemenangan timmu.'
+      },
+      {
+        id: 'tokohijaiyah',
+        title: 'Toko Karakter Hijaiyah',
+        category: 'adab',
+        categoryLabel: 'Adab & Akhlak',
+        thumbnail: 'games/tokohijaiyah/thumbnail.svg',
+        appIcon: 'games/tokohijaiyah/thumbnail.svg',
+        plays: 7600,
+        playsLabel: '7.6k dimainkan',
+        rating: 4.8,
+        playable: true,
+        url: 'games/tokohijaiyah/toko-hijaiyah.html',
+        description: 'Studio kustomisasi busana muslim PlayLand! Hias sahabat Ahmad dan Fatimah dengan peci, mahkota, jilbab indah, serta tasbih dan Al-Qur\'an agar tampil rapi dan islami.'
       }
     ];
 
@@ -2401,29 +2697,6 @@
     });
 
     // =========================================================================
-    // DAILY GOOD DEEDS CHECKLIST (INTERACTIVE VIRTUE REWARDS)
-    // =========================================================================
-    document.querySelectorAll('.deed-item').forEach(item => {
-      item.addEventListener('click', (e) => {
-        if (e.target.tagName !== 'INPUT') {
-          const cb = item.querySelector('input');
-          cb.checked = !cb.checked;
-        }
-        const cb = item.querySelector('input');
-        if (cb.checked) {
-          item.classList.add('done');
-          userCoins += 10;
-          headerCoinsCount.textContent = userCoins;
-          showToast('🌟 Alhamdulillah! Kebaikan dicatat (+10 Bintang Kebaikan)');
-        } else {
-          item.classList.remove('done');
-          userCoins = Math.max(0, userCoins - 10);
-          headerCoinsCount.textContent = userCoins;
-        }
-      });
-    });
-
-    // =========================================================================
     // VIEW SWITCHING (SPA ROUTING)
     // =========================================================================
     function switchView(viewName) {
@@ -2454,6 +2727,11 @@
     // =========================================================================
     // OPEN GAME DETAIL VIEW (BLOXD.IO GAMING PORTAL LAYOUT)
     // =========================================================================
+    // =========================================================================
+    // OPEN GAME DETAIL VIEW (BLOXD.IO GAMING PORTAL LAYOUT WITH MANDATORY SPLASH)
+    // =========================================================================
+    let splashProgressTimer = null;
+
     function openGameDetail(gameId) {
       const g = GAMES.find(x => x.id === gameId) || GAMES[0];
 
@@ -2463,28 +2741,47 @@
       detailGamePlaysCount.textContent = g.playsLabel;
       detailDescriptionText.textContent = g.description;
 
-      if (g.playable) {
-        if (!detailGameIframe.src || !detailGameIframe.src.includes(g.url)) {
-          detailGameIframe.src = g.url;
-        }
-      } else {
-        detailGameIframe.srcdoc = `
-{
-  id: 'tajwid',
-  title: 'Petualangan Tajwid',
-  category: 'tajwid',
-  categoryLabel: 'Tajwid & Hijaiyah',
-  thumbnail: 'games/tajwid/thumnail.jpg',
-  appIcon: 'games/tajwid/app.jpg',
-  plays: 15800,
-  playsLabel: '15.8k dimainkan',
-  rating: 4.9,
-  playable: true,
-  url: 'games/tajwid/tajwid.html',
-  description: 'Petualangan 3D seru menjelajahi pulau-pulau terapung PlayLand. Kendarai kereta api ajaib, temukan permata ilmu, dan pelajari hukum-hukum tajwid Al-Qur\'an secara interaktif dan menyenangkan.'
-},
+      // Update Splash Screen Content
+      const splashOverlay = document.getElementById('gameSplashOverlay');
+      const progressBar = document.getElementById('splashProgressBar');
+      const progressPercent = document.getElementById('splashProgressPercent');
+      const progressStatus = document.getElementById('splashProgressStatus');
+      const playBtn = document.getElementById('splashPlayBtn');
 
-<!doctype html>
+      document.getElementById('splashGameIcon').src = g.appIcon;
+      document.getElementById('splashGameTitle').textContent = g.title;
+      document.getElementById('splashGameCategory').textContent = g.categoryLabel;
+
+      const quotes = [
+        '"Menuntut ilmu adalah kewajiban bagi setiap muslim." — (HR. Ibnu Majah)',
+        '"Sebaik-baik manusia adalah yang paling bermanfaat bagi sesama." — (HR. Ahmad)',
+        '"Barangsiapa menempuh jalan untuk menuntut ilmu, Allah mudahkan jalannya menuju surga." — (HR. Muslim)',
+        '"Senyummu di hadapan saudaramu adalah sedekah bagimu." — (HR. Tirmidzi)',
+        '"Makanlah dari rezeki yang halal lagi baik yang telah Kami berikan kepadamu." — (QS. Al-Baqarah: 172)'
+      ];
+      document.getElementById('splashQuoteText').textContent = quotes[Math.floor(Math.random() * quotes.length)];
+
+      // Reset & Display Splash
+      splashOverlay.classList.remove('hidden');
+      progressBar.style.width = '0%';
+      progressPercent.textContent = '0%';
+      progressStatus.textContent = 'Menyiapkan aset 3D & audio...';
+      playBtn.style.display = 'none';
+
+      if (splashProgressTimer) clearInterval(splashProgressTimer);
+
+      let currentProg = 0;
+      let isIframeLoaded = false;
+
+      if (g.playable) {
+        detailGameIframe.onload = () => {
+          isIframeLoaded = true;
+        };
+        detailGameIframe.src = g.url;
+      } else {
+        isIframeLoaded = true;
+        detailGameIframe.srcdoc = `
+          <!doctype html>
           <html>
           <head>
             <meta charset="utf-8">
@@ -2499,11 +2796,40 @@
           <body>
             <h2>🌟 ${g.title} Segera Hadir!</h2>
             <p>${g.description}</p>
-            <button onclick="parent.openGameDetail('hijaiyah')">▶ Mainkan Hijaiyah Sky Run 3D Sekarang</button>
+            <button onclick="parent.openGameDetail('slice-master')">▶ Mainkan Slice Master Islami 3D Sekarang</button>
           </body>
           </html>
         `;
       }
+
+      // Smooth loading progress animation
+      splashProgressTimer = setInterval(() => {
+        if (currentProg < 85) {
+          currentProg += Math.floor(Math.random() * 12) + 8;
+        } else if (isIframeLoaded && currentProg < 100) {
+          currentProg += 15;
+        }
+        if (currentProg > 100) currentProg = 100;
+
+        progressBar.style.width = currentProg + '%';
+        progressPercent.textContent = currentProg + '%';
+
+        if (currentProg < 35) {
+          progressStatus.textContent = 'Menyiapkan aset 3D & audio...';
+        } else if (currentProg < 75) {
+          progressStatus.textContent = 'Mengunduh dunia PlayLand...';
+        } else if (currentProg < 100) {
+          progressStatus.textContent = 'Hampir selesai...';
+        } else {
+          progressStatus.textContent = 'Alhamdulillah, permainan siap!';
+          clearInterval(splashProgressTimer);
+          playBtn.style.display = 'inline-flex';
+        }
+      }, 100);
+
+      playBtn.onclick = () => {
+        splashOverlay.classList.add('hidden');
+      };
 
       switchView('detail');
       history.replaceState(null, '', '#game/' + g.id);
@@ -2609,11 +2935,12 @@
     }
 
     // =========================================================================
-    // RENDER POPULAR SIDEBAR
+    // RENDER POPULAR SIDEBAR (MAKSIMAL 9 GAME POPULER SAJA)
     // =========================================================================
     function renderPopularSidebar() {
       popularSidebarList.innerHTML = '';
-      GAMES.forEach(game => {
+      const popularGames = [...GAMES].sort((a, b) => b.plays - a.plays).slice(0, 9);
+      popularGames.forEach(game => {
         const item = document.createElement('div');
         item.className = `popular-item ${game.playable ? 'featured-item' : ''}`;
         item.innerHTML = `
@@ -2621,7 +2948,7 @@
           <div class="popular-meta">
             <strong class="popular-name">${game.title}</strong>
             <span class="popular-plays">
-              👥 ${game.playsLabel} ${game.playable ? '• <b style="color: #27ae60;">Bisa Main</b>' : ''}
+              👥 ${game.playsLabel}
             </span>
           </div>
           <span class="popular-chevron">❯</span>
@@ -2676,6 +3003,7 @@
     document.querySelectorAll('.nav-btn').forEach(btn => {
       btn.addEventListener('click', () => {
         const nav = btn.dataset.nav;
+        if (!nav) return;
         const filterCat = btn.dataset.filterCat;
         if (nav === 'home') {
           switchView('home');
@@ -2793,6 +3121,22 @@
         switchView('home');
       }
     });
+
+    // Toggle Semua Kategori in Sidebar
+    const btnToggleAllCategories = document.getElementById('btnToggleAllCategories');
+    const extraCategoriesGroup = document.getElementById('extraCategoriesGroup');
+    const labelToggleCats = document.getElementById('labelToggleCats');
+    const iconToggleCats = document.getElementById('iconToggleCats');
+
+    if (btnToggleAllCategories) {
+      btnToggleAllCategories.addEventListener('click', (e) => {
+        e.preventDefault();
+        const isHidden = extraCategoriesGroup.style.display === 'none';
+        extraCategoriesGroup.style.display = isHidden ? 'flex' : 'none';
+        labelToggleCats.textContent = isHidden ? 'Lebih Sedikit ▴' : 'Semua Kategori >';
+        iconToggleCats.setAttribute('data-icon', isHidden ? 'fluent-color:chevron-up-24' : 'fluent-color:chevron-right-24');
+      });
+    }
 
     // Initial render
     renderCarousel();

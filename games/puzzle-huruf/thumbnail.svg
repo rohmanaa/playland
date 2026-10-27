@@ -1,0 +1,40 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 300" width="100%" height="100%">
+  <defs>
+    <linearGradient id="puzBg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#10ac84"/>
+      <stop offset="100%" stop-color="#1dd1a1"/>
+    </linearGradient>
+    <filter id="shadow">
+      <feDropShadow dx="0" dy="5" stdDeviation="4" flood-color="#000" flood-opacity="0.25"/>
+    </filter>
+  </defs>
+  <rect width="400" height="300" rx="22" fill="url(#puzBg)"/>
+
+  <!-- Puzzle Tiles in Arc -->
+  <g transform="translate(60, 60)" filter="url(#shadow)">
+    <rect width="60" height="70" rx="12" fill="#ffffff" stroke="#009432" stroke-width="3"/>
+    <text x="30" y="48" font-family="'Amiri', serif" font-weight="bold" font-size="44" fill="#1e3799" text-anchor="middle">ا</text>
+  </g>
+  <g transform="translate(135, 60)" filter="url(#shadow)">
+    <rect width="60" height="70" rx="12" fill="#ffffff" stroke="#009432" stroke-width="3"/>
+    <text x="30" y="48" font-family="'Amiri', serif" font-weight="bold" font-size="44" fill="#1e3799" text-anchor="middle">ل</text>
+  </g>
+  <g transform="translate(210, 60)" filter="url(#shadow)">
+    <rect width="60" height="70" rx="12" fill="#ffffff" stroke="#009432" stroke-width="3"/>
+    <text x="30" y="48" font-family="'Amiri', serif" font-weight="bold" font-size="44" fill="#1e3799" text-anchor="middle">ل</text>
+  </g>
+  <g transform="translate(285, 60)" filter="url(#shadow)">
+    <rect width="60" height="70" rx="12" fill="#ffffff" stroke="#009432" stroke-width="3"/>
+    <text x="30" y="48" font-family="'Amiri', serif" font-weight="bold" font-size="44" fill="#1e3799" text-anchor="middle">ه</text>
+  </g>
+
+  <!-- Word Badge -->
+  <rect x="130" y="155" width="140" height="40" rx="20" fill="#ffffff" stroke="#10ac84" stroke-width="2" filter="url(#shadow)"/>
+  <text x="200" y="182" font-family="sans-serif" font-weight="bold" font-size="18" fill="#10ac84" text-anchor="middle">ALLAH</text>
+
+  <!-- Bottom Title Banner -->
+  <rect x="50" y="235" width="300" height="44" rx="22" fill="#006266" stroke="#ffffff" stroke-width="3" filter="url(#shadow)"/>
+  <text x="200" y="264" font-family="sans-serif" font-weight="bold" font-size="20" fill="#ffffff" text-anchor="middle">
+    PUZZLE <tspan fill="#ffd32a">HURUF ISLAMI</tspan>
+  </text>
+</svg>
