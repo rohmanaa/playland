@@ -1,0 +1,1422 @@
+<!doctype html>
+<html lang="id">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no, viewport-fit=cover">
+  <title>Wudhu Quest 3D — Petualangan Bersuci di Taman Masjid</title>
+  
+  <!-- Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600;700&family=Nunito:wght@700;800;900&family=Amiri:wght@700&display=swap" rel="stylesheet">
+  
+  <!-- Three.js CDN -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+
+  <style>
+    :root {
+      --bg: #07172c;
+      --panel: rgba(255, 255, 255, 0.95);
+      --panel2: #f0f7ff;
+      --ink: #0d233a;
+      --mute: #627d98;
+      --accent: #0284c7;
+      --accent-d: #0369a1;
+      --good: #10b981;
+      --gold: #f59e0b;
+      --bad: #ef4444;
+      --radius: 24px;
+      --s: 1;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; user-select: none; -webkit-user-select: none; }
+    html, body {
+      width: 100%; height: 100%;
+      overflow: hidden;
+      background: var(--bg);
+      font-family: 'Fredoka', 'Nunito', system-ui, sans-serif;
+      touch-action: none;
+    }
+
+    #gameCanvas {
+      width: 100%; height: 100%;
+      display: block;
+      position: absolute;
+      inset: 0;
+      z-index: 1;
+    }
+
+    /* SVG Icon Helper */
+    .svg-icon {
+      display: inline-block;
+      width: 1.25em; height: 1.25em;
+      stroke-width: 2.2;
+      stroke: currentColor;
+      fill: none;
+      stroke-linecap: round;
+      stroke-linejoin: round;
+      vertical-align: middle;
+    }
+
+    /* 3D Beveled Buttons */
+    .btn-3d {
+      background: linear-gradient(180deg, var(--accent), var(--accent-d));
+      color: #ffffff;
+      border: 3px solid #ffffff;
+      border-radius: 6px;
+      font-family: 'Fredoka', cursive, sans-serif;
+      font-size: 18px;
+      font-weight: 700;
+      padding: 12px 26px;
+      cursor: pointer;
+      box-shadow: 0 5px 0 var(--accent-d), inset 0 2px 0 rgba(255,255,255,0.4);
+      transition: all 0.12s ease;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      touch-action: manipulation;
+    }
+    .btn-3d:hover { transform: translateY(-2px); box-shadow: 0 7px 0 var(--accent-d); }
+    .btn-3d:active { transform: translateY(4px); box-shadow: 0 1px 0 var(--accent-d); }
+    .btn-3d.green {
+      background: linear-gradient(180deg, #10b981, #059669);
+      box-shadow: 0 5px 0 #047857, inset 0 2px 0 rgba(255,255,255,0.4);
+    }
+    .btn-3d.green:hover { box-shadow: 0 7px 0 #047857; }
+    .btn-3d.green:active { box-shadow: 0 1px 0 #047857; }
+    .btn-3d.gold {
+      background: linear-gradient(180deg, #fbbf24, #d97706);
+      box-shadow: 0 5px 0 #b45309, inset 0 2px 0 rgba(255,255,255,0.4);
+      color: #451a03;
+    }
+    .btn-3d.gold:hover { box-shadow: 0 7px 0 #b45309; }
+    .btn-3d.gold:active { box-shadow: 0 1px 0 #b45309; }
+    .btn-3d.secondary {
+      background: #ffffff;
+      color: var(--ink);
+      border-color: #e2e8f0;
+      box-shadow: 0 5px 0 #cbd5e1;
+    }
+    .btn-3d.secondary:hover { box-shadow: 0 7px 0 #cbd5e1; }
+    .btn-3d.secondary:active { box-shadow: 0 1px 0 #cbd5e1; }
+
+    /* UI Top Bar HUD */
+    #hud {
+      position: absolute;
+      inset: 0;
+      pointer-events: none;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      padding: 16px;
+      z-index: 10;
+    }
+
+    .hud-top {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      flex-wrap: wrap;
+    }
+
+    .hud-chip-group {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      pointer-events: auto;
+    }
+
+    .hud-chip {
+      background: rgba(255, 255, 255, 0.96);
+      border: 3px solid #ffffff;
+      border-radius: 4px;
+      padding: 7px 16px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-weight: 800;
+      font-size: 15px;
+      color: var(--ink);
+      box-shadow: 0 4px 0 rgba(0, 0, 0, 0.15);
+      font-variant-numeric: tabular-nums;
+    }
+    .hud-chip.stars { color: #d97706; }
+    .hud-chip.coins { color: #0284c7; }
+
+    .btn-circle {
+      background: #ffffff;
+      border: 3px solid #ffffff;
+      border-radius: 6px;
+      width: 44px; height: 44px;
+      display: flex; align-items: center; justify-content: center;
+      cursor: pointer;
+      box-shadow: 0 4px 0 rgba(0, 0, 0, 0.15);
+      transition: transform 0.12s;
+      pointer-events: auto;
+      color: var(--ink);
+    }
+    .btn-circle:hover { transform: translateY(-2px); }
+    .btn-circle:active { transform: translateY(2px); }
+
+    /* Mission Target Card on HUD */
+    .wudhu-step-card {
+      background: rgba(255, 255, 255, 0.96);
+      border: 3px solid #ffffff;
+      border-radius: 6px;
+      padding: 10px 22px;
+      box-shadow: 0 6px 0 rgba(3, 105, 161, 0.25);
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      pointer-events: auto;
+      max-width: 480px;
+    }
+    .step-number-badge {
+      background: linear-gradient(135deg, var(--accent), var(--accent-d));
+      color: white;
+      border-radius: 4px;
+      width: 44px; height: 44px;
+      border-radius: 16px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 20px; font-weight: 800;
+      flex-shrink: 0;
+      box-shadow: 0 4px 12px rgba(2, 132, 199, 0.35);
+    }
+    .step-text-col {
+      display: flex;
+      flex-direction: column;
+    }
+    .step-arabic-title {
+      font-family: 'Amiri', serif;
+      font-size: 24px;
+      color: #0369a1;
+      line-height: 1.1;
+      font-weight: 700;
+    }
+    .step-latin-title {
+      font-size: 17px;
+      font-weight: 700;
+      color: var(--ink);
+      line-height: 1.2;
+    }
+    .step-instruction {
+      font-size: 12px;
+      font-weight: 600;
+      color: #64748b;
+    }
+
+    /* Interactive Wash Action Prompt / Button (Bottom Center) */
+    .wash-action-panel {
+      pointer-events: auto;
+      margin: 0 auto;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 10px;
+    }
+    .wash-progress-bar-wrap {
+      width: 240px;
+      height: 14px;
+      background: rgba(255, 255, 255, 0.85);
+      border: 2px solid #ffffff;
+      border-radius: 999px;
+      overflow: hidden;
+      box-shadow: 0 4px 14px rgba(0,0,0,0.2);
+    }
+    .wash-progress-fill {
+      height: 100%;
+      width: 0%;
+      background: linear-gradient(90deg, #38bdf8, #0284c7);
+      border-radius: 999px;
+      transition: width 0.25s ease-out;
+    }
+    .wash-count-text {
+      font-size: 14px;
+      font-weight: 800;
+      color: #ffffff;
+      text-shadow: 0 2px 4px rgba(0,0,0,0.6);
+    }
+    .btn-wash-action {
+      background: linear-gradient(180deg, #38bdf8, #0284c7);
+      color: white;
+      border: 4px solid #ffffff;
+      border-radius: 30px;
+      padding: 14px 40px;
+      font-size: 22px;
+      font-weight: 800;
+      font-family: 'Fredoka', cursive;
+      cursor: pointer;
+      box-shadow: 0 6px 0 #0369a1, 0 14px 28px rgba(2, 132, 199, 0.45);
+      transition: all 0.12s;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .btn-wash-action:hover { transform: translateY(-2px); box-shadow: 0 8px 0 #0369a1; }
+    .btn-wash-action:active { transform: translateY(4px); box-shadow: 0 2px 0 #0369a1; }
+
+    /* Mobile Virtual Joystick & Action */
+    .mobile-controls {
+      display: none;
+      pointer-events: auto;
+      width: 100%;
+      justify-content: space-between;
+      align-items: flex-end;
+      padding-bottom: 8px;
+    }
+    .virtual-joystick-zone {
+      width: 120px; height: 120px;
+      background: rgba(255, 255, 255, 0.25);
+      border: 3px solid rgba(255, 255, 255, 0.5);
+      border-radius: 50%;
+      position: relative;
+      touch-action: none;
+    }
+    .virtual-stick-thumb {
+      width: 50px; height: 50px;
+      background: #ffffff;
+      border-radius: 50%;
+      position: absolute;
+      top: 35px; left: 35px;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.25);
+      pointer-events: none;
+    }
+
+    @media (max-width: 768px) {
+      .mobile-controls { display: flex; }
+      .wudhu-step-card { padding: 8px 16px; gap: 10px; max-width: 340px; }
+      .step-arabic-title { font-size: 20px; }
+      .step-latin-title { font-size: 15px; }
+      .btn-wash-action { padding: 12px 28px; font-size: 18px; }
+    }
+
+    /* Modal Framework (Glassmorphism & Spring animation) */
+    .modal-overlay {
+      position: absolute;
+      inset: 0;
+      background: rgba(7, 23, 44, 0.85);
+      backdrop-filter: blur(12px);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 16px;
+      z-index: 50;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.25s ease;
+    }
+    .modal-overlay.active {
+      opacity: 1;
+      pointer-events: auto;
+    }
+
+    .modal-card {
+      background: #ffffff;
+      border: 4px solid #ffffff;
+      border-radius: 32px;
+      max-width: 520px;
+      width: 100%;
+      max-height: 90vh;
+      overflow-y: auto;
+      padding: 32px 26px;
+      text-align: center;
+      box-shadow: 0 25px 60px rgba(0, 0, 0, 0.45);
+      transform: scale(0.85);
+      transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+      position: relative;
+    }
+    .modal-overlay.active .modal-card {
+      transform: scale(1);
+    }
+
+    .modal-close-btn {
+      position: absolute;
+      top: 18px; right: 18px;
+      width: 36px; height: 36px;
+      border-radius: 50%;
+      background: #f1f5f9;
+      border: none;
+      cursor: pointer;
+      display: flex; align-items: center; justify-content: center;
+      color: #64748b;
+      font-size: 18px;
+      font-weight: 800;
+      transition: all 0.15s;
+    }
+    .modal-close-btn:hover { background: #e2e8f0; color: #0f172a; }
+
+    .modal-title {
+      font-size: 28px;
+      font-weight: 700;
+      color: var(--ink);
+      line-height: 1.15;
+    }
+    .modal-arabic-header {
+      font-family: 'Amiri', serif;
+      font-size: 32px;
+      color: #d97706;
+      margin: 4px 0 10px;
+    }
+    .modal-desc {
+      font-size: 14px;
+      color: #475569;
+      line-height: 1.55;
+      font-weight: 600;
+      margin-bottom: 22px;
+    }
+
+    /* Step Selector Grid */
+    .step-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));
+      gap: 12px;
+      margin-bottom: 20px;
+      text-align: left;
+    }
+    .step-grid-item {
+      background: #f8fafc;
+      border: 2px solid #e2e8f0;
+      border-radius: 18px;
+      padding: 12px;
+      cursor: pointer;
+      transition: all 0.15s ease;
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+    .step-grid-item:hover {
+      border-color: var(--accent);
+      background: #f0f9ff;
+      transform: translateY(-2px);
+    }
+    .step-grid-item.completed {
+      border-color: #10b981;
+      background: #ecfdf5;
+    }
+    .step-grid-item.active {
+      border-color: var(--accent);
+      box-shadow: 0 0 0 3px rgba(2, 132, 199, 0.2);
+    }
+    .step-badge-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .step-mini-num {
+      font-size: 12px;
+      font-weight: 800;
+      color: var(--accent);
+    }
+    .step-stars {
+      font-size: 12px;
+      color: #d97706;
+    }
+    .step-grid-title {
+      font-size: 14px;
+      font-weight: 700;
+      color: var(--ink);
+    }
+
+    /* Doa Box */
+    .doa-box {
+      background: #f0fdf4;
+      border: 2px dashed #86efac;
+      border-radius: 20px;
+      padding: 16px;
+      margin-bottom: 20px;
+    }
+    .doa-arabic {
+      font-family: 'Amiri', serif;
+      font-size: 26px;
+      color: #166534;
+      line-height: 1.4;
+      margin-bottom: 6px;
+    }
+    .doa-latin {
+      font-size: 13px;
+      font-weight: 700;
+      color: #15803d;
+      font-style: italic;
+      margin-bottom: 4px;
+    }
+    .doa-arti {
+      font-size: 12px;
+      color: #166534;
+    }
+
+    /* Toast Notification */
+    #toastNotification {
+      position: absolute;
+      top: 20px;
+      left: 50%;
+      transform: translateX(-50%) translateY(-20px);
+      background: linear-gradient(135deg, #10b981, #047857);
+      color: white;
+      border: 2px solid #ffffff;
+      border-radius: 999px;
+      padding: 10px 24px;
+      font-size: 16px;
+      font-weight: 700;
+      box-shadow: 0 10px 30px rgba(4, 120, 87, 0.4);
+      opacity: 0;
+      pointer-events: none;
+      transition: all 0.25s ease;
+      z-index: 100;
+      white-space: nowrap;
+    }
+    #toastNotification.show {
+      opacity: 1;
+      transform: translateX(-50%) translateY(0);
+    }
+  </style>
+</head>
+<body>
+
+  <!-- 3D Canvas -->
+  <canvas id="gameCanvas"></canvas>
+
+  <!-- Heads Up Display (HUD) -->
+  <div id="hud">
+    <!-- Top Bar -->
+    <div class="hud-top">
+      <div class="wudhu-step-card" id="stepCard">
+        <div class="step-number-badge" id="stepBadgeNum">1</div>
+        <div class="step-text-col">
+          <div class="step-arabic-title" id="stepArabicTitle">النِّيَّةُ وَالتَّسْمِيَةُ</div>
+          <div class="step-latin-title" id="stepLatinTitle">Niat & Basmalah</div>
+          <div class="step-instruction" id="stepInstruction">Kukuhkan niat ikhlas karena Allah SWT</div>
+        </div>
+      </div>
+
+      <div class="hud-chip-group">
+        <div class="hud-chip stars">
+          <span>⭐</span> <span id="starsText">0</span>
+        </div>
+        <div class="hud-chip coins">
+          <span>🪙</span> <span id="coinsText">0</span>
+        </div>
+        <button class="btn-circle" id="btnAudioSay" title="Dengarkan Doa">🔊</button>
+        <button class="btn-circle" id="btnOpenMenu" title="Menu Langkah">📋</button>
+        <button class="btn-circle" id="btnOpenSettings" title="Pengaturan">⚙️</button>
+      </div>
+    </div>
+
+    <!-- Center Wash Action Interaction Panel -->
+    <div class="wash-action-panel">
+      <div class="wash-count-text" id="washCountText">Basuhan: 0 / 3 Kali</div>
+      <div class="wash-progress-bar-wrap">
+        <div class="wash-progress-fill" id="washProgressFill"></div>
+      </div>
+      <button class="btn-wash-action" id="btnPerformWash">
+        <span>💧</span> <span id="btnWashLabel">Alirkan Air & Basuh</span>
+      </button>
+    </div>
+
+    <!-- Mobile Virtual Controls -->
+    <div class="mobile-controls">
+      <div class="virtual-joystick-zone" id="joystickZone">
+        <div class="virtual-stick-thumb" id="joystickThumb"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Toast Message -->
+  <div id="toastNotification">✨ Alhamdulillah! Langkah Sempurna!</div>
+
+  <!-- MODAL 1: START / LEVEL SELECTOR -->
+  <div class="modal-overlay active" id="modalStart">
+    <div class="modal-card">
+      <div style="font-size: 54px; margin-bottom: 6px;">🕌✨</div>
+      <div class="modal-arabic-header">بِسْمِ اللَّهِ الرَّحْمَٰنِ الرَّحِيمِ</div>
+      <h1 class="modal-title">Wudhu Quest 3D</h1>
+      <p class="modal-desc">
+        Belajar urutan rukun wudhu dan sunnah Rasulullah SAW di pelataran masjid 3D yang indah. Bersuci dengan tertib, raih bintang, dan pahami doa-doanya!
+      </p>
+
+      <div class="step-grid" id="stepSelectorGrid">
+        <!-- Rendered by JS -->
+      </div>
+
+      <div style="display: flex; gap: 12px; justify-content: center; flex-wrap: wrap;">
+        <button class="btn-3d green" id="btnStartAdventure">
+          <span>▶</span> <span>Mulai Praktik Wudhu</span>
+        </button>
+        <button class="btn-3d secondary" id="btnOpenGuide">
+          <span>📖</span> <span>Panduan Fikih</span>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL 2: STEP RESULT / SUCCESS MODAL -->
+  <div class="modal-overlay" id="modalStepSuccess">
+    <div class="modal-card">
+      <div style="font-size: 50px; margin-bottom: 4px;" id="successIcon">🌟🤲</div>
+      <div class="modal-arabic-header" id="successArabic">الْحَمْدُ لِلَّهِ</div>
+      <h2 class="modal-title" id="successTitle">Langkah Sempurna!</h2>
+      <p class="modal-desc" id="successDesc">Kamu telah membasuh sesuai tuntunan sunnah 3 kali dengan tertib.</p>
+
+      <!-- Doa Box for this step -->
+      <div class="doa-box" id="successDoaBox">
+        <div class="doa-arabic" id="doaArabicText"></div>
+        <div class="doa-latin" id="doaLatinText"></div>
+        <div class="doa-arti" id="doaArtiText"></div>
+      </div>
+
+      <div style="display: flex; gap: 10px; justify-content: center;">
+        <button class="btn-3d green" id="btnNextStep">
+          <span>Lanjut Langkah Berikutnya →</span>
+        </button>
+        <button class="btn-3d secondary" id="btnRepeatStep">
+          <span>🔄 Ulangi</span>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL 3: GUIDE / FIKIH MODAL -->
+  <div class="modal-overlay" id="modalGuide">
+    <div class="modal-card">
+      <button class="modal-close-btn" onclick="closeModal('modalGuide')">✕</button>
+      <div class="modal-arabic-header">أَحْكَامُ الْوُضُوءِ</div>
+      <h2 class="modal-title">Panduan Thaharah & Wudhu</h2>
+      <p class="modal-desc">Rukun wudhu adalah hal yang wajib dilakukan agar wudhu menjadi sah:</p>
+
+      <div style="text-align: left; font-size: 13px; color: #334155; line-height: 1.6; background: #f8fafc; padding: 16px; border-radius: 20px; margin-bottom: 20px;">
+        <p><strong>1. Niat:</strong> Menyengaja berwudhu untuk menghilangkan hadas kecil ikhlas karena Allah.</p>
+        <p><strong>2. Membasuh Muka:</strong> Batasnya dari tumbuhnya rambut hingga dagu, dan telinga ke telinga.</p>
+        <p><strong>3. Membasuh Tangan:</strong> Dari ujung jari hingga melewati kedua siku.</p>
+        <p><strong>4. Mengusap Sebagian Kepala:</strong> Membasahi rambut/kepala dengan air.</p>
+        <p><strong>5. Membasuh Kaki:</strong> Dari ujung jari kaki hingga melewati kedua mata kaki.</p>
+        <p><strong>6. Tertib:</strong> Melakukan rukun secara berurutan.</p>
+        <p style="margin-top: 8px; color: #0284c7;"><em>Sunnah:</em> Membaca Basmalah, berkumur-kumur, istinsyaq, mengusap telinga, membasuh 3 kali, dan membaca doa setelah wudhu.</p>
+      </div>
+
+      <button class="btn-3d" onclick="closeModal('modalGuide')">Saya Paham, Siap Praktik!</button>
+    </div>
+  </div>
+
+  <!-- MODAL 4: SETTINGS MODAL -->
+  <div class="modal-overlay" id="modalSettings">
+    <div class="modal-card">
+      <button class="modal-close-btn" onclick="closeModal('modalSettings')">✕</button>
+      <h2 class="modal-title">Pengaturan Game</h2>
+      <div style="margin: 20px 0; display: flex; flex-direction: column; gap: 14px; text-align: left;">
+        <label style="display: flex; justify-content: space-between; align-items: center; font-weight: 700; color: #1e293b;">
+          <span>Efek Suara (SFX):</span>
+          <input type="checkbox" id="chkSfx" checked style="width: 20px; height: 20px;">
+        </label>
+        <label style="display: flex; justify-content: space-between; align-items: center; font-weight: 700; color: #1e293b;">
+          <span>Pelafalan Doa Otomatis:</span>
+          <input type="checkbox" id="chkSpeech" checked style="width: 20px; height: 20px;">
+        </label>
+        <label style="display: flex; justify-content: space-between; align-items: center; font-weight: 700; color: #1e293b;">
+          <span>Kualitas Grafis 3D:</span>
+          <select id="selQuality" style="padding: 6px 12px; border-radius: 10px; border: 1px solid #cbd5e1; font-weight: 700;">
+            <option value="high">Tinggi (Bayangan Lembut)</option>
+            <option value="medium" selected>Sedang (Optimal)</option>
+            <option value="low">Hemat Baterai</option>
+          </select>
+        </label>
+      </div>
+      <button class="btn-3d" onclick="closeModal('modalSettings')">Simpan Pengaturan</button>
+    </div>
+  </div>
+
+  <script>
+    /*==== 1. CONFIG & BALANCING ====*/
+    const CONFIG = {
+      targetWashesPerStep: 3, // Sunnah 3 kali basuhan
+      totalSteps: 10,
+      rewardCoinsPerStep: 25,
+      rewardStarsPerStep: 1,
+      saveKey: 'g_wudhuquest_v1'
+    };
+
+    /*==== 2. DATA WUDHU (10 LANGKAH LENGKAP & SUNNAH) ====*/
+    const WUDHU_STEPS = [
+      {
+        id: 1,
+        arabic: 'النِّيَّةُ وَالتَّسْمِيَةُ',
+        title: 'Niat & Membaca Basmalah',
+        instruction: 'Berniat ikhlas karena Allah dan ucapkan "Bismillah"',
+        desc: 'Niat di dalam hati untuk menghilangkan hadas kecil agar shalat menjadi sah, disertai membaca bismillah.',
+        doaArabic: 'بِسْمِ اللَّهِ الرَّحْمَٰنِ الرَّحِيمِ • نَوَيْتُ الْوُضُوءَ لِرَفْعِ الْحَدَثِ الْأَصْغَرِ فَرْضًا لِلَّهِ تَعَالَى',
+        doaLatin: 'Bismillaahir-rahmaanir-rahiim. Nawaitul-wudhuu\'a liraf\'il-hadatsil-ashghari fardhan lillaahi ta\'aalaa.',
+        doaArti: 'Dengan nama Allah Yang Maha Pengasih lagi Maha Penyayang. Saya niat berwudhu untuk menghilangkan hadas kecil fardhu karena Allah Ta\'ala.',
+        bodyPart: 'niat',
+        actionVerb: 'Ucapkan Basmalah & Pasang Niat'
+      },
+      {
+        id: 2,
+        arabic: 'غَسْلُ الْكَفَّيْنِ',
+        title: 'Membasuh Kedua Telapak Tangan',
+        instruction: 'Basuh kedua tangan hingga pergelangan dan sela-sela jari',
+        desc: 'Mencuci kedua telapak tangan sebanyak 3 kali serta menyela-nyela jari-jemari tangan.',
+        doaArabic: 'اللَّهُمَّ احْفَظْ يَدَيَّ مِنْ مَعَاصِيكَ كُلِّهَا',
+        doaLatin: 'Allaahummahfadz yadayya min ma\'aashiika kullihaa.',
+        doaArti: 'Ya Allah, peliharalah kedua tanganku dari segala maksiat kepada-Mu.',
+        bodyPart: 'tangan_bawah',
+        actionVerb: 'Basuh Telapak Tangan (3x)'
+      },
+      {
+        id: 3,
+        arabic: 'الْمَضْمَضَةُ',
+        title: 'Berkumur-kumur (Madhmadhoh)',
+        instruction: 'Ambil air dan bersihkan rongga mulut secara merata',
+        desc: 'Memasukkan air ke mulut dan memutar-mutarnya untuk membersihkan sisa makanan (sunnah muakkadah).',
+        doaArabic: 'اللَّهُمَّ أَعِنِّي عَلَى تِلَاوَةِ كِتَابِكَ وَذِكْرِكَ',
+        doaLatin: 'Allaahumma a\'innii \'alaa tilaawati kitaabika wa dzikrik.',
+        doaArti: 'Ya Allah, bantulah aku untuk senantiasa membaca kitab-Mu dan mengingat-Mu.',
+        bodyPart: 'mulut',
+        actionVerb: 'Berkumur-kumur (3x)'
+      },
+      {
+        id: 4,
+        arabic: 'الِاسْتِنْشَاقُ',
+        title: 'Menghirup Air ke Hidung (Istinsyaq)',
+        instruction: 'Hirup air pelan ke rongga hidung lalu hembuskan',
+        desc: 'Menghirup air ke hidung lalu mengeluarkannya (istintsar) dengan tangan kiri untuk menjaga kebersihan saluran nafas.',
+        doaArabic: 'اللَّهُمَّ أَرِحْنِي رَائِحَةَ الْجَنَّةِ',
+        doaLatin: 'Allaahumma arihnii raa\'ihatal jannah.',
+        doaArti: 'Ya Allah, berilah aku wangi semerbak harumnya surga.',
+        bodyPart: 'hidung',
+        actionVerb: 'Istinsyaq Air (3x)'
+      },
+      {
+        id: 5,
+        arabic: 'غَسْلُ الْوَجْهِ',
+        title: 'Membasuh Seluruh Wajah',
+        instruction: 'Rukun Wajib: Ratakan air dari ujung kening hingga dagu',
+        desc: 'Membasuh wajah secara merata sebanyak 3 kali. Ini merupakan rukun fardhu wudhu.',
+        doaArabic: 'اللَّهُمَّ بَيِّضْ وَجْهِي يَوْمَ تَبْيَضُّ وُجُوهٌ وَتَسْوَدُّ وُجُوهٌ',
+        doaLatin: 'Allaahumma bayyidh wajhii yawma tabyadh-dhu wujuuhuw wa taswaddu wujuuh.',
+        doaArti: 'Ya Allah, putihkanlah wajahku pada hari di mana wajah-wajah menjadi putih berseri.',
+        bodyPart: 'wajah',
+        actionVerb: 'Basuh Seluruh Wajah (3x)'
+      },
+      {
+        id: 6,
+        arabic: 'غَسْلُ الْيَدَيْنِ إِلَى الْمِرْفَقَيْنِ',
+        title: 'Membasuh Tangan Hingga Siku',
+        instruction: 'Rukun Wajib: Dahulukan tangan kanan, lalu tangan kiri',
+        desc: 'Membasuh kedua tangan mulai dari ujung jari hingga melebihi kedua siku secara merata 3 kali.',
+        doaArabic: 'اللَّهُمَّ أَعْطِنِي كِتَابِي بِيَمِينِي وَحَاسِبْنِي حِسَابًا يَسِيرًا',
+        doaLatin: 'Allaahumma a\'thinii kitaabii bi yamiinii wa haasibnii hisaabay yasiiraa.',
+        doaArti: 'Ya Allah, berikanlah kitab amalku dari sebelah kanan dan hisablah aku dengan hisab yang mudah.',
+        bodyPart: 'tangan_siku',
+        actionVerb: 'Basuh Hingga Siku (3x)'
+      },
+      {
+        id: 7,
+        arabic: 'مَسْحُ الرَّأْسِ',
+        title: 'Mengusap Sebagian Kepala',
+        instruction: 'Rukun Wajib: Usap bagian rambut / ubun-ubun kepala',
+        desc: 'Menjalankan kedua telapak tangan yang basah ke sebagian kepala atau rambut.',
+        doaArabic: 'اللَّهُمَّ حَرِّمْ شَعْرِي وَبَشَرِي عَلَى النَّارِ',
+        doaLatin: 'Allaahumma harrim sya\'rii wa basyarii \'alan-naar.',
+        doaArti: 'Ya Allah, haramkanlah rambut dan kulit tubuhku dari sentuhan api neraka.',
+        bodyPart: 'kepala',
+        actionVerb: 'Usap Kepala (3x)'
+      },
+      {
+        id: 8,
+        arabic: 'مَسْحُ الْأُذُنَيْنِ',
+        title: 'Mengusap Kedua Telinga',
+        instruction: 'Usap bagian luar dan dalam telinga dengan jari telunjuk & jempol',
+        desc: 'Memasukkan jari telunjuk ke rongga telinga dan ibu jari mengusap bagian luar daun telinga.',
+        doaArabic: 'اللَّهُمَّ اجْعَلْنِي مِنَ الَّذِينَ يَسْتَمِعُونَ الْقَوْلَ فَيَتَّبِعُونَ أَحْسَنَهُ',
+        doaLatin: 'Allaahummaj\'alnii minal ladziina yastami\'uunal qawla fayattabi\'uuna ahsanah.',
+        doaArti: 'Ya Allah, jadikanlah aku termasuk orang yang mendengarkan kebaikan lalu mengikuti yang terbaik.',
+        bodyPart: 'telinga',
+        actionVerb: 'Usap Kedua Telinga (3x)'
+      },
+      {
+        id: 9,
+        arabic: 'غَسْلُ الرِّجْلَيْنِ إِلَى الْكَعْبَيْنِ',
+        title: 'Membasuh Kaki Hingga Mata Kaki',
+        instruction: 'Rukun Wajib: Dahulukan kaki kanan, sela-sela jari kaki dan tumit',
+        desc: 'Membasuh kedua kaki hingga melampaui kedua mata kaki sebanyak 3 kali.',
+        doaArabic: 'اللَّهُمَّ ثَبِّتْ قَدَمَيَّ عَلَى الصِّرَاطِ يَوْMَ تَزِلُّ فِيهِ الْأَقْدَامُ',
+        doaLatin: 'Allaahumma tsabbit qadamayya \'alash-shiraathi yawma tazillu fiihil aqdaam.',
+        doaArti: 'Ya Allah, kokohkanlah kedua telapak kakiku di atas jembatan Shirath pada hari terpelesetnya kaki-kaki.',
+        bodyPart: 'kaki',
+        actionVerb: 'Basuh Kaki & Tumit (3x)'
+      },
+      {
+        id: 10,
+        arabic: 'دُعَاءُ بَعْدَ الْوُضُوءِ',
+        title: 'Tertib & Doa Setelah Wudhu',
+        instruction: 'Menghadap kiblat dan baca doa syahadat setelah bersuci',
+        desc: 'Menyempurnakan wudhu dengan membaca doa kesaksian tauhid dan permohonan disucikan lahir batin.',
+        doaArabic: 'أَشْهَدُ أَنْ لَا إِلَٰهَ إِلَّا اللَّهُ وَأَشْهَدُ أَنَّ مُحَمَّدًا عَبْدُهُ وَرَسُولُهُ • اللَّهُمَّ اجْعَلْنِي مِنَ التَّوَّابِينَ وَاجْعَلْنِي مِنَ الْمُتَطَهِّرِينَ',
+        doaLatin: 'Asyhadu allaa ilaaha illallaahu wahdahu laa syariikalah, wa asyhadu anna Muhammadan \'abduhu wa rasuuluh. Allaahummaj\'alnii minat-tawwaabiina waj\'alnii minal mutathahhiriin.',
+        doaArti: 'Aku bersaksi tiada tuhan selain Allah dan Muhammad hamba serta utusan-Nya. Ya Allah jadikanlah aku orang yang bertaubat dan orang yang senantiasa bersuci.',
+        bodyPart: 'doa_akhir',
+        actionVerb: 'Baca Doa Selesai Wudhu'
+      }
+    ];
+
+    /*==== 3. SAVE / LOCALSTORAGE ENGINE ====*/
+    let userState = {
+      stars: 0,
+      coins: 0,
+      completedSteps: {},
+      currentStepId: 1
+    };
+
+    function loadSave() {
+      try {
+        const raw = localStorage.getItem(CONFIG.saveKey);
+        if (raw) {
+          userState = Object.assign(userState, JSON.parse(raw));
+        }
+      } catch(e) {}
+    }
+
+    function writeSave() {
+      try {
+        localStorage.setItem(CONFIG.saveKey, JSON.stringify(userState));
+      } catch(e) {}
+    }
+
+    /*==== 4. AUDIO SYNTHESIZER (WEB AUDIO API + SPEECH) ====*/
+    let audioCtx = null;
+    let sfxEnabled = true;
+
+    function initAudio() {
+      if (!audioCtx) {
+        audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+      }
+      if (audioCtx.state === 'suspended') {
+        audioCtx.resume();
+      }
+    }
+
+    function playTone(freq, type = 'sine', duration = 0.15, vol = 0.25) {
+      if (!sfxEnabled || !audioCtx) return;
+      try {
+        const osc = audioCtx.createOscillator();
+        const gain = audioCtx.createGain();
+        osc.type = type;
+        osc.frequency.setValueAtTime(freq, audioCtx.currentTime);
+        gain.gain.setValueAtTime(vol, audioCtx.currentTime);
+        gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + duration);
+        osc.connect(gain);
+        gain.connect(audioCtx.destination);
+        osc.start();
+        osc.stop(audioCtx.currentTime + duration);
+      } catch (e) {}
+    }
+
+    // Water Splash / Stream sound generator (noise buffer with bandpass)
+    function playWaterSplash() {
+      if (!sfxEnabled || !audioCtx) return;
+      try {
+        const bufSize = audioCtx.sampleRate * 0.45;
+        const buf = audioCtx.createBuffer(1, bufSize, audioCtx.sampleRate);
+        const data = buf.getChannelData(0);
+        for (let i = 0; i < bufSize; i++) {
+          data[i] = (Math.random() * 2 - 1) * Math.exp(-i / (audioCtx.sampleRate * 0.2));
+        }
+        const src = audioCtx.createBufferSource();
+        src.buffer = buf;
+
+        const filter = audioCtx.createBiquadFilter();
+        filter.type = 'bandpass';
+        filter.frequency.setValueAtTime(900, audioCtx.currentTime);
+        filter.Q.setValueAtTime(1.8, audioCtx.currentTime);
+
+        const gain = audioCtx.createGain();
+        gain.gain.setValueAtTime(0.3, audioCtx.currentTime);
+        gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.45);
+
+        src.connect(filter);
+        filter.connect(gain);
+        gain.connect(audioCtx.destination);
+        src.start();
+      } catch(e) {}
+    }
+
+    function soundComplete() {
+      playTone(523.25, 'triangle', 0.12, 0.3);
+      setTimeout(() => playTone(659.25, 'triangle', 0.12, 0.3), 100);
+      setTimeout(() => playTone(783.99, 'triangle', 0.18, 0.35), 200);
+      setTimeout(() => playTone(1046.50, 'sine', 0.35, 0.4), 320);
+    }
+
+    function speakCurrentDoa() {
+      if (!('speechSynthesis' in window)) return;
+      try {
+        window.speechSynthesis.cancel();
+        const step = WUDHU_STEPS[currentStepIndex];
+        const u = new SpeechSynthesisUtterance(step.doaLatin);
+        u.lang = 'id-ID';
+        u.rate = 0.88;
+        window.speechSynthesis.speak(u);
+      } catch (e) {}
+    }
+
+    /*==== 5. THREE.JS 3D ENVIRONMENT (COURTYARD & WUDHU AREA) ====*/
+    let scene, camera, renderer;
+    let ahmadGroup, ahmadInner, ahmadArms = [], waterParticles = [];
+    let tapMesh, waterStreamMesh;
+
+    function blockTex(base, seed, dots = 8, opt = {}) {
+      const S = opt.fine ? 256 : 64;
+      const c = document.createElement('canvas'); c.width = c.height = S; const x = c.getContext('2d');
+      let s = typeof seed === 'number' ? seed : [...String(seed)].reduce((a,ch) => (a*31 + ch.charCodeAt(0))>>>0, 12345);
+      const r = () => (s = (s * 1664525 + 1013904223) >>> 0) / 4294967296;
+      const K = S / 64;
+      x.fillStyle = base; x.fillRect(0, 0, S, S);
+      for (let i = 0; i < dots * 3; i++) {
+        const px = r() * S, py = r() * S, pr = (3 + r() * 7) * K, lite = r() < 0.5;
+        const g = x.createRadialGradient(px, py, 0, px, py, pr);
+        g.addColorStop(0, lite ? 'rgba(255,255,255,.09)' : 'rgba(30,15,0,.08)'); g.addColorStop(1, 'rgba(0,0,0,0)');
+        x.fillStyle = g; x.fillRect(px - pr, py - pr, pr * 2, pr * 2);
+      }
+      if (opt.grassTop) {
+        const gh = S * 0.24, gc = opt.grassColor || '#7fd75b';
+        x.fillStyle = gc; x.beginPath(); x.moveTo(0, 0);
+        for (let i = 0; i <= 8; i++) x.lineTo(i * S / 8, gh + Math.sin(i * 1.7 + s) * 2.5 * K);
+        x.lineTo(S, 0); x.closePath(); x.fill();
+      }
+      let g = x.createLinearGradient(0, 0, 0, S);
+      g.addColorStop(0, 'rgba(255,255,255,.16)'); g.addColorStop(.42, 'rgba(255,255,255,0)');
+      g.addColorStop(.72, 'rgba(0,0,0,0)'); g.addColorStop(1, 'rgba(0,0,0,.18)');
+      x.fillStyle = g; x.fillRect(0, 0, S, S);
+      g = x.createLinearGradient(0, 0, S, 0);
+      g.addColorStop(0, 'rgba(255,255,255,.10)'); g.addColorStop(.28, 'rgba(255,255,255,0)');
+      g.addColorStop(.78, 'rgba(0,0,0,0)'); g.addColorStop(1, 'rgba(0,0,0,.10)');
+      x.fillStyle = g; x.fillRect(0, 0, S, S);
+      const t = new THREE.CanvasTexture(c); t.encoding = THREE.sRGBEncoding; t.anisotropy = 4; return t;
+    }
+
+    function createCourtyardTexture() {
+      const c = document.createElement('canvas');
+      c.width = 128; c.height = 128;
+      const ctx = c.getContext('2d');
+      ctx.fillStyle = '#e7ddc8';
+      ctx.fillRect(0, 0, 128, 128);
+
+      // Soft hand-paved cream & sky tiles
+      function tile(px, py, col) {
+        ctx.fillStyle = col;
+        ctx.beginPath();
+        if (ctx.roundRect) { ctx.roundRect(px + 3, py + 3, 58, 58, 8); } else { ctx.rect(px + 3, py + 3, 58, 58); }
+        ctx.fill();
+        const g = ctx.createLinearGradient(px, py, px, py + 60);
+        g.addColorStop(0, 'rgba(255,255,255,.22)'); g.addColorStop(1, 'rgba(90,60,20,.10)');
+        ctx.fillStyle = g;
+        ctx.beginPath();
+        if (ctx.roundRect) { ctx.roundRect(px + 3, py + 3, 58, 58, 8); } else { ctx.rect(px + 3, py + 3, 58, 58); }
+        ctx.fill();
+      }
+      tile(0, 0, '#f6efdd');
+      tile(64, 64, '#f6efdd');
+      tile(64, 0, '#cfe8f5');
+      tile(0, 64, '#cfe8f5');
+
+      // Tiny star accents
+      ctx.fillStyle = '#3d9bc9';
+      [[32, 32], [96, 96]].forEach(([sx, sy]) => {
+        ctx.beginPath();
+        for (let i = 0; i < 8; i++) {
+          const a = i * Math.PI / 4, rr = i % 2 ? 1.6 : 4;
+          ctx.lineTo(sx + Math.cos(a) * rr, sy + Math.sin(a) * rr);
+        }
+        ctx.closePath(); ctx.fill();
+      });
+
+      const tex = new THREE.CanvasTexture(c);
+      tex.encoding = THREE.sRGBEncoding;
+      tex.wrapS = tex.wrapT = THREE.RepeatWrapping;
+      tex.repeat.set(9, 9);
+      tex.anisotropy = 4;
+      return tex;
+    }
+
+    function initThree() {
+      const canvas = document.getElementById('gameCanvas');
+      scene = new THREE.Scene();
+
+      // Atmospheric Sky Box (soft painted gradient)
+      const skyGeo = new THREE.BoxGeometry(220, 220, 220);
+      const skyCanvas = document.createElement('canvas');
+      skyCanvas.width = 16; skyCanvas.height = 256;
+      const skyCtx = skyCanvas.getContext('2d');
+      const skyGrad = skyCtx.createLinearGradient(0, 0, 0, 256);
+      skyGrad.addColorStop(0, '#4aa8e0');
+      skyGrad.addColorStop(0.35, '#8fd3f5');
+      skyGrad.addColorStop(0.72, '#c8ecfb');
+      skyGrad.addColorStop(1, '#ffeedd');
+      skyCtx.fillStyle = skyGrad;
+      skyCtx.fillRect(0, 0, 16, 256);
+
+      const skyMat = new THREE.MeshBasicMaterial({
+        map: new THREE.CanvasTexture(skyCanvas),
+        side: THREE.BackSide
+      });
+      scene.add(new THREE.Mesh(skyGeo, skyMat));
+      scene.fog = new THREE.Fog(0xcdeafc, 25, 120);
+
+      // Dynamic 3/4 Isometric Camera View
+      camera = new THREE.PerspectiveCamera(46, window.innerWidth / window.innerHeight, 0.1, 300);
+      camera.position.set(2.8, 3.2, 4.2);
+      camera.lookAt(-0.2, 1.2, -1.0);
+
+      // Renderer
+      renderer = new THREE.WebGLRenderer({ canvas, antialias: true, powerPreference: 'high-performance' });
+      renderer.setSize(window.innerWidth, window.innerHeight);
+      renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+      renderer.shadowMap.enabled = true;
+      renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+      renderer.outputEncoding = THREE.sRGBEncoding;
+      renderer.toneMapping = THREE.ACESFilmicToneMapping;
+      renderer.toneMappingExposure = 1.0;
+
+      // Lights (soft toy-diorama rig)
+      const hemiLight = new THREE.HemisphereLight(0xcdeeff, 0xffe2b0, 0.5);
+      scene.add(hemiLight);
+
+      const sunLight = new THREE.DirectionalLight(0xfff1d6, 0.95);
+      sunLight.position.set(12, 28, 16);
+      sunLight.castShadow = true;
+      sunLight.shadow.mapSize.width = 2048;
+      sunLight.shadow.mapSize.height = 2048;
+      sunLight.shadow.bias = -0.0004;
+      sunLight.shadow.camera.left = -16;
+      sunLight.shadow.camera.right = 16;
+      sunLight.shadow.camera.top = 16;
+      sunLight.shadow.camera.bottom = -16;
+      sunLight.shadow.camera.far = 80;
+      scene.add(sunLight);
+
+      const fillLight = new THREE.DirectionalLight(0xbfe0ff, 0.28);
+      fillLight.position.set(-10, 12, -6);
+      scene.add(fillLight);
+
+      // Build World
+      buildMosqueCourtyard();
+      buildWudhuArea();
+      buildAhmadCharacter();
+      initWaterParticleSystem();
+
+      window.addEventListener('resize', onWindowResize);
+    }
+
+    function buildMosqueCourtyard() {
+      // Marble mosaic floor courtyard block
+      const floorGeo = new THREE.BoxGeometry(60, 1, 60);
+      const floorMat = new THREE.MeshStandardMaterial({
+        map: createCourtyardTexture(),
+        roughness: 0.35,
+        metalness: 0.05
+      });
+      const floor = new THREE.Mesh(floorGeo, floorMat);
+      floor.position.y = -0.5;
+      floor.receiveShadow = true;
+      scene.add(floor);
+
+      const wallMat = new THREE.MeshStandardMaterial({ map: blockTex('#f8f4ea', 'wall_mosque', 6), roughness: 0.55 });
+      const goldMat = new THREE.MeshStandardMaterial({ map: blockTex('#f5b32b', 'gold_trim', 8), metalness: 0.55, roughness: 0.35 });
+      const domeMat = new THREE.MeshStandardMaterial({ map: blockTex('#10a56e', 'dome_emerald', 8), metalness: 0.15, roughness: 0.45 });
+
+      // Mosque backdrop
+      const backWall = new THREE.Mesh(new THREE.BoxGeometry(38, 14, 2), wallMat);
+      backWall.position.set(0, 7, -15);
+      backWall.castShadow = true;
+      scene.add(backWall);
+
+      // Grand rounded emerald dome
+      const dome = new THREE.Mesh(new THREE.SphereGeometry(7.8, 26, 18, 0, Math.PI * 2, 0, Math.PI / 2), domeMat);
+      dome.position.set(0, 14, -15);
+      dome.scale.set(1, 0.82, 1);
+      dome.castShadow = true;
+      scene.add(dome);
+      const domeBand = new THREE.Mesh(new THREE.CylinderGeometry(7.9, 8.1, 0.6, 26), goldMat);
+      domeBand.position.set(0, 14.15, -15);
+      scene.add(domeBand);
+
+      // Golden spire
+      const sp1 = new THREE.Mesh(new THREE.CylinderGeometry(0.12, 0.3, 2.4, 10), goldMat); sp1.position.set(0, 21.2, -15);
+      const sp2 = new THREE.Mesh(new THREE.SphereGeometry(0.34, 12, 9), goldMat); sp2.position.set(0, 22.6, -15);
+      scene.add(sp1, sp2);
+
+      // Courtyard Columns on Left & Right
+      for (let x of [-7, -3.5, 3.5, 7]) {
+        const pillar = new THREE.Mesh(new THREE.CylinderGeometry(0.52, 0.62, 8, 12), wallMat);
+        pillar.position.set(x, 4, -8);
+        pillar.castShadow = true;
+
+        const archTop1 = new THREE.Mesh(new THREE.CylinderGeometry(0.72, 0.72, 0.5, 12), goldMat);
+        archTop1.position.set(x, 8.25, -8);
+        const archTop2 = new THREE.Mesh(new THREE.SphereGeometry(0.55, 14, 10, 0, Math.PI * 2, 0, Math.PI / 2), domeMat);
+        archTop2.position.set(x, 8.5, -8);
+        archTop2.castShadow = true;
+        scene.add(pillar, archTop1, archTop2);
+      }
+
+      // Cypress Trees in Courtyard Corners (rounded toy cypress)
+      const trunkMat = new THREE.MeshStandardMaterial({ map: blockTex('#8a5a34', 'wood_trunk', 6), roughness: 0.8 });
+      const foliageMat = new THREE.MeshStandardMaterial({ map: blockTex('#0e7a58', 'tree_leaf', 8), roughness: 0.6 });
+      const blobGeo = new THREE.SphereGeometry(1, 12, 10);
+
+      for (let pos of [[-9, -4], [9, -4], [-9, 4], [9, 4]]) {
+        const trunk = new THREE.Mesh(new THREE.CylinderGeometry(0.18, 0.26, 1.6, 8), trunkMat);
+        trunk.position.set(pos[0], 0.8, pos[1]);
+        const f1 = new THREE.Mesh(blobGeo, foliageMat); f1.position.set(pos[0], 2.6, pos[1]); f1.scale.set(1.25, 1.35, 1.25);
+        const f2 = new THREE.Mesh(blobGeo, foliageMat); f2.position.set(pos[0], 4.2, pos[1]); f2.scale.set(0.95, 1.15, 0.95);
+        const f3 = new THREE.Mesh(blobGeo, foliageMat); f3.position.set(pos[0], 5.6, pos[1]); f3.scale.set(0.6, 0.85, 0.6);
+        f1.castShadow = f2.castShadow = f3.castShadow = true;
+        scene.add(trunk, f1, f2, f3);
+      }
+    }
+
+    function buildWudhuArea() {
+      // Elevated Stone Platform for Wudhu
+      const platformMat = new THREE.MeshStandardMaterial({ map: blockTex('#e2e8f0', 'plat_stone', 6), roughness: 0.4 });
+      const platform = new THREE.Mesh(new THREE.BoxGeometry(7, 0.45, 5), platformMat);
+      platform.position.set(0, 0.22, -1.2);
+      platform.receiveShadow = true;
+      scene.add(platform);
+
+      // Granite Wudhu Basin
+      const basinMat = new THREE.MeshStandardMaterial({ map: blockTex('#1e293b', 'basin_granite', 6), roughness: 0.2 });
+      const basin = new THREE.Mesh(new THREE.BoxGeometry(5.2, 0.65, 1.4), basinMat);
+      basin.position.set(0, 0.55, -2.1);
+      basin.castShadow = true;
+      scene.add(basin);
+
+      // Water inside basin
+      const basinWater = new THREE.Mesh(new THREE.BoxGeometry(5.0, 0.1, 1.2),
+        new THREE.MeshStandardMaterial({ map: blockTex('#38bdf8', 'basin_water', 6), transparent: true, opacity: 0.85, roughness: 0.1 }));
+      basinWater.position.set(0, 0.85, -2.1);
+      scene.add(basinWater);
+
+      // Ornate Brass Water Faucet (Keran Wudhu)
+      const brassMat = new THREE.MeshStandardMaterial({ map: blockTex('#f5b32b', 'brass_faucet', 8), metalness: 0.6, roughness: 0.3 });
+      const post = new THREE.Mesh(new THREE.CylinderGeometry(0.13, 0.16, 1.1, 10), brassMat);
+      post.position.set(0, 1.2, -2.1);
+
+      const spout = new THREE.Mesh(new THREE.CylinderGeometry(0.08, 0.08, 0.5, 10), brassMat);
+      spout.rotation.x = Math.PI / 2;
+      spout.position.set(0, 1.65, -1.85);
+
+      scene.add(post, spout);
+      tapMesh = spout;
+
+      // Flowing Water Stream Block
+      const streamGeo = new THREE.BoxGeometry(0.12, 0.9, 0.12);
+      const streamMat = new THREE.MeshBasicMaterial({ color: 0x7dd3fc, transparent: true, opacity: 0.75 });
+      waterStreamMesh = new THREE.Mesh(streamGeo, streamMat);
+      waterStreamMesh.position.set(0, 1.15, -1.7);
+      scene.add(waterStreamMesh);
+
+      // Wooden Bench for Ahmad to sit during Wudhu
+      const benchMat = new THREE.MeshStandardMaterial({ map: blockTex('#92400e', 'wood_bench', 6), roughness: 0.6 });
+      const bench = new THREE.Mesh(new THREE.BoxGeometry(2.2, 0.5, 0.8), benchMat);
+      bench.position.set(0, 0.48, -0.4);
+      bench.castShadow = true;
+      scene.add(bench);
+    }
+
+    function buildAhmadCharacter() {
+      ahmadGroup = new THREE.Group();
+      ahmadInner = new THREE.Group();
+
+      // Peci / Songkok (rounded cap)
+      const peciMat = new THREE.MeshStandardMaterial({ color: 0xffffff, roughness: 0.45 });
+      const peci = new THREE.Mesh(new THREE.SphereGeometry(0.37, 14, 10, 0, Math.PI * 2, 0, Math.PI / 2), peciMat);
+      peci.position.y = 1.78;
+      peci.scale.set(1, 1.05, 0.94);
+
+      const goldTrim = new THREE.Mesh(new THREE.CylinderGeometry(0.375, 0.385, 0.07, 14),
+        new THREE.MeshStandardMaterial({ color: 0xf5b32b, metalness: 0.55, roughness: 0.35 }));
+      goldTrim.position.y = 1.79;
+
+      // Head (rounded)
+      const headMat = new THREE.MeshStandardMaterial({ color: 0xe8a06c, roughness: 0.6 });
+      const head = new THREE.Mesh(new THREE.SphereGeometry(0.36, 16, 13), headMat);
+      head.position.y = 1.6;
+      head.scale.set(1, 0.95, 0.92);
+
+      // Face (Facing toward tap at -Z)
+      const leftEye = new THREE.Mesh(new THREE.SphereGeometry(0.05, 8, 6), new THREE.MeshBasicMaterial({ color: 0x0f172a }));
+      leftEye.position.set(-0.15, 1.64, -0.315);
+      const rightEye = new THREE.Mesh(new THREE.SphereGeometry(0.05, 8, 6), new THREE.MeshBasicMaterial({ color: 0x0f172a }));
+      rightEye.position.set(0.15, 1.64, -0.315);
+
+      // Body (Green Vest + White Jubbah)
+      const vestMat = new THREE.MeshStandardMaterial({ color: 0x0a7d55, roughness: 0.5 });
+      const body = new THREE.Mesh(new THREE.BoxGeometry(0.78, 0.88, 0.48), vestMat);
+      body.position.y = 0.88;
+
+      // Arms (Reaching forward toward the water tap)
+      const armMat = new THREE.MeshStandardMaterial({ color: 0x096a4a });
+      const leftArm = new THREE.Mesh(new THREE.BoxGeometry(0.20, 0.65, 0.22), armMat);
+      leftArm.position.set(-0.48, 0.88, -0.15);
+      leftArm.rotation.x = -0.55; // Reaching toward water
+
+      const rightArm = new THREE.Mesh(new THREE.BoxGeometry(0.20, 0.65, 0.22), armMat);
+      rightArm.position.set(0.48, 0.88, -0.15);
+      rightArm.rotation.x = -0.55; // Reaching toward water
+      ahmadArms = [leftArm, rightArm];
+
+      // Legs seated
+      const pantsMat = new THREE.MeshStandardMaterial({ color: 0x1e293b });
+      const leftLeg = new THREE.Mesh(new THREE.BoxGeometry(0.28, 0.48, 0.32), pantsMat);
+      leftLeg.position.set(-0.2, 0.28, 0);
+
+      const rightLeg = new THREE.Mesh(new THREE.BoxGeometry(0.28, 0.48, 0.32), pantsMat);
+      rightLeg.position.set(0.2, 0.28, 0);
+
+      ahmadInner.add(peci, goldTrim, head, leftEye, rightEye, body, leftArm, rightArm, leftLeg, rightLeg);
+      ahmadGroup.add(ahmadInner);
+
+      // Position Ahmad seated on the bench facing the tap
+      ahmadGroup.position.set(0, 0.35, -0.4);
+      scene.add(ahmadGroup);
+    }
+
+    function initWaterParticleSystem() {
+      const pCount = 50;
+      const pGeo = new THREE.BufferGeometry();
+      const pos = new Float32Array(pCount * 3);
+
+      for (let i = 0; i < pCount; i++) {
+        pos[i * 3] = (Math.random() - 0.5) * 0.4;
+        pos[i * 3 + 1] = 0.8 + Math.random() * 0.5;
+        pos[i * 3 + 2] = -1.8 + (Math.random() - 0.5) * 0.4;
+      }
+
+      pGeo.setAttribute('position', new THREE.BufferAttribute(pos, 3));
+      const pMat = new THREE.PointsMaterial({
+        color: 0x7dd3fc,
+        size: 0.12,
+        transparent: true,
+        opacity: 0.85
+      });
+
+      const points = new THREE.Points(pGeo, pMat);
+      scene.add(points);
+      waterParticles = points;
+    }
+
+    /*==== 6. GAMEPLAY LOGIC & FLOW STATE MACHINE ====*/
+    let currentStepIndex = 0;
+    let currentWashCount = 0;
+    let isWashingAnimation = false;
+
+    function renderHUD() {
+      const step = WUDHU_STEPS[currentStepIndex];
+      document.getElementById('stepBadgeNum').textContent = step.id;
+      document.getElementById('stepArabicTitle').textContent = step.arabic;
+      document.getElementById('stepLatinTitle').textContent = step.title;
+      document.getElementById('stepInstruction').textContent = step.instruction;
+      document.getElementById('btnWashLabel').textContent = step.actionVerb;
+
+      document.getElementById('starsText').textContent = userState.stars;
+      document.getElementById('coinsText').textContent = userState.coins;
+
+      updateWashProgress();
+    }
+
+    function updateWashProgress() {
+      const pct = (currentWashCount / CONFIG.targetWashesPerStep) * 100;
+      document.getElementById('washProgressFill').style.width = pct + '%';
+      document.getElementById('washCountText').textContent = `Basuhan: ${currentWashCount} / ${CONFIG.targetWashesPerStep} Kali`;
+    }
+
+    function performWashAction() {
+      if (isWashingAnimation) return;
+      initAudio();
+      isWashingAnimation = true;
+
+      playWaterSplash();
+      currentWashCount++;
+
+      // Ahmad washing animation
+      const startRot = ahmadArms[0].rotation.x;
+      let animProgress = 0;
+
+      const washAnimInterval = setInterval(() => {
+        animProgress += 0.2;
+        ahmadArms[0].rotation.x = -Math.sin(animProgress) * 0.9;
+        ahmadArms[1].rotation.x = -Math.sin(animProgress) * 0.9;
+        ahmadInner.rotation.x = Math.sin(animProgress) * 0.15;
+
+        if (animProgress >= Math.PI * 2) {
+          clearInterval(washAnimInterval);
+          ahmadArms[0].rotation.x = 0;
+          ahmadArms[1].rotation.x = 0;
+          ahmadInner.rotation.x = 0;
+          isWashingAnimation = false;
+
+          updateWashProgress();
+
+          if (currentWashCount >= CONFIG.targetWashesPerStep) {
+            onStepCompleted();
+          }
+        }
+      }, 30);
+    }
+
+    function onStepCompleted() {
+      const step = WUDHU_STEPS[currentStepIndex];
+      userState.coins += CONFIG.rewardCoinsPerStep;
+      userState.stars += CONFIG.rewardStarsPerStep;
+      userState.completedSteps[step.id] = true;
+      writeSave();
+
+      soundComplete();
+      showToast(`✨ Masya Allah! Langkah ${step.title} Selesai!`);
+
+      // Open Success Modal
+      document.getElementById('successTitle').textContent = `${step.title} Selesai!`;
+      document.getElementById('doaArabicText').textContent = step.doaArabic;
+      document.getElementById('doaLatinText').textContent = step.doaLatin;
+      document.getElementById('doaArtiText').textContent = step.doaArti;
+
+      renderHUD();
+      openModal('modalStepSuccess');
+
+      // Pronounce doa
+      setTimeout(speakCurrentDoa, 600);
+    }
+
+    function nextStep() {
+      closeModal('modalStepSuccess');
+      if (currentStepIndex < WUDHU_STEPS.length - 1) {
+        currentStepIndex++;
+      } else {
+        currentStepIndex = 0; // Loop or celebrate complete wudhu
+        showToast('🏆 Subhanallah! Seluruh Rukun Wudhu Telah Selesai!');
+      }
+      currentWashCount = 0;
+      renderHUD();
+    }
+
+    function repeatStep() {
+      closeModal('modalStepSuccess');
+      currentWashCount = 0;
+      renderHUD();
+    }
+
+    function selectStepFromGrid(stepIndex) {
+      currentStepIndex = stepIndex;
+      currentWashCount = 0;
+      closeModal('modalStart');
+      renderHUD();
+    }
+
+    function showToast(msg) {
+      const t = document.getElementById('toastNotification');
+      t.textContent = msg;
+      t.classList.add('show');
+      setTimeout(() => t.classList.remove('show'), 2200);
+    }
+
+    /*==== 7. UI MODAL STACK SYSTEM ====*/
+    function openModal(id) {
+      document.querySelectorAll('.modal-overlay').forEach(el => el.classList.remove('active'));
+      const target = document.getElementById(id);
+      if (target) target.classList.add('active');
+    }
+
+    function closeModal(id) {
+      const target = document.getElementById(id);
+      if (target) target.classList.remove('active');
+    }
+
+    function renderStepSelectorGrid() {
+      const grid = document.getElementById('stepSelectorGrid');
+      grid.innerHTML = '';
+      WUDHU_STEPS.forEach((step, idx) => {
+        const item = document.createElement('div');
+        const isDone = userState.completedSteps[step.id];
+        item.className = `step-grid-item ${isDone ? 'completed' : ''} ${idx === currentStepIndex ? 'active' : ''}`;
+        item.innerHTML = `
+          <div class="step-badge-row">
+            <span class="step-mini-num">Langkah ${step.id}</span>
+            <span class="step-stars">${isDone ? '⭐⭐⭐' : '🔒'}</span>
+          </div>
+          <div class="step-grid-title">${step.title}</div>
+        `;
+        item.addEventListener('click', () => selectStepFromGrid(idx));
+        grid.appendChild(item);
+      });
+    }
+
+    /*==== 8. EVENT BINDINGS ====*/
+    document.getElementById('btnPerformWash').addEventListener('click', performWashAction);
+    document.getElementById('btnStartAdventure').addEventListener('click', () => closeModal('modalStart'));
+    document.getElementById('btnNextStep').addEventListener('click', nextStep);
+    document.getElementById('btnRepeatStep').addEventListener('click', repeatStep);
+    document.getElementById('btnOpenMenu').addEventListener('click', () => {
+      renderStepSelectorGrid();
+      openModal('modalStart');
+    });
+    document.getElementById('btnOpenGuide').addEventListener('click', () => openModal('modalGuide'));
+    document.getElementById('btnOpenSettings').addEventListener('click', () => openModal('modalSettings'));
+    document.getElementById('btnAudioSay').addEventListener('click', speakCurrentDoa);
+
+    // Keyboard support: Space/E to wash, P to open menu
+    window.addEventListener('keydown', (e) => {
+      if (e.code === 'Space' || e.key === 'e' || e.key === 'E') {
+        performWashAction();
+      }
+      if (e.key === 'p' || e.key === 'P' || e.key === 'Escape') {
+        openModal('modalStart');
+      }
+    });
+
+    /*==== 9. ANIMATION LOOP ====*/
+    let clock = new THREE.Clock();
+
+    function animate() {
+      requestAnimationFrame(animate);
+      const delta = clock.getDelta();
+      const time = clock.getElapsedTime();
+
+      // Gentle water ripple in basin
+      if (waterStreamMesh) {
+        waterStreamMesh.scale.x = 1 + Math.sin(time * 12) * 0.15;
+        waterStreamMesh.scale.z = 1 + Math.cos(time * 12) * 0.15;
+      }
+
+      // Water particle dripping
+      if (waterParticles) {
+        const positions = waterParticles.geometry.attributes.position.array;
+        for (let i = 0; i < positions.length / 3; i++) {
+          positions[i * 3 + 1] -= delta * 1.5;
+          if (positions[i * 3 + 1] < 0.8) {
+            positions[i * 3 + 1] = 1.3;
+          }
+        }
+        waterParticles.geometry.attributes.position.needsUpdate = true;
+      }
+
+      // Gentle camera sway
+      camera.position.x = Math.sin(time * 0.3) * 0.4;
+      camera.lookAt(0, 1.4, 0);
+
+      renderer.render(scene, camera);
+    }
+
+    function onWindowResize() {
+      camera.aspect = window.innerWidth / window.innerHeight;
+      camera.updateProjectionMatrix();
+      renderer.setSize(window.innerWidth, window.innerHeight);
+    }
+
+    /*==== 10. BOOT ====*/
+    loadSave();
+    initThree();
+    renderStepSelectorGrid();
+    renderHUD();
+    animate();
+  </script>
+</body>
+</html>

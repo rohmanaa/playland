@@ -1,0 +1,1166 @@
+﻿<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Doa Harian 3D Puzzle â€” PlayLand Islami</title>
+<style>
+  * { margin:0; padding:0; box-sizing:border-box; }
+  body { background:#0a1628; overflow:hidden; font-family:'Fredoka One',cursive,'Arial',sans-serif; }
+  @import url('https://fonts.googleapis.com/css2?family=Fredoka+One&family=Nunito:wght@700;800;900&display=swap');
+
+  #game-canvas { display:block; width:100%; height:100vh; }
+
+  /* HUD Overlay */
+  #hud {
+    position:fixed; top:0; left:0; right:0; z-index:10;
+    display:flex; align-items:center; justify-content:space-between;
+    padding:12px 20px;
+    background:linear-gradient(180deg, rgba(8,20,45,0.95) 0%, transparent 100%);
+  }
+  .hud-item {
+    background:rgba(255,255,255,0.14);
+    border:3px solid #fff;
+    border-radius:6px;
+    padding:6px 16px;
+    color:#fff;
+    font-size:15px;
+    font-weight:800;
+    display:flex; align-items:center; gap:8px;
+    box-shadow:0 4px 0 rgba(0,0,0,0.3);
+  }
+  .hud-item span { color:#ffd700; }
+  #level-badge {
+    background:linear-gradient(135deg,#6c3fe8,#a855f7);
+    border:3px solid #fff;
+    border-radius:6px;
+    padding:6px 18px;
+    color:#fff;
+    font-size:14px;
+    font-weight:800;
+    text-align:center;
+    box-shadow:0 4px 0 rgba(0,0,0,0.3);
+  }
+
+  /* Start Screen */
+  #start-screen {
+    position:fixed; inset:0; z-index:100;
+    display:flex; flex-direction:column; align-items:center; justify-content:center;
+    background:radial-gradient(ellipse at 50% 30%, #1a3a6e 0%, #0a1628 100%);
+  }
+  .start-logo { font-size:64px; margin-bottom:8px; animation:float 3s ease-in-out infinite; }
+  @keyframes float { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-8px)} }
+  .start-title {
+    font-family:'Nunito',sans-serif;
+    font-size:clamp(28px,5vw,52px);
+    font-weight:900;
+    color:#fff;
+    text-shadow:0 4px 0 #2b3a67, 0 8px 0 rgba(0,0,0,0.3);
+    margin-bottom:4px;
+    text-align:center;
+  }
+  .start-subtitle {
+    font-size:15px; color:#9bb8e8; margin-bottom:28px; text-align:center;
+    font-weight:700; max-width:400px; line-height:1.6;
+  }
+  .arabic-preview {
+    font-family:'Amiri',serif;
+    font-size:clamp(18px,3vw,28px);
+    color:#ffd700;
+    text-align:center;
+    margin-bottom:8px;
+    letter-spacing:2px;
+    text-shadow:0 3px 0 rgba(0,0,0,0.4);
+  }
+  .doa-info {
+    background:rgba(255,255,255,0.1);
+    border:3px solid #fff;
+    border-radius:6px;
+    padding:12px 24px;
+    margin-bottom:24px;
+    text-align:center;
+    max-width:420px;
+    box-shadow:0 5px 0 rgba(0,0,0,0.3);
+  }
+  .doa-info p { color:#cce0ff; font-size:13px; font-weight:700; line-height:1.7; }
+  .controls-box {
+    background:rgba(255,255,255,0.08);
+    border:3px solid rgba(255,255,255,0.4);
+    border-radius:6px;
+    padding:14px 24px;
+    margin-bottom:24px;
+    text-align:left;
+    min-width:280px;
+    box-shadow:0 5px 0 rgba(0,0,0,0.25);
+  }
+  .controls-box h4 { color:#ffd700; font-size:13px; margin-bottom:8px; font-weight:800; }
+  .ctrl-row { display:flex; align-items:center; gap:10px; margin-bottom:6px; color:#cce0ff; font-size:12.5px; font-weight:700; }
+  .key-badge {
+    background:rgba(255,255,255,0.2);
+    border:2px solid rgba(255,255,255,0.4);
+    border-radius:4px;
+    padding:2px 8px;
+    font-size:11px;
+    color:#fff;
+    font-weight:800;
+    white-space:nowrap;
+  }
+  .btn-start {
+    background:linear-gradient(180deg,#ffa722,#ff7012);
+    border:3px solid #fff; border-radius:6px;
+    padding:14px 44px;
+    font-family:'Nunito',sans-serif;
+    font-size:20px; font-weight:900;
+    color:#fff; cursor:pointer;
+    box-shadow:0 6px 0 #b34a06, 0 10px 18px rgba(0,0,0,0.3), inset 0 2px 0 rgba(255,255,255,0.4);
+    transition:all 0.1s;
+    letter-spacing:0.5px;
+  }
+  .btn-start:active { transform:translateY(4px); box-shadow:0 2px 0 #b34a06; }
+  .btn-start:hover { transform:translateY(-2px); }
+
+  /* Doa Panel Overlay */
+  #doa-panel {
+    position:fixed; right:0; top:50%; transform:translateY(-50%);
+    z-index:20;
+    background:rgba(8,20,45,0.94);
+    border:3px solid #fff;
+    border-right:none;
+    border-radius:6px 0 0 6px;
+    padding:16px 20px;
+    min-width:220px;
+    box-shadow:0 6px 0 rgba(0,0,0,0.3);
+    display:none;
+  }
+  #doa-panel h4 {
+    color:#ffd700; font-size:13px; font-weight:800;
+    margin-bottom:10px; text-align:center;
+  }
+  .doa-slot {
+    background:rgba(255,255,255,0.08);
+    border:2px solid rgba(255,255,255,0.3);
+    border-radius:4px;
+    padding:8px 12px;
+    margin-bottom:6px;
+    min-height:40px;
+    display:flex; align-items:center; gap:8px;
+    transition:all 0.2s;
+  }
+  .doa-slot.filled {
+    background:rgba(100,200,100,0.2);
+    border-color:#4ade80;
+  }
+  .doa-slot.filled .slot-text { color:#7eea7e; }
+  .slot-num { color:#9bb8e8; font-size:11px; font-weight:800; width:16px; }
+  .slot-text { color:#cce0ff; font-size:12px; font-weight:800; }
+  .slot-check { color:#7eea7e; font-size:16px; margin-left:auto; }
+
+  /* Letter Blocks in world */
+  #collect-msg {
+    position:fixed; bottom:80px; left:50%; transform:translateX(-50%);
+    z-index:25;
+    background:linear-gradient(135deg,rgba(100,60,240,0.95),rgba(168,85,247,0.95));
+    border:2px solid rgba(255,255,255,0.3);
+    border-radius:40px;
+    padding:10px 28px;
+    color:#fff;
+    font-size:18px; font-weight:900;
+    display:none;
+    text-align:center;
+    text-shadow:0 2px 8px rgba(0,0,0,0.3);
+    animation:popIn 0.4s cubic-bezier(0.34,1.56,0.64,1);
+  }
+  @keyframes popIn { from{transform:translateX(-50%) scale(0.5);opacity:0} to{transform:translateX(-50%) scale(1);opacity:1} }
+
+  /* Level Complete */
+  #level-complete {
+    position:fixed; inset:0; z-index:200;
+    display:none; flex-direction:column; align-items:center; justify-content:center;
+    background:rgba(5,12,30,0.88);
+    backdrop-filter:blur(8px);
+  }
+  #level-complete .trophy { font-size:72px; animation:bounce 1s ease-in-out infinite; margin-bottom:16px; }
+  @keyframes bounce { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-16px)} }
+  #level-complete h2 {
+    font-family:'Nunito',sans-serif;
+    font-size:clamp(24px,4vw,42px);
+    font-weight:900; color:#ffd700;
+    text-shadow:0 4px 20px rgba(255,215,0,0.6);
+    margin-bottom:8px; text-align:center;
+  }
+  #level-complete p { color:#cce0ff; font-size:15px; font-weight:700; margin-bottom:8px; text-align:center; }
+  .complete-doa-arabic {
+    font-family:'Amiri',serif;
+    font-size:clamp(16px,3vw,26px);
+    color:#ffd700; text-align:center;
+    margin:8px 0; letter-spacing:2px;
+  }
+  .complete-doa-latin { color:#9bb8e8; font-size:13px; font-style:italic; margin-bottom:20px; text-align:center; }
+  .btn-next {
+    background:linear-gradient(135deg,#22c55e,#16a34a);
+    border:none; border-radius:40px;
+    padding:12px 36px;
+    font-family:'Nunito',sans-serif;
+    font-size:17px; font-weight:900;
+    color:#fff; cursor:pointer;
+    box-shadow:0 8px 24px rgba(34,197,94,0.5);
+    transition:all 0.2s;
+    margin:6px;
+  }
+  .btn-next:hover { transform:translateY(-3px); }
+
+  /* Mobile Controls */
+  #mobile-controls {
+    position:fixed; bottom:20px; left:50%; transform:translateX(-50%);
+    z-index:30; display:none;
+    gap:10px;
+  }
+  .m-btn {
+    width:60px; height:60px;
+    background:rgba(255,255,255,0.15);
+    backdrop-filter:blur(10px);
+    border:2px solid rgba(255,255,255,0.25);
+    border-radius:50%;
+    color:#fff; font-size:22px;
+    cursor:pointer; display:flex;
+    align-items:center; justify-content:center;
+    user-select:none; -webkit-tap-highlight-color:transparent;
+    transition:background 0.15s;
+  }
+  .m-btn:active { background:rgba(255,255,255,0.3); }
+  @media (hover:none) and (pointer:coarse) {
+    #mobile-controls { display:flex; }
+    #doa-panel { min-width:180px; }
+  }
+  @media (max-width:600px) { #mobile-controls { display:flex; } }
+
+  /* Stars earned */
+  .star-anim {
+    position:fixed; pointer-events:none; z-index:50;
+    font-size:32px; font-weight:900; color:#ffd700;
+    text-shadow:0 4px 12px rgba(255,215,0,0.7);
+    animation:starFly 1.5s ease-out forwards;
+  }
+  @keyframes starFly {
+    0%{transform:translateY(0) scale(1);opacity:1}
+    100%{transform:translateY(-100px) scale(1.5);opacity:0}
+  }
+</style>
+<link href="https://fonts.googleapis.com/css2?family=Fredoka+One&family=Nunito:wght@700;800;900&family=Amiri:wght@700&display=swap" rel="stylesheet">
+</head>
+<body>
+
+<!-- START SCREEN -->
+<div id="start-screen">
+  <div class="start-logo">ðŸ•Œ</div>
+  <div class="start-title">Doa Harian 3D Puzzle</div>
+  <div class="start-subtitle">Kumpulkan koin huruf doa dalam dunia masjid 3D yang ajaib!</div>
+
+  <div class="doa-info">
+    <div class="arabic-preview" id="preview-arabic">Ø¨ÙØ³Ù’Ù…Ù Ø§Ù„Ù„ÙŽÙ‘Ù‡Ù Ø§Ù„Ø±ÙŽÙ‘Ø­Ù’Ù…ÙŽÙ†Ù Ø§Ù„Ø±ÙŽÙ‘Ø­ÙÙŠÙ…Ù</div>
+    <p id="preview-meaning">Bismillahirrahmanirrahim â€” Dengan nama Allah Yang Maha Pengasih lagi Maha Penyayang</p>
+  </div>
+
+  <div class="controls-box">
+    <h4>ðŸŽ® Cara Bermain</h4>
+    <div class="ctrl-row"><span class="key-badge">W A S D</span> atau <span class="key-badge">â†‘ â†“ â† â†’</span> Gerak karakter</div>
+    <div class="ctrl-row"><span class="key-badge">SPACE</span> Lompat</div>
+    <div class="ctrl-row"><span class="key-badge">Mouse</span> Putar kamera (klik + drag)</div>
+    <div class="ctrl-row">ðŸª™ Kumpulkan semua koin doa untuk naik level!</div>
+  </div>
+
+  <button class="btn-start" id="btn-start" onclick="startGame()">â–¶ Mulai Bermain!</button>
+</div>
+
+<!-- HUD -->
+<div id="hud" style="display:none;">
+  <div class="hud-item">â­ <span id="hud-stars">0</span> Bintang</div>
+  <div id="level-badge">Level <span id="hud-level">1</span> â€” <span id="hud-doa-name">Doa Makan</span></div>
+  <div class="hud-item">ðŸª™ <span id="hud-coins">0</span>/<span id="hud-total">0</span></div>
+</div>
+
+<!-- DOA PANEL -->
+<div id="doa-panel">
+  <h4>ðŸ“œ Kumpulkan Doa</h4>
+  <div id="slots-container"></div>
+</div>
+
+<!-- Collect message -->
+<div id="collect-msg">âœ¨ Kata doa terkumpul!</div>
+
+<!-- Level Complete -->
+<div id="level-complete">
+  <div class="trophy">ðŸ†</div>
+  <h2 id="lc-title">Doa Terkumpul!</h2>
+  <p id="lc-desc">Kamu berhasil mengumpulkan semua kata doa!</p>
+  <div class="complete-doa-arabic" id="lc-arabic"></div>
+  <div class="complete-doa-latin" id="lc-latin"></div>
+  <p id="lc-hikmah" style="color:#9bb8e8;font-size:13px;font-style:italic;margin-bottom:20px;max-width:360px;text-align:center;"></p>
+  <div style="display:flex;gap:10px;flex-wrap:wrap;justify-content:center;">
+    <button class="btn-next" id="btn-next-level">Level Selanjutnya â†’</button>
+  </div>
+</div>
+
+<!-- Mobile Controls -->
+<div id="mobile-controls">
+  <div style="display:grid;grid-template-columns:60px 60px 60px;gap:6px;">
+    <div></div>
+    <div class="m-btn" id="m-up">â†‘</div>
+    <div></div>
+    <div class="m-btn" id="m-left">â†</div>
+    <div class="m-btn" id="m-down">â†“</div>
+    <div class="m-btn" id="m-right">â†’</div>
+  </div>
+  <div class="m-btn" id="m-jump" style="width:70px;height:70px;font-size:24px;background:rgba(255,165,0,0.3);margin-top:12px;">â¬†ï¸</div>
+</div>
+
+<canvas id="game-canvas"></canvas>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script>
+// =============================================
+// DOA HARIAN DATA
+// =============================================
+const DOA_LEVELS = [
+  {
+    name: "Doa Makan",
+    arabic: "Ø§Ù„Ù„ÙŽÙ‘Ù‡ÙÙ…ÙŽÙ‘ Ø¨ÙŽØ§Ø±ÙÙƒÙ’ Ù„ÙŽÙ†ÙŽØ§ ÙÙÙŠÙ…ÙŽØ§ Ø±ÙŽØ²ÙŽÙ‚Ù’ØªÙŽÙ†ÙŽØ§",
+    latin: "Allahumma baarik lanaa fiimaa rozaqtanaa",
+    meaning: "Ya Allah, berkahilah kami dalam rezeki yang Engkau berikan kepada kami",
+    words: ["Ø§Ù„Ù„ÙŽÙ‘Ù‡ÙÙ…ÙŽÙ‘", "Ø¨ÙŽØ§Ø±ÙÙƒÙ’", "Ù„ÙŽÙ†ÙŽØ§", "ÙÙÙŠÙ…ÙŽØ§", "Ø±ÙŽØ²ÙŽÙ‚Ù’ØªÙŽÙ†ÙŽØ§"],
+    colors: [0xff6b6b, 0xff9f43, 0xffd700, 0x26de81, 0x45aaf2],
+    hikmah: "Membaca doa sebelum makan adalah sunnah Nabi SAW agar makanan kita menjadi berkah.",
+    worldColor: 0x1a4a2e,
+    skyColor: 0x8fd3f0,
+    theme: "garden"
+  },
+  {
+    name: "Doa Tidur",
+    arabic: "Ø¨ÙØ³Ù’Ù…ÙÙƒÙŽ Ø§Ù„Ù„ÙŽÙ‘Ù‡ÙÙ…ÙŽÙ‘ Ø£ÙŽØ­Ù’ÙŠÙŽØ§ ÙˆÙŽØ£ÙŽÙ…ÙÙˆØªÙ",
+    latin: "Bismika Allahumma ahyaa wa amuutu",
+    meaning: "Dengan nama-Mu ya Allah aku hidup dan aku mati",
+    words: ["Ø¨ÙØ³Ù’Ù…ÙÙƒÙŽ", "Ø§Ù„Ù„ÙŽÙ‘Ù‡ÙÙ…ÙŽÙ‘", "Ø£ÙŽØ­Ù’ÙŠÙŽØ§", "ÙˆÙŽØ£ÙŽÙ…ÙÙˆØªÙ"],
+    colors: [0x6c5ce7, 0xa29bfe, 0xfd79a8, 0xfdcb6e],
+    hikmah: "Nabi SAW menganjurkan membaca doa ini setiap kali hendak tidur agar dilindungi Allah.",
+    worldColor: 0x1a1a3a,
+    skyColor: 0x141a3f,
+    theme: "night"
+  },
+  {
+    name: "Doa Bangun Tidur",
+    arabic: "Ø§ÙŽÙ„Ù’Ø­ÙŽÙ…Ù’Ø¯Ù Ù„ÙÙ„ÙŽÙ‘Ù‡Ù Ø§Ù„ÙŽÙ‘Ø°ÙÙŠ Ø£ÙŽØ­Ù’ÙŠÙŽØ§Ù†ÙŽØ§ Ø¨ÙŽØ¹Ù’Ø¯ÙŽÙ…ÙŽØ§ Ø£ÙŽÙ…ÙŽØ§ØªÙŽÙ†ÙŽØ§",
+    latin: "Alhamdulillahilladzi ahyaanaa ba'da maa amaatanaa",
+    meaning: "Segala puji bagi Allah yang menghidupkan kami setelah mematikan kami",
+    words: ["Ø§ÙŽÙ„Ù’Ø­ÙŽÙ…Ù’Ø¯Ù", "Ù„ÙÙ„ÙŽÙ‘Ù‡Ù", "Ø§Ù„ÙŽÙ‘Ø°ÙÙŠ", "Ø£ÙŽØ­Ù’ÙŠÙŽØ§Ù†ÙŽØ§", "Ø¨ÙŽØ¹Ù’Ø¯ÙŽÙ…ÙŽØ§", "Ø£ÙŽÙ…ÙŽØ§ØªÙŽÙ†ÙŽØ§"],
+    colors: [0xffeaa7, 0xff7675, 0x74b9ff, 0x55efc4, 0xa29bfe, 0xfd79a8],
+    hikmah: "Saat bangun tidur, kita disunnahkan bersyukur karena Allah telah mengembalikan jiwa kita.",
+    worldColor: 0x2d6a4f,
+    skyColor: 0xffc398,
+    theme: "sunrise"
+  },
+  {
+    name: "Doa Masuk Masjid",
+    arabic: "Ø§Ù„Ù„ÙŽÙ‘Ù‡ÙÙ…ÙŽÙ‘ Ø§ÙÙ’ØªÙŽØ­Ù’ Ù„ÙÙŠ Ø£ÙŽØ¨Ù’ÙˆÙŽØ§Ø¨ÙŽ Ø±ÙŽØ­Ù’Ù…ÙŽØªÙÙƒÙŽ",
+    latin: "Allahummaf-tah lii abwaaba rohmatik",
+    meaning: "Ya Allah, bukakanlah bagiku pintu-pintu rahmat-Mu",
+    words: ["Ø§Ù„Ù„ÙŽÙ‘Ù‡ÙÙ…ÙŽÙ‘", "Ø§ÙÙ’ØªÙŽØ­Ù’", "Ù„ÙÙŠ", "Ø£ÙŽØ¨Ù’ÙˆÙŽØ§Ø¨ÙŽ", "Ø±ÙŽØ­Ù’Ù…ÙŽØªÙÙƒÙŽ"],
+    colors: [0x00cec9, 0x6c5ce7, 0xffeaa7, 0x00b894, 0xe17055],
+    hikmah: "Doa masuk masjid diajarkan Nabi SAW agar kita mendapat rahmat dan keberkahan dari Allah.",
+    worldColor: 0x1a3a5c,
+    skyColor: 0x232a6e,
+    theme: "mosque"
+  }
+];
+
+// =============================================
+// GAME STATE
+// =============================================
+let scene, camera, renderer, clock;
+let player, playerBody;
+let coins = [];
+let collectedCoins = 0;
+let totalCoins = 0;
+let currentLevel = 0;
+let totalStars = parseInt(localStorage.getItem('doaPuzzleStars') || '0');
+let gameStarted = false;
+let levelComplete = false;
+
+// Physics
+let velocity = { x: 0, y: 0, z: 0 };
+let onGround = false;
+const GRAVITY = -25;
+const JUMP_FORCE = 12;
+const MOVE_SPEED = 8;
+
+// Camera
+let camDist = 9;
+let camTheta = Math.PI;
+let camPhi = Math.PI / 5;
+let isDragging = false;
+let lastMouse = { x: 0, y: 0 };
+
+// Controls
+const keys = {};
+
+// =============================================
+// INIT THREE.JS
+// =============================================
+function initThree() {
+  const canvas = document.getElementById('game-canvas');
+  renderer = new THREE.WebGLRenderer({ canvas, antialias: true });
+  renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+  renderer.setSize(window.innerWidth, window.innerHeight);
+  renderer.shadowMap.enabled = true;
+  renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+  renderer.outputEncoding = THREE.sRGBEncoding;
+  renderer.toneMapping = THREE.ACESFilmicToneMapping;
+  renderer.toneMappingExposure = 1.15;
+
+  scene = new THREE.Scene();
+  clock = new THREE.Clock();
+
+  camera = new THREE.PerspectiveCamera(60, window.innerWidth / window.innerHeight, 0.1, 200);
+  camera.position.set(0, 5, 9);
+
+  window.addEventListener('resize', () => {
+    camera.aspect = window.innerWidth / window.innerHeight;
+    camera.updateProjectionMatrix();
+    renderer.setSize(window.innerWidth, window.innerHeight);
+  });
+
+  // Mouse camera controls
+  canvas.addEventListener('mousedown', e => { isDragging = true; lastMouse = {x:e.clientX, y:e.clientY}; });
+  window.addEventListener('mouseup', () => isDragging = false);
+  window.addEventListener('mousemove', e => {
+    if (!isDragging || !gameStarted) return;
+    const dx = e.clientX - lastMouse.x;
+    const dy = e.clientY - lastMouse.y;
+    camTheta -= dx * 0.008;
+    camPhi = Math.max(0.1, Math.min(Math.PI / 2.2, camPhi + dy * 0.008));
+    lastMouse = {x: e.clientX, y: e.clientY};
+  });
+  canvas.addEventListener('touchstart', e => {
+    if (e.touches.length === 1) { isDragging = true; lastMouse = {x:e.touches[0].clientX, y:e.touches[0].clientY}; }
+  }, {passive:true});
+  window.addEventListener('touchmove', e => {
+    if (!isDragging || !gameStarted || e.touches.length !== 1) return;
+    const dx = e.touches[0].clientX - lastMouse.x;
+    const dy = e.touches[0].clientY - lastMouse.y;
+    camTheta -= dx * 0.008;
+    camPhi = Math.max(0.1, Math.min(Math.PI / 2.2, camPhi + dy * 0.008));
+    lastMouse = {x:e.touches[0].clientX, y:e.touches[0].clientY};
+  }, {passive:true});
+  window.addEventListener('touchend', () => isDragging = false);
+
+  // Keyboard
+  window.addEventListener('keydown', e => {
+    keys[e.code] = true;
+    if ((e.code === 'Space' || e.code === 'ArrowUp') && onGround) {
+      velocity.y = JUMP_FORCE;
+      onGround = false;
+      e.preventDefault();
+    }
+  });
+  window.addEventListener('keyup', e => { keys[e.code] = false; });
+
+  // Mobile buttons
+  setupMobileControls();
+
+  loadLevel(currentLevel);
+  animate();
+}
+
+function setupMobileControls() {
+  const mUp = document.getElementById('m-up');
+  const mDown = document.getElementById('m-down');
+  const mLeft = document.getElementById('m-left');
+  const mRight = document.getElementById('m-right');
+  const mJump = document.getElementById('m-jump');
+
+  function hold(btn, code) {
+    btn.addEventListener('touchstart', e => { keys[code] = true; e.preventDefault(); }, {passive:false});
+    btn.addEventListener('touchend', () => keys[code] = false);
+    btn.addEventListener('mousedown', () => keys[code] = true);
+    btn.addEventListener('mouseup', () => keys[code] = false);
+  }
+  hold(mUp, 'KeyW'); hold(mDown, 'KeyS'); hold(mLeft, 'KeyA'); hold(mRight, 'KeyD');
+  mJump.addEventListener('touchstart', e => {
+    if (onGround) { velocity.y = JUMP_FORCE; onGround = false; }
+    e.preventDefault();
+  }, {passive:false});
+  mJump.addEventListener('mousedown', () => {
+    if (onGround) { velocity.y = JUMP_FORCE; onGround = false; }
+  });
+}
+
+// =============================================
+// LOAD LEVEL
+// =============================================
+function loadLevel(levelIdx) {
+  // Clear scene
+  while (scene.children.length) scene.remove(scene.children[0]);
+  coins = [];
+  collectedCoins = 0;
+  levelComplete = false;
+
+  const lvl = DOA_LEVELS[levelIdx % DOA_LEVELS.length];
+  totalCoins = lvl.words.length;
+
+  // Update HUD
+  document.getElementById('hud-level').textContent = levelIdx + 1;
+  document.getElementById('hud-doa-name').textContent = lvl.name;
+  document.getElementById('hud-coins').textContent = '0';
+  document.getElementById('hud-total').textContent = totalCoins;
+  document.getElementById('hud-stars').textContent = totalStars;
+
+  // Setup world based on theme
+  buildWorld(lvl);
+
+  // Place coins
+  placeDoaCoins(lvl);
+
+  // Build Doa Panel slots
+  buildDoaPanel(lvl);
+
+  // Reset player
+  if (player) {
+    player.position.set(0, 1.2, 0);
+    velocity = { x: 0, y: 0, z: 0 };
+  }
+}
+
+function blockTex(base, seed, dots = 8, opt = {}) {
+  const S = opt.fine ? 256 : 64;
+  const c = document.createElement('canvas'); c.width = c.height = S; const x = c.getContext('2d');
+  let s = typeof seed === 'number' ? seed : [...String(seed)].reduce((a,ch) => (a*31 + ch.charCodeAt(0))>>>0, 12345);
+  const r = () => (s = (s * 1664525 + 1013904223) >>> 0) / 4294967296;
+  const K = S / 64;
+  x.fillStyle = base; x.fillRect(0, 0, S, S);
+  for (let i = 0; i < dots * 3; i++) {
+    const px = r() * S, py = r() * S, pr = (3 + r() * 7) * K, lite = r() < 0.5;
+    const g = x.createRadialGradient(px, py, 0, px, py, pr);
+    g.addColorStop(0, lite ? 'rgba(255,255,255,.09)' : 'rgba(30,15,0,.08)'); g.addColorStop(1, 'rgba(0,0,0,0)');
+    x.fillStyle = g; x.fillRect(px - pr, py - pr, pr * 2, pr * 2);
+  }
+  if (opt.grassTop) {
+    const gh = S * 0.24, gc = opt.grassColor || '#7fd75b';
+    x.fillStyle = gc; x.beginPath(); x.moveTo(0, 0);
+    for (let i = 0; i <= 8; i++) x.lineTo(i * S / 8, gh + Math.sin(i * 1.7 + s) * 2.5 * K);
+    x.lineTo(S, 0); x.closePath(); x.fill();
+    for (let i = 0; i < 44 * K; i++) {
+      const px = r() * S, py = gh - 2 * K + r() * 9 * K;
+      x.fillStyle = r() < 0.62 ? gc : 'rgba(255,255,255,.2)';
+      x.beginPath(); x.arc(px, Math.min(py, gh + 6 * K), K + r() * 2.2 * K, 0, 7); x.fill();
+    }
+  }
+  if (opt.flowers) {
+    const fp = ['#fff6e8', '#ffd84a', '#ff9ec7', '#8ee5cf', '#ff8a3d'];
+    for (let i = 0; i < opt.flowers; i++) {
+      const px = S * .12 + r() * S * .76, py = S * .12 + r() * S * .76;
+      x.fillStyle = fp[(r() * fp.length) | 0];
+      x.beginPath(); x.arc(px, py, .35 * K + r() * .4 * K, 0, 7); x.fill();
+    }
+  }
+  let g = x.createLinearGradient(0, 0, 0, S);
+  g.addColorStop(0, 'rgba(255,255,255,.16)'); g.addColorStop(.42, 'rgba(255,255,255,0)');
+  g.addColorStop(.72, 'rgba(0,0,0,0)'); g.addColorStop(1, 'rgba(0,0,0,.18)');
+  x.fillStyle = g; x.fillRect(0, 0, S, S);
+  g = x.createLinearGradient(0, 0, S, 0);
+  g.addColorStop(0, 'rgba(255,255,255,.10)'); g.addColorStop(.28, 'rgba(255,255,255,0)');
+  g.addColorStop(.78, 'rgba(0,0,0,0)'); g.addColorStop(1, 'rgba(0,0,0,.10)');
+  x.fillStyle = g; x.fillRect(0, 0, S, S);
+  if (opt.vignette) {
+    g = x.createRadialGradient(S / 2, S / 2, S * .16, S / 2, S / 2, S * .52);
+    g.addColorStop(0, 'rgba(0,0,0,0)'); g.addColorStop(.72, 'rgba(0,0,0,0)'); g.addColorStop(1, 'rgba(25,45,15,.16)');
+    x.fillStyle = g; x.fillRect(0, 0, S, S);
+  }
+  const t = new THREE.CanvasTexture(c); t.encoding = THREE.sRGBEncoding; t.anisotropy = 4; return t;
+}
+
+function buildWorld(lvl) {
+  // Sky / Fog
+  scene.background = new THREE.Color(lvl.skyColor);
+  if (lvl.theme === 'night') {
+    scene.fog = new THREE.FogExp2(0x141a3f, 0.026);
+  } else {
+    scene.fog = new THREE.Fog(lvl.skyColor, 30, 80);
+  }
+
+  // Ambient light
+  const ambient = new THREE.HemisphereLight(lvl.theme === 'night' ? 0x8ea2e8 : 0xcdeeff, lvl.theme === 'night' ? 0x2a3352 : 0xffe2b0, lvl.theme === 'night' ? 0.38 : 0.55);
+  scene.add(ambient);
+
+  // Sun / Moon directional light
+  const sunColor = lvl.theme === 'sunrise' ? 0xffc07a : lvl.theme === 'night' ? 0x9fb2ff : 0xfff1d6;
+  const sunLight = new THREE.DirectionalLight(sunColor, lvl.theme === 'night' ? 0.5 : 1.15);
+  sunLight.position.set(10, 20, 10);
+  sunLight.castShadow = true;
+  sunLight.shadow.mapSize.set(2048, 2048);
+  sunLight.shadow.bias = -0.0004;
+  sunLight.shadow.camera.near = 0.5;
+  sunLight.shadow.camera.far = 60;
+  sunLight.shadow.camera.left = -20;
+  sunLight.shadow.camera.right = 20;
+  sunLight.shadow.camera.top = 20;
+  sunLight.shadow.camera.bottom = -20;
+  scene.add(sunLight);
+
+  // Soft sky fill from the opposite side
+  const fill = new THREE.DirectionalLight(lvl.theme === 'night' ? 0x5a6fd4 : 0xbfe0ff, lvl.theme === 'night' ? 0.18 : 0.26);
+  fill.position.set(-8, 9, -6);
+  scene.add(fill);
+
+  // Point lights for atmosphere
+  const ptColors = lvl.theme === 'night' ? [0x8a7bff, 0xff9ec7] : [0xffd700, 0x8ecaff];
+  ptColors.forEach((col, i) => {
+    const pt = new THREE.PointLight(col, lvl.theme === 'night' ? 1.2 : 0.7, 15);
+    pt.position.set(i === 0 ? -5 : 5, 4, i === 0 ? -5 : 5);
+    scene.add(pt);
+  });
+
+
+  // Ground
+  const grTopMat = new THREE.MeshLambertMaterial({ map: blockTex('#7fd75b', 'gr_top', 10, { fine: true, vignette: true, flowers: 12 }) });
+  const grSideMat = new THREE.MeshLambertMaterial({ map: blockTex('#9c6b3f', 'gr_side', 6, { grassTop: true }) });
+  const grBotMat = new THREE.MeshLambertMaterial({ map: blockTex('#96633b', 'dirt', 6) });
+  const groundGeo = new THREE.BoxGeometry(40, 1.2, 40);
+  const ground = new THREE.Mesh(groundGeo, [grSideMat, grSideMat, grTopMat, grBotMat, grSideMat, grSideMat]);
+  ground.position.y = -0.6;
+  ground.receiveShadow = true;
+  ground.userData.isGround = true;
+  scene.add(ground);
+
+  // Ground pattern (block tiles)
+  const tileMat = new THREE.MeshLambertMaterial({ map: blockTex('#e9d09a', 'tile_block', 6) });
+  for (let i = -4; i <= 4; i++) {
+    for (let j = -4; j <= 4; j++) {
+      if ((i + j) % 2 === 0) {
+        const tile = new THREE.Mesh(new THREE.BoxGeometry(2.1, 0.05, 2.1), tileMat);
+        tile.position.set(i * 2.2, 0.025, j * 2.2);
+        tile.receiveShadow = true;
+        scene.add(tile);
+      }
+    }
+  }
+
+  // Mosque / Building
+  buildMosque(lvl);
+
+  // Trees / Decorations
+  addDecorations(lvl);
+
+  // Stars for night theme
+  if (lvl.theme === 'night') {
+    addStars();
+  }
+
+  // Player
+  buildPlayer();
+}
+
+function buildMosque(lvl) {
+  const wallMat = new THREE.MeshLambertMaterial({ map: blockTex('#f8f4ea', 'mosque_wall', 6) });
+  const domeMat = new THREE.MeshLambertMaterial({ map: blockTex('#3fae4a', 'mosque_dome', 8) });
+  const goldMat = new THREE.MeshLambertMaterial({ map: blockTex('#ffc928', 'mosque_gold', 8) });
+
+  // Main body
+  const body = new THREE.Mesh(new THREE.BoxGeometry(6, 4, 6), wallMat);
+  body.position.set(0, 2, -10);
+  body.castShadow = true;
+  body.receiveShadow = true;
+  scene.add(body);
+
+  // Rounded toy dome
+  const dome = new THREE.Mesh(new THREE.SphereGeometry(2.35, 20, 14, 0, Math.PI * 2, 0, Math.PI / 2), domeMat);
+  dome.position.set(0, 4, -10);
+  dome.castShadow = true;
+  scene.add(dome);
+  const domeRing = new THREE.Mesh(new THREE.CylinderGeometry(2.42, 2.5, 0.28, 20), goldMat);
+  domeRing.position.set(0, 4.08, -10);
+  domeRing.castShadow = true;
+  scene.add(domeRing);
+  const spire = new THREE.Mesh(new THREE.CylinderGeometry(0.05, 0.09, 1.1, 8), goldMat);
+  spire.position.set(0, 6.9, -10);
+  spire.castShadow = true;
+  scene.add(spire);
+  const spireTip = new THREE.Mesh(new THREE.SphereGeometry(0.16, 10, 8), goldMat);
+  spireTip.position.set(0, 7.5, -10);
+  scene.add(spireTip);
+
+  // Minarets (2)
+  [-3.5, 3.5].forEach(x => {
+    const minaret = new THREE.Mesh(new THREE.CylinderGeometry(0.42, 0.5, 6, 12), wallMat);
+    minaret.position.set(x, 3, -10);
+    minaret.castShadow = true;
+    scene.add(minaret);
+
+    // Rounded minaret balcony + cap
+    const cap1 = new THREE.Mesh(new THREE.CylinderGeometry(0.6, 0.6, 0.24, 12), goldMat);
+    cap1.position.set(x, 6.15, -10);
+    cap1.castShadow = true;
+    const cap2 = new THREE.Mesh(new THREE.SphereGeometry(0.46, 12, 9, 0, Math.PI * 2, 0, Math.PI / 2), domeMat);
+    cap2.position.set(x, 6.28, -10);
+    cap2.castShadow = true;
+    const cap3 = new THREE.Mesh(new THREE.SphereGeometry(0.13, 8, 6), goldMat);
+    cap3.position.set(x, 6.86, -10);
+    scene.add(cap1, cap2, cap3);
+  });
+
+  // Door
+  const doorMat = new THREE.MeshLambertMaterial({ map: blockTex('#b8803c', 'wood_door', 6) });
+  const door = new THREE.Mesh(new THREE.BoxGeometry(1.2, 2, 0.1), doorMat);
+  door.position.set(0, 1, -7);
+  scene.add(door);
+
+  // Gold arch above door
+  const arch = new THREE.Mesh(new THREE.TorusGeometry(0.62, 0.12, 10, 20, Math.PI), goldMat);
+  arch.position.set(0, 2, -7);
+  scene.add(arch);
+
+  // Block Pond in front
+  const rimMat = new THREE.MeshLambertMaterial({ map: blockTex('#9a9aa3', 'pond_stone', 6) });
+  const pondRim = new THREE.Mesh(new THREE.BoxGeometry(3.6, 0.3, 3.6), rimMat);
+  pondRim.position.set(0, 0.15, -5);
+  scene.add(pondRim);
+
+  const waterMat = new THREE.MeshLambertMaterial({ map: blockTex('#4aa8ff', 'water_block', 6), transparent: true, opacity: 0.75 });
+  const pondWater = new THREE.Mesh(new THREE.BoxGeometry(3.1, 0.22, 3.1), waterMat);
+  pondWater.position.set(0, 0.22, -5);
+  scene.add(pondWater);
+}
+
+function addDecorations(lvl) {
+  const treePositions = [[-6,0,-6],[-6,0,6],[6,0,-6],[6,0,6],[-8,0,0],[8,0,0],[-4,0,-8],[4,0,-8]];
+  const woodMat = new THREE.MeshLambertMaterial({ map: blockTex('#a9713d', 'tree_wood', 6) });
+  const leafColor = lvl.theme === 'night' ? '#2f7a3f' : '#4db548';
+  const leafMat1 = new THREE.MeshLambertMaterial({ map: blockTex(leafColor, 'leaf_b1', 8) });
+  const leafMat2 = new THREE.MeshLambertMaterial({ map: blockTex(leafColor, 'leaf_b2', 8) });
+  const trunkGeo = new THREE.CylinderGeometry(0.16, 0.24, 1.3, 8);
+  const blobGeo = new THREE.SphereGeometry(1, 10, 8);
+
+  treePositions.forEach(([x,,z]) => {
+    const g = new THREE.Group();
+    const trunk = new THREE.Mesh(trunkGeo, woodMat);
+    trunk.position.y = 0.65;
+    trunk.castShadow = true;
+    g.add(trunk);
+    const l1 = new THREE.Mesh(blobGeo, leafMat1);
+    l1.position.y = 1.85;
+    l1.scale.set(1.15, 1.0, 1.15);
+    l1.castShadow = true;
+    g.add(l1);
+    const l2 = new THREE.Mesh(blobGeo, leafMat2);
+    l2.position.set(0.5, 2.5, 0.25);
+    l2.scale.setScalar(0.62);
+    l2.castShadow = true;
+    g.add(l2);
+    const l3 = new THREE.Mesh(blobGeo, leafMat2);
+    l3.position.set(-0.45, 2.45, -0.2);
+    l3.scale.setScalar(0.55);
+    l3.castShadow = true;
+    g.add(l3);
+    g.position.set(x, 0, z);
+    g.scale.setScalar(0.85 + Math.random() * 0.5);
+    g.rotation.y = Math.random() * Math.PI * 2;
+    scene.add(g);
+  });
+
+  // Boundary fence (rounded gold posts with finials)
+  const fenceMat = new THREE.MeshLambertMaterial({ map: blockTex('#d4a017', 'fence_gold', 6) });
+  const postGeo = new THREE.CylinderGeometry(0.13, 0.16, 1.4, 8);
+  const finialGeo = new THREE.SphereGeometry(0.2, 10, 8);
+  for (let i = -9; i <= 9; i += 2) {
+    [[-9.5, i], [9.5, i], [i, -9.5], [i, 9.5]].forEach(([fx, fz]) => {
+      const post = new THREE.Mesh(postGeo, fenceMat);
+      post.position.set(fx, 0.7, fz);
+      post.castShadow = true;
+      scene.add(post);
+      const finial = new THREE.Mesh(finialGeo, fenceMat);
+      finial.position.set(fx, 1.52, fz);
+      scene.add(finial);
+    });
+  }
+
+  // Lanterns (rounded glowing lamps)
+  if (lvl.theme === 'night' || lvl.theme === 'mosque') {
+    const poleMat = new THREE.MeshLambertMaterial({ map: blockTex('#5a5a64', 'lamp_pole', 6) });
+    const lampMat = new THREE.MeshStandardMaterial({ map: blockTex('#ffc928', 'lamp_gold', 8), emissive: 0xffaa22, emissiveIntensity: 1.2 });
+    [[-3, 0, -3], [3, 0, -3], [-3, 0, 3], [3, 0, 3]].forEach(([x,,z]) => {
+      const pole = new THREE.Mesh(new THREE.CylinderGeometry(0.08, 0.11, 3, 8), poleMat);
+      pole.position.set(x, 1.5, z);
+      scene.add(pole);
+
+      const lamp = new THREE.Mesh(new THREE.SphereGeometry(0.34, 12, 9), lampMat);
+      lamp.position.set(x, 3.15, z);
+      scene.add(lamp);
+
+      const cap = new THREE.Mesh(new THREE.ConeGeometry(0.28, 0.3, 10), poleMat);
+      cap.position.set(x, 3.55, z);
+      scene.add(cap);
+
+      const ptLight = new THREE.PointLight(0xffaa22, 1.5, 6);
+      ptLight.position.set(x, 3.1, z);
+      scene.add(ptLight);
+    });
+  }
+}
+
+function addStars() {
+  const starGeo = new THREE.BufferGeometry();
+  const starCount = 300;
+  const positions = new Float32Array(starCount * 3);
+  for (let i = 0; i < starCount; i++) {
+    positions[i * 3] = (Math.random() - 0.5) * 150;
+    positions[i * 3 + 1] = 30 + Math.random() * 40;
+    positions[i * 3 + 2] = (Math.random() - 0.5) * 150;
+  }
+  starGeo.setAttribute('position', new THREE.BufferAttribute(positions, 3));
+  const starMat = new THREE.PointsMaterial({ color: 0xffffff, size: 0.35 });
+  scene.add(new THREE.Points(starGeo, starMat));
+
+  // Glowing toy moon
+  const moonMat = new THREE.MeshStandardMaterial({
+    map: blockTex('#fff9d0', 'moon_block', 6),
+    emissive: 0xfff0a0,
+    emissiveIntensity: 0.4
+  });
+  const moon = new THREE.Mesh(new THREE.SphereGeometry(2.1, 16, 12), moonMat);
+  moon.position.set(15, 25, -30);
+  scene.add(moon);
+}
+
+function buildPlayer() {
+  player = new THREE.Group();
+
+  const bodyMat = new THREE.MeshLambertMaterial({ map: blockTex('#3fae4a', 'char_body', 8) });
+  const skinMat = new THREE.MeshLambertMaterial({ map: blockTex('#f5bd85', 'char_skin', 6) });
+  const peciMat = new THREE.MeshLambertMaterial({ map: blockTex('#ffffff', 'char_peci', 6) });
+  const eyeMat = new THREE.MeshBasicMaterial({ color: 0x1e293b });
+  const pantsMat = new THREE.MeshLambertMaterial({ map: blockTex('#1e293b', 'char_pants', 6) });
+
+  // Body
+  playerBody = new THREE.Mesh(new THREE.BoxGeometry(0.7, 0.8, 0.5), bodyMat);
+  playerBody.position.y = 0.4;
+  player.add(playerBody);
+
+  // Head (rounded)
+  const head = new THREE.Mesh(new THREE.SphereGeometry(0.38, 14, 12), skinMat);
+  head.position.y = 1.16;
+  head.scale.set(1, 0.94, 0.92);
+  head.castShadow = true;
+  player.add(head);
+
+  // Peci (rounded cap hat)
+  const peci = new THREE.Mesh(new THREE.SphereGeometry(0.4, 14, 10, 0, Math.PI * 2, 0, Math.PI / 2), peciMat);
+  peci.position.y = 1.36;
+  peci.scale.set(1.02, 0.9, 0.98);
+  player.add(peci);
+  const peciRim = new THREE.Mesh(new THREE.CylinderGeometry(0.41, 0.41, 0.08, 14), peciMat);
+  peciRim.position.y = 1.38;
+  player.add(peciRim);
+
+  // Eyes (two small round eyes)
+  [[-0.14, 1.18, 0.365], [0.14, 1.18, 0.365]].forEach(([x,y,z]) => {
+    const eye = new THREE.Mesh(new THREE.SphereGeometry(0.06, 8, 6), eyeMat);
+    eye.position.set(x, y, z);
+    player.add(eye);
+  });
+
+  // Arms (blocks)
+  const leftArm = new THREE.Mesh(new THREE.BoxGeometry(0.2, 0.65, 0.22), bodyMat);
+  leftArm.position.set(-0.46, 0.4, 0);
+  const rightArm = new THREE.Mesh(new THREE.BoxGeometry(0.2, 0.65, 0.22), bodyMat);
+  rightArm.position.set(0.46, 0.4, 0);
+  player.add(leftArm, rightArm);
+
+  // Legs (blocks)
+  const leftLeg = new THREE.Mesh(new THREE.BoxGeometry(0.24, 0.45, 0.26), pantsMat);
+  leftLeg.position.set(-0.18, -0.22, 0);
+  const rightLeg = new THREE.Mesh(new THREE.BoxGeometry(0.24, 0.45, 0.26), pantsMat);
+  rightLeg.position.set(0.18, -0.22, 0);
+  player.add(leftLeg, rightLeg);
+
+  player.position.set(0, 1.0, 4);
+  player.castShadow = true;
+  scene.add(player);
+}
+
+// =============================================
+// PLACE DOA COINS
+// =============================================
+function placeDoaCoins(lvl) {
+  const spread = 7;
+  const positions = generateCoinPositions(lvl.words.length);
+
+  lvl.words.forEach((word, i) => {
+    const pos = positions[i];
+    const cHex = lvl.colors[i % lvl.colors.length];
+    const colStr = typeof cHex === 'string' ? cHex : '#' + new THREE.Color(cHex).getHexString();
+
+    // Floating platform
+    const platGeo = new THREE.BoxGeometry(1.8, 0.25, 1.8);
+    const platMat = new THREE.MeshLambertMaterial({ map: blockTex(colStr, 'plat_' + i, 8) });
+    const plat = new THREE.Mesh(platGeo, platMat);
+    plat.position.set(pos.x, pos.y - 0.5, pos.z);
+    plat.castShadow = true;
+    plat.receiveShadow = true;
+    scene.add(plat);
+
+    // Coin body (glowing voxel cube with bevel)
+    const coinGeo = new THREE.BoxGeometry(0.85, 0.85, 0.85);
+    const coinMat = new THREE.MeshStandardMaterial({
+      map: blockTex(colStr, 'coin_' + i, 10),
+      emissive: new THREE.Color(cHex),
+      emissiveIntensity: 0.45,
+      metalness: 0.2,
+      roughness: 0.3
+    });
+    const coin = new THREE.Mesh(coinGeo, coinMat);
+    coin.position.set(pos.x, pos.y + 0.8, pos.z);
+    coin.castShadow = true;
+    coin.userData = { wordIdx: i, word, collected: false };
+    scene.add(coin);
+
+    // Glowing Block Frame Ring (4 box beams forming a square frame)
+    const ring = new THREE.Group();
+    const frameMat = new THREE.MeshStandardMaterial({
+      color: cHex,
+      emissive: new THREE.Color(cHex),
+      emissiveIntensity: 0.6
+    });
+    const bTh = 0.08, bLen = 1.3;
+    const b1 = new THREE.Mesh(new THREE.BoxGeometry(bLen, bTh, bTh), frameMat); b1.position.y = bLen / 2;
+    const b2 = new THREE.Mesh(new THREE.BoxGeometry(bLen, bTh, bTh), frameMat); b2.position.y = -bLen / 2;
+    const b3 = new THREE.Mesh(new THREE.BoxGeometry(bTh, bLen, bTh), frameMat); b3.position.x = bLen / 2;
+    const b4 = new THREE.Mesh(new THREE.BoxGeometry(bTh, bLen, bTh), frameMat); b4.position.x = -bLen / 2;
+    ring.add(b1, b2, b3, b4);
+    ring.position.set(pos.x, pos.y + 0.8, pos.z);
+    ring.userData = { ring: true, coinIdx: i };
+    scene.add(ring);
+
+    // Point light on coin
+    const ptLight = new THREE.PointLight(cHex, 1.5, 4);
+    ptLight.position.copy(coin.position);
+    scene.add(ptLight);
+
+    // Number label (3D block)
+    addNumberSphere(i + 1, pos.x, pos.y + 1.8, pos.z);
+
+    coins.push({ mesh: coin, ring, pos: coin.position.clone(), collected: false, wordIdx: i });
+  });
+}
+
+function generateCoinPositions(count) {
+  const positions = [];
+  for (let i = 0; i < count; i++) {
+    const angle = (i / count) * Math.PI * 2 + Math.PI / 4;
+    const r = 4.5 + (i % 2) * 1.5;
+    const h = 1.0 + (i % 3) * 1.2;
+    positions.push({ x: Math.cos(angle) * r, y: h, z: Math.sin(angle) * r - 1 });
+  }
+  return positions;
+}
+
+function addNumberSphere(num, x, y, z) {
+  const geo = new THREE.SphereGeometry(0.22, 12, 9);
+  const mat = new THREE.MeshStandardMaterial({
+    map: blockTex('#ffffff', 'num_' + num, 6),
+    emissive: 0xffffff,
+    emissiveIntensity: 0.5
+  });
+  const s = new THREE.Mesh(geo, mat);
+  s.position.set(x, y, z);
+  scene.add(s);
+}
+
+function buildDoaPanel(lvl) {
+  const container = document.getElementById('slots-container');
+  container.innerHTML = '';
+  lvl.words.forEach((word, i) => {
+    const slot = document.createElement('div');
+    slot.className = 'doa-slot';
+    slot.id = `slot-${i}`;
+    slot.innerHTML = `<span class="slot-num">${i+1}</span><span class="slot-text" style="font-family:'Amiri',serif;font-size:14px;direction:rtl">${word}</span>`;
+    container.appendChild(slot);
+  });
+  document.getElementById('doa-panel').style.display = 'block';
+}
+
+// =============================================
+// UPDATE
+// =============================================
+function update(dt) {
+  if (!gameStarted || levelComplete || !player) return;
+
+  // Camera direction for movement
+  const forward = new THREE.Vector3(-Math.sin(camTheta), 0, -Math.cos(camTheta)).normalize();
+  const right = new THREE.Vector3(Math.cos(camTheta), 0, -Math.sin(camTheta)).normalize();
+
+  let moveX = 0, moveZ = 0;
+  if (keys['KeyW'] || keys['ArrowUp']) { moveX += forward.x; moveZ += forward.z; }
+  if (keys['KeyS'] || keys['ArrowDown']) { moveX -= forward.x; moveZ -= forward.z; }
+  if (keys['KeyA'] || keys['ArrowLeft']) { moveX -= right.x; moveZ -= right.z; }
+  if (keys['KeyD'] || keys['ArrowRight']) { moveX += right.x; moveZ += right.z; }
+
+  const len = Math.sqrt(moveX * moveX + moveZ * moveZ);
+  if (len > 0) { moveX /= len; moveZ /= len; }
+
+  velocity.x = moveX * MOVE_SPEED;
+  velocity.z = moveZ * MOVE_SPEED;
+
+  // Gravity
+  velocity.y += GRAVITY * dt;
+
+  // Move
+  player.position.x += velocity.x * dt;
+  player.position.y += velocity.y * dt;
+  player.position.z += velocity.z * dt;
+
+  // Ground collision
+  if (player.position.y < 1.0) {
+    player.position.y = 1.0;
+    velocity.y = 0;
+    onGround = true;
+  }
+
+  // Boundary
+  player.position.x = Math.max(-9, Math.min(9, player.position.x));
+  player.position.z = Math.max(-9, Math.min(9, player.position.z));
+
+  // Rotate player
+  if (len > 0) {
+    const targetRot = Math.atan2(velocity.x, velocity.z);
+    const diff = targetRot - player.rotation.y;
+    player.rotation.y += diff * 0.15;
+  }
+
+  // Coin collection
+  coins.forEach((coinData, i) => {
+    if (coinData.collected) return;
+    const dx = player.position.x - coinData.pos.x;
+    const dy = player.position.y - coinData.pos.y;
+    const dz = player.position.z - coinData.pos.z;
+    const dist = Math.sqrt(dx*dx + dy*dy + dz*dz);
+    if (dist < 1.4) {
+      collectCoin(i);
+    }
+  });
+
+  // Animate coins
+  const t = clock.getElapsedTime();
+  coins.forEach((coinData, i) => {
+    if (coinData.collected) return;
+    coinData.mesh.position.y = coinData.pos.y + 0.8 + Math.sin(t * 2 + i) * 0.15;
+    coinData.mesh.rotation.y += 0.03;
+    if (coinData.ring) {
+      coinData.ring.position.y = coinData.mesh.position.y;
+      coinData.ring.rotation.y += 0.02;
+      coinData.ring.rotation.x = t * 0.5;
+    }
+  });
+
+  // Update camera
+  const camX = player.position.x + camDist * Math.sin(camTheta) * Math.cos(camPhi);
+  const camY = player.position.y + camDist * Math.sin(camPhi) + 2;
+  const camZ = player.position.z + camDist * Math.cos(camTheta) * Math.cos(camPhi);
+  camera.position.lerp(new THREE.Vector3(camX, camY, camZ), 0.1);
+  camera.lookAt(player.position.x, player.position.y + 1, player.position.z);
+}
+
+function collectCoin(idx) {
+  const coinData = coins[idx];
+  if (coinData.collected) return;
+  coinData.collected = true;
+  collectedCoins++;
+
+  // Hide coin mesh
+  coinData.mesh.visible = false;
+  if (coinData.ring) coinData.ring.visible = false;
+
+  // Update slot
+  const slot = document.getElementById(`slot-${coinData.wordIdx}`);
+  if (slot) {
+    slot.classList.add('filled');
+    slot.innerHTML += '<span class="slot-check">âœ“</span>';
+  }
+
+  // Update HUD
+  document.getElementById('hud-coins').textContent = collectedCoins;
+
+  // Show message
+  showCollectMsg(`âœ¨ "${DOA_LEVELS[currentLevel % DOA_LEVELS.length].words[coinData.wordIdx]}" terkumpul!`);
+
+  // Star fly
+  spawnStarAnim();
+
+  // Check complete
+  if (collectedCoins >= totalCoins) {
+    setTimeout(showLevelComplete, 1200);
+  }
+}
+
+function showCollectMsg(msg) {
+  const el = document.getElementById('collect-msg');
+  el.textContent = msg;
+  el.style.display = 'block';
+  el.style.fontFamily = "'Amiri', serif";
+  clearTimeout(el._timer);
+  el._timer = setTimeout(() => { el.style.display = 'none'; }, 2200);
+}
+
+function spawnStarAnim() {
+  const el = document.createElement('div');
+  el.className = 'star-anim';
+  el.textContent = '+â­';
+  el.style.left = (30 + Math.random() * 60) + '%';
+  el.style.top = '60%';
+  document.body.appendChild(el);
+  setTimeout(() => el.remove(), 1600);
+}
+
+function showLevelComplete() {
+  levelComplete = true;
+  const lvl = DOA_LEVELS[currentLevel % DOA_LEVELS.length];
+  totalStars += lvl.words.length;
+  localStorage.setItem('doaPuzzleStars', totalStars);
+
+  document.getElementById('hud-stars').textContent = totalStars;
+  document.getElementById('lc-title').textContent = `${lvl.name} Selesai! ðŸŽ‰`;
+  document.getElementById('lc-desc').textContent = `Kamu berhasil mengumpulkan ${totalCoins} kata doa!`;
+  document.getElementById('lc-arabic').textContent = lvl.arabic;
+  document.getElementById('lc-latin').textContent = `${lvl.latin} â€” ${lvl.meaning}`;
+  document.getElementById('lc-hikmah').textContent = `ðŸ’¡ ${lvl.hikmah}`;
+
+  document.getElementById('level-complete').style.display = 'flex';
+}
+
+// =============================================
+// ANIMATE
+// =============================================
+function animate() {
+  requestAnimationFrame(animate);
+  const dt = Math.min(clock.getDelta(), 0.05);
+  update(dt);
+  renderer.render(scene, camera);
+}
+
+// =============================================
+// START GAME
+// =============================================
+function startGame() {
+  document.getElementById('start-screen').style.display = 'none';
+  document.getElementById('hud').style.display = 'flex';
+  gameStarted = true;
+  initThree();
+}
+
+// Next level button
+document.getElementById('btn-next-level').addEventListener('click', () => {
+  currentLevel++;
+  document.getElementById('level-complete').style.display = 'none';
+  loadLevel(currentLevel);
+  levelComplete = false;
+});
+</script>
+</body>
+</html>

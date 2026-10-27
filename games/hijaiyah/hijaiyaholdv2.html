@@ -1,0 +1,1969 @@
+<!doctype html>
+<html lang="id">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no, viewport-fit=cover">
+  <title>Hijaiyah Sky Run 3D — Petualangan Huruf Al-Qur'an</title>
+  
+  <!-- Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600;700&family=Nunito:wght@700;800;900&family=Amiri:wght@700&display=swap" rel="stylesheet">
+  
+  <!-- Three.js CDN -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+
+  <style>
+    :root {
+      --primary: #1080ec;
+      --accent: #f59e0b;
+      --green: #10b981;
+      --red: #ef4444;
+      --ink: #0f2338;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; user-select: none; -webkit-user-select: none; }
+    html, body {
+      width: 100%; height: 100%;
+      overflow: hidden;
+      background: #0f1c2e;
+      font-family: 'Nunito', -apple-system, sans-serif;
+    }
+    #gameCanvas {
+      width: 100%; height: 100%;
+      display: block;
+    }
+
+    /* Red Flash Overlay for Wall Crash */
+    #wallCrashFlash {
+      position: absolute;
+      inset: 0;
+      background: radial-gradient(circle, rgba(239, 68, 68, 0.8) 0%, rgba(153, 27, 27, 0.95) 100%);
+      pointer-events: none;
+      opacity: 0;
+      transition: opacity 0.12s ease-out;
+      z-index: 40;
+    }
+
+    /* Game HUD Overlay */
+    #hud {
+      position: absolute;
+      inset: 0;
+      pointer-events: none;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      padding: 16px;
+      z-index: 10;
+    }
+
+    /* Top HUD */
+    .hud-top {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      flex-wrap: wrap;
+    }
+
+    .mission-card {
+      background: rgba(255, 255, 255, 0.96);
+      backdrop-filter: blur(14px);
+      border: 3px solid #ffffff;
+      border-radius: 22px;
+      padding: 8px 22px;
+      box-shadow: 0 10px 28px rgba(10, 30, 60, 0.28);
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      pointer-events: auto;
+      animation: float-mission 3s ease-in-out infinite;
+    }
+    @keyframes float-mission {
+      0%, 100% { transform: translateY(0); }
+      50% { transform: translateY(-4px); }
+    }
+
+    .mission-target {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+    }
+    .target-arabic {
+      font-family: 'Amiri', serif;
+      font-size: 44px;
+      font-weight: 700;
+      color: #0d63bd;
+      line-height: 1;
+      text-shadow: 0 2px 8px rgba(13, 99, 189, 0.3);
+      min-width: 48px;
+      text-align: center;
+    }
+    .target-details {
+      display: flex;
+      flex-direction: column;
+    }
+    .mission-badge {
+      background: linear-gradient(135deg, #1080ec, #0659ae);
+      color: white;
+      font-size: 10px;
+      font-weight: 800;
+      text-transform: uppercase;
+      letter-spacing: 0.8px;
+      padding: 2px 8px;
+      border-radius: 999px;
+      display: inline-block;
+      margin-bottom: 2px;
+      width: fit-content;
+    }
+    .target-name {
+      font-family: 'Fredoka', cursive, sans-serif;
+      font-size: 20px;
+      font-weight: 700;
+      color: var(--ink);
+      line-height: 1.1;
+    }
+    .target-hint {
+      font-size: 11px;
+      font-weight: 800;
+      color: #64748b;
+    }
+
+    .stats-group {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      pointer-events: auto;
+    }
+    .stat-pill {
+      background: rgba(255, 255, 255, 0.95);
+      backdrop-filter: blur(10px);
+      border: 2px solid #ffffff;
+      border-radius: 999px;
+      padding: 8px 18px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-weight: 800;
+      font-size: 15px;
+      color: var(--ink);
+      box-shadow: 0 8px 20px rgba(0, 0, 0, 0.16);
+    }
+    .stat-pill.stars { color: #d97706; }
+    .stat-pill.streak { color: #059669; }
+
+    .btn-hud-icon {
+      background: #ffffff;
+      border: 2px solid #ffffff;
+      border-radius: 50%;
+      width: 46px; height: 46px;
+      font-size: 20px;
+      display: flex; align-items: center; justify-content: center;
+      cursor: pointer;
+      box-shadow: 0 6px 18px rgba(0, 0, 0, 0.16);
+      transition: transform 0.18s;
+      pointer-events: auto;
+    }
+    .btn-hud-icon:hover { transform: scale(1.08); }
+
+    /* Floating Toast Notification */
+    #celebrationToast {
+      position: absolute;
+      top: 18%;
+      left: 50%;
+      transform: translate(-50%, -20px) scale(0.8);
+      background: linear-gradient(135deg, #10b981, #047857);
+      color: white;
+      border: 3px solid #ffffff;
+      border-radius: 28px;
+      padding: 12px 32px;
+      font-family: 'Fredoka', cursive;
+      font-size: 24px;
+      font-weight: 700;
+      box-shadow: 0 16px 40px rgba(4, 120, 87, 0.45);
+      opacity: 0;
+      pointer-events: none;
+      transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+      text-align: center;
+      z-index: 25;
+      white-space: nowrap;
+    }
+    #celebrationToast.show {
+      opacity: 1;
+      transform: translate(-50%, 0) scale(1);
+    }
+
+    /* Warning banner when crashing into walls */
+    #crashWarningToast {
+      position: absolute;
+      top: 26%;
+      left: 50%;
+      transform: translate(-50%, -20px) scale(0.85);
+      background: linear-gradient(135deg, #ef4444, #b91c1c);
+      color: white;
+      border: 3px solid #ffffff;
+      border-radius: 22px;
+      padding: 12px 28px;
+      font-family: 'Fredoka', cursive;
+      font-size: 22px;
+      font-weight: 700;
+      box-shadow: 0 16px 40px rgba(185, 28, 28, 0.5);
+      opacity: 0;
+      pointer-events: none;
+      transition: all 0.25s ease;
+      z-index: 45;
+      white-space: nowrap;
+    }
+    #crashWarningToast.show {
+      opacity: 1;
+      transform: translate(-50%, 0) scale(1);
+    }
+
+    /* Bottom Touch Controls for Mobile / Tablets */
+    .touch-controls {
+      display: none;
+      pointer-events: auto;
+      gap: 16px;
+      justify-content: space-between;
+      width: 100%;
+      max-width: 480px;
+      margin: 0 auto;
+    }
+    .touch-btn {
+      flex: 1;
+      height: 64px;
+      background: rgba(255, 255, 255, 0.92);
+      backdrop-filter: blur(8px);
+      border: 3px solid #ffffff;
+      border-radius: 22px;
+      font-family: 'Fredoka', cursive;
+      font-size: 20px;
+      font-weight: 700;
+      color: var(--ink);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 0 10px 24px rgba(0, 0, 0, 0.2);
+      cursor: pointer;
+      touch-action: manipulation;
+      transition: transform 0.1s;
+    }
+    .touch-btn:active {
+      transform: scale(0.92);
+      background: #e2f0fd;
+    }
+    .touch-btn.jump-btn {
+      background: linear-gradient(180deg, #ffdc42, #ffab10);
+      color: #5c3500;
+      border-color: #ffffff;
+    }
+
+    @media (max-width: 768px) {
+      .touch-controls { display: flex; }
+      .mission-card { padding: 6px 14px; gap: 8px; }
+      .target-arabic { font-size: 32px; }
+      .target-name { font-size: 16px; }
+      .stat-pill { padding: 6px 12px; font-size: 13px; }
+    }
+
+    /* Overlay Screens (Start & Game Over) */
+    .screen-overlay {
+      position: absolute;
+      inset: 0;
+      background: rgba(10, 25, 45, 0.88);
+      backdrop-filter: blur(12px);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 16px;
+      z-index: 50;
+      transition: opacity 0.3s;
+    }
+    .screen-overlay.hidden {
+      display: none;
+    }
+
+    .modal-box {
+      background: #ffffff;
+      border: 4px solid #ffffff;
+      border-radius: 36px;
+      max-width: 460px;
+      width: 100%;
+      padding: 34px 28px;
+      text-align: center;
+      box-shadow: 0 25px 60px rgba(0, 0, 0, 0.45);
+      animation: pop-up 0.35s cubic-bezier(0.34, 1.56, 0.64, 1);
+    }
+    @keyframes pop-up {
+      0% { transform: scale(0.85); opacity: 0; }
+      100% { transform: scale(1); opacity: 1; }
+    }
+
+    .modal-icon {
+      font-size: 58px;
+      margin-bottom: 4px;
+      display: inline-block;
+      animation: bounce-icon 2s infinite;
+    }
+    @keyframes bounce-icon {
+      0%, 100% { transform: translateY(0); }
+      50% { transform: translateY(-8px); }
+    }
+
+    .modal-title {
+      font-family: 'Fredoka', cursive, sans-serif;
+      font-size: 30px;
+      font-weight: 700;
+      color: var(--ink);
+      line-height: 1.15;
+    }
+    .modal-arabic {
+      font-family: 'Amiri', serif;
+      font-size: 34px;
+      color: #d97706;
+      margin: 6px 0;
+    }
+    .modal-desc {
+      font-size: 14px;
+      color: #475569;
+      line-height: 1.55;
+      font-weight: 700;
+      margin: 10px 0 22px;
+    }
+
+    .btn-main-action {
+      background: linear-gradient(180deg, #2563eb, #1d4ed8);
+      color: white;
+      border: none;
+      font-family: 'Fredoka', cursive;
+      font-size: 21px;
+      font-weight: 700;
+      padding: 15px 36px;
+      border-radius: 999px;
+      cursor: pointer;
+      box-shadow: 0 8px 0 #1e3a8a, 0 16px 30px rgba(29, 78, 216, 0.45);
+      width: 100%;
+      transition: all 0.15s ease;
+      letter-spacing: 0.3px;
+    }
+    .btn-main-action:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 10px 0 #1e3a8a, 0 20px 34px rgba(29, 78, 216, 0.55);
+    }
+    .btn-main-action:active {
+      transform: translateY(4px);
+      box-shadow: 0 3px 0 #1e3a8a, 0 8px 16px rgba(29, 78, 216, 0.3);
+    }
+
+    .rules-card {
+      background: #f8fafc;
+      border: 1px solid #e2e8f0;
+      border-radius: 20px;
+      padding: 14px 18px;
+      margin-bottom: 22px;
+      text-align: left;
+      font-size: 13px;
+      color: #334155;
+      line-height: 1.5;
+    }
+    .rules-card strong { color: #0f172a; }
+    .rules-item { display: flex; align-items: center; gap: 8px; margin-bottom: 6px; }
+    .rules-item:last-child { margin-bottom: 0; }
+
+    .controls-hint {
+      margin-top: 16px;
+      font-size: 12px;
+      font-weight: 800;
+      color: #94a3b8;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 12px;
+    }
+    .hint-kbd {
+      background: #f1f5f9;
+      border: 1px solid #cbd5e1;
+      padding: 3px 8px;
+      border-radius: 6px;
+      color: var(--primary);
+    }
+  
+/* ===== HUD baru & proteksi gambar ===== */
+canvas,img{-webkit-touch-callout:none;-webkit-user-drag:none;user-select:none;-webkit-user-select:none}
+#hud{padding-top:calc(14px + env(safe-area-inset-top,0px));padding-left:calc(16px + env(safe-area-inset-left,0px));padding-right:calc(16px + env(safe-area-inset-right,0px));padding-bottom:calc(16px + env(safe-area-inset-bottom,0px))}
+.mission{display:flex;align-items:center;gap:12px;pointer-events:auto;animation:float-mission 3s ease-in-out infinite}
+.mission .target-arabic{font-size:84px;color:#fde047;-webkit-text-stroke:7px #0f172a;paint-order:stroke fill;text-shadow:0 6px 0 #0f172a,0 0 26px rgba(253,224,71,.65);min-width:70px;line-height:1}
+.mission .target-details{display:flex;flex-direction:column;gap:3px}
+.mission .mission-badge{align-self:flex-start;background:#10b981;color:#fff;border:2px solid #fff;border-radius:999px;padding:2px 12px;font-size:12px;font-weight:900;letter-spacing:.05em;text-transform:uppercase;box-shadow:0 3px 0 #047857}
+.mission .target-name{color:#fff;font:700 22px Fredoka,Nunito,sans-serif;-webkit-text-stroke:5px #0f172a;paint-order:stroke fill;text-shadow:0 3px 0 #0f172a}
+.mission .target-hint{color:#fff;font-weight:800;font-size:14px;text-shadow:0 2px 0 rgba(15,23,42,.85),0 0 8px rgba(15,23,42,.6)}
+.stat-pill{background:linear-gradient(180deg,#fff,#d5e9fb);border:3px solid #fff;box-shadow:0 4px 0 rgba(43,58,103,.22),0 10px 18px rgba(0,0,0,.18);font-size:18px;font-weight:900;color:#2b3a67}
+.stat-pill svg,.btn-hud-icon svg{width:22px;height:22px;flex:none}
+.btn-hud-icon{background:linear-gradient(180deg,#fff,#d5e9fb);border:3px solid #fff;box-shadow:0 4px 0 rgba(43,58,103,.22)}
+.btn-hud-icon:active{transform:translateY(3px);box-shadow:0 1px 0 rgba(43,58,103,.22)}
+.prog{position:relative;flex-basis:100%;height:16px;border-radius:9px;background:rgba(255,255,255,.55);box-shadow:inset 0 0 0 2px #fff;overflow:hidden}
+.prog i{display:block;height:100%;width:0;border-radius:9px;background:repeating-linear-gradient(-45deg,#fbbf24 0 8px,#f59e0b 8px 16px);transition:width .4s}
+.prog b{position:absolute;inset:0;text-align:center;font-size:11px;line-height:16px;color:#0f172a;font-weight:900}
+@media(max-width:560px){.mission .target-arabic{font-size:64px;min-width:52px}.mission .target-name{font-size:18px}}
+.stat-pill.lvl{color:#7c3aed}
+.touch-controls{display:none!important}
+html,body,canvas{touch-action:none;overscroll-behavior:none}
+#celebrationToast.bad{background:linear-gradient(180deg,#f87171,#dc2626)!important;box-shadow:0 6px 0 #991b1b!important}
+#mNotif{position:fixed;left:50%;top:33vh;z-index:8;transform:translate(-50%,-30px) scale(.8);opacity:0;transition:transform .4s cubic-bezier(.3,1.6,.5,1),opacity .3s;pointer-events:none;display:flex;align-items:center;gap:10px;padding:8px 22px 8px 16px;border-radius:999px;background:linear-gradient(180deg,#34d399,#059669);border:3px solid #fff;box-shadow:0 5px 0 #047857,0 12px 22px rgba(0,0,0,.25);color:#fff;font:700 20px Fredoka,Nunito,sans-serif;white-space:nowrap;text-shadow:0 2px 0 rgba(0,0,0,.25)}
+#mNotif.show{transform:translate(-50%,0) scale(1);opacity:1}
+#mNotif b{font-family:Amiri,'Traditional Arabic',serif;font-size:40px;color:#fde047;-webkit-text-stroke:4px #064e3b;paint-order:stroke fill;line-height:1;text-shadow:none}
+/* HUD ala mockup */
+.mission{gap:10px}.mtile{width:68px;height:68px;border-radius:20px;background:linear-gradient(180deg,#fff,#e6f0ff);border:3px solid #fff;box-shadow:0 5px 0 rgba(43,58,103,.25);display:flex;align-items:center;justify-content:center}
+.mission .mtile .target-arabic{font-size:46px;min-width:0;-webkit-text-stroke:5px #0f172a;text-shadow:0 3px 0 #0f172a}
+.stats-group{gap:8px}.tile{min-width:58px;padding:6px 6px 4px;border-radius:18px;background:linear-gradient(180deg,#fff,#e6f0ff);border:3px solid #fff;box-shadow:0 5px 0 rgba(43,58,103,.22);text-align:center;color:#2b3a67}
+.tile .tv{display:flex;align-items:center;justify-content:center;gap:4px;font-size:21px;font-weight:900}.tile .tv svg{width:22px;height:22px}.tile .tv.lv{color:#7c3aed;height:22px}.tile>span{display:block;font-size:10px;font-weight:800;opacity:.65;letter-spacing:.04em}
+.prog{position:static;display:flex;align-items:center;gap:12px;height:auto;padding:8px 14px;border-radius:18px;background:linear-gradient(180deg,#fff,#eaf2ff);box-shadow:0 4px 0 rgba(43,58,103,.2);overflow:visible}
+.prog .trk{flex:1;height:14px;border-radius:8px;background:#dfe7f5;overflow:hidden}.prog b{position:static;font-size:13px;line-height:1;white-space:nowrap}
+.hud-bot{display:flex;justify-content:space-between;align-items:flex-end;pointer-events:none}
+.sq{pointer-events:auto;width:76px;height:76px;border-radius:22px;border:3px solid #fff;background:linear-gradient(180deg,#fff,#dbeafe);box-shadow:0 5px 0 rgba(43,58,103,.25);color:#1d4ed8;font:800 10px Fredoka,sans-serif;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;cursor:pointer}
+.sq svg{width:30px;height:30px}.sq.pu{color:#6d28d9;background:linear-gradient(180deg,#fff,#ede9fe)}.sq:active{transform:translateY(3px)}
+/* notifikasi di bawah */
+#celebrationToast{top:auto;bottom:calc(env(safe-area-inset-bottom,0px) + 112px);font-size:19px;padding:8px 22px}
+#mNotif{top:auto;bottom:calc(env(safe-area-inset-bottom,0px) + 172px)}
+#lvB{position:fixed;left:50%;bottom:calc(env(safe-area-inset-bottom,0px) + 236px);z-index:8;transform:translate(-50%,20px) scale(.8);opacity:0;transition:transform .4s cubic-bezier(.3,1.6,.5,1),opacity .3s;pointer-events:none;padding:8px 22px;border-radius:26px;background:linear-gradient(180deg,#fbbf24,#f59e0b);border:3px solid #fff;box-shadow:0 5px 0 #b45309;color:#fff;font:700 19px Fredoka,sans-serif;text-align:center;text-shadow:0 2px 0 rgba(0,0,0,.25);white-space:nowrap}
+#lvB.show{transform:translate(-50%,0) scale(1);opacity:1}#lvB small{display:block;font-size:13px;font-weight:600}
+/* modal kamus & pengaturan */
+.ov2{position:fixed;inset:0;display:none;align-items:center;justify-content:center;z-index:30;background:rgba(15,23,42,.6)}.ov2.on{display:flex}
+.cd{width:92%;max-width:420px;max-height:82vh;overflow:auto;padding:18px;border-radius:26px;background:linear-gradient(180deg,#fff,#eaf2ff);border:3px solid #fff;box-shadow:0 6px 0 rgba(0,0,0,.2);text-align:center;color:#2b3a67;font-family:Fredoka,sans-serif}
+.cd h3{margin:0 0 4px;font-size:26px}.cd p{margin:0 0 10px;font-size:14px;opacity:.7}
+#kGrid{display:grid;grid-template-columns:repeat(4,1fr);gap:8px}.kc{padding:6px 2px;border-radius:14px;background:#e5e7eb;color:#94a3b8}.kc.ok{background:#d1fae5;color:#065f46;box-shadow:inset 0 0 0 2px #34d399}.kc b{display:block;font:700 30px Amiri,serif}.kc span{font-size:11px;font-weight:700}
+.row2{display:flex;justify-content:space-between;align-items:center;padding:12px 6px;border-bottom:1px solid #dbe4f3;font-weight:700}.row2 input{width:24px;height:24px}
+.bts{display:flex;gap:10px;justify-content:center}.bt2{margin-top:14px;padding:10px 24px;border-radius:16px;border:3px solid #fff;background:linear-gradient(180deg,#7dff9f,#2fcf5e);box-shadow:0 5px 0 #14804a;color:#fff;font:700 17px Fredoka,sans-serif;cursor:pointer;text-shadow:0 2px 0 rgba(0,0,0,.25)}.bt2.bl{background:linear-gradient(180deg,#7fdcff,#35aef5);box-shadow:0 5px 0 #1c6fb0}
+/* HUD ringkas: misi & statistik tetap satu baris, tidak turun */
+.hud-top{display:grid;grid-template-columns:minmax(0,1fr) auto;align-items:start;gap:8px}
+.hud-top .prog{grid-column:1/-1}
+.mission,.target-details{min-width:0}.target-name,.target-hint{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+@media(max-width:480px){
+.mtile{width:54px;height:54px;border-radius:16px;flex:none}.mission .mtile .target-arabic{font-size:36px;-webkit-text-stroke:4px #0f172a;text-shadow:0 2px 0 #0f172a}
+.mission{gap:8px}.mission .target-name{font-size:16px;-webkit-text-stroke:4px #0f172a}.mission .target-hint{font-size:12px}.mission .mission-badge{font-size:10px;padding:1px 10px}
+.stats-group{gap:5px}.tile{min-width:46px;padding:5px 4px 3px;border-radius:14px}.tile .tv{font-size:16px;gap:2px}.tile .tv svg{width:16px;height:16px}.tile .tv.lv{height:16px}.tile>span{font-size:8px}
+.prog{padding:6px 10px}.prog b{font-size:12px}}
+@media(max-height:560px){.mission .target-hint{display:none}.prog{padding:4px 10px}.sq{width:58px;height:58px}.sq svg{width:24px;height:24px}}
+#pwB{position:fixed;left:50%;bottom:calc(env(safe-area-inset-bottom,0px) + 298px);z-index:8;transform:translate(-50%,20px) scale(.8);opacity:0;transition:transform .35s cubic-bezier(.3,1.6,.5,1),opacity .25s;pointer-events:none;padding:7px 20px;border-radius:999px;background:linear-gradient(180deg,#60a5fa,#2563eb);border:3px solid #fff;box-shadow:0 4px 0 #1e3a8a;color:#fff;font:700 17px Fredoka,sans-serif;white-space:pre;text-shadow:0 2px 0 rgba(0,0,0,.25)}#pwB.show{transform:translate(-50%,0) scale(1);opacity:1}
+/* Notifikasi: teks ber-outline saja, di sisi kiri */
+.fi{width:1.15em;height:1.15em;vertical-align:-.2em;display:inline-block;-webkit-text-stroke:0}
+.tile .tv .fi{width:22px;height:22px}.sq .fi{width:32px;height:32px}
+#celebrationToast,#mNotif,#lvB,#pwB{position:fixed!important;left:calc(env(safe-area-inset-left,0px) + 14px)!important;right:auto!important;bottom:auto!important;transform:translateX(-26px)!important;opacity:0;background:none!important;border:0!important;box-shadow:none!important;padding:0!important;border-radius:0!important;font:800 18px/1.2 Fredoka,Nunito,sans-serif!important;color:#fff;-webkit-text-stroke:5px #0f172a;paint-order:stroke fill;text-shadow:0 3px 0 #0f172a;text-align:left!important;white-space:nowrap;display:flex;align-items:center;gap:6px;pointer-events:none;transition:transform .35s cubic-bezier(.3,1.5,.5,1),opacity .25s;z-index:8}
+#celebrationToast.show,#mNotif.show,#lvB.show,#pwB.show{transform:translateX(0)!important;opacity:1}
+#pwB{top:36vh!important;flex-direction:column;align-items:flex-start;gap:2px;color:#7dd3fc}
+#lvB{top:44vh!important;color:#fde047}#lvB small{display:block;font-size:12px;font-weight:700;color:#fff}
+#mNotif{top:52vh!important}#mNotif b{-webkit-text-stroke:5px #064e3b}
+#celebrationToast{top:60vh!important;color:#86efac}#celebrationToast.bad{color:#fca5a5}
+@media(max-width:480px){#celebrationToast,#mNotif,#lvB,#pwB{font-size:15px!important;-webkit-text-stroke-width:4px}#mNotif b{font-size:30px}}
+.mission.ready .mtile{animation:rdy .45s ease-in-out 4}@keyframes rdy{50%{transform:scale(1.15);box-shadow:0 0 0 4px #fde047,0 5px 0 rgba(43,58,103,.25)}}
+.modal-box{max-height:92vh;overflow-y:auto}
+#tut{position:fixed;left:50%;top:60vh;transform:translateX(-50%);z-index:8;display:none;flex-direction:column;align-items:center;gap:6px;pointer-events:none;font:800 17px Fredoka,sans-serif;color:#fff;-webkit-text-stroke:5px #0f172a;paint-order:stroke fill;text-shadow:0 3px 0 #0f172a;text-align:center;max-width:90vw}
+#tut.show{display:flex}#tut .fi{width:56px;height:56px;-webkit-text-stroke:0;filter:drop-shadow(0 3px 0 rgba(15,23,42,.6))}
+#tut.tx .fi{animation:tsx 1s ease-in-out infinite}#tut.ty .fi{animation:tsy 1s ease-in-out infinite}
+@keyframes tsx{0%,100%{transform:translateX(-46px)}50%{transform:translateX(46px)}}@keyframes tsy{0%{transform:translateY(24px);opacity:.3}60%{transform:translateY(-34px);opacity:1}100%{transform:translateY(-34px);opacity:0}}
+.modal-box{scrollbar-width:none}.modal-box::-webkit-scrollbar{display:none}
+@media(max-height:720px){.modal-box{padding:18px 20px}.modal-icon{display:none}.modal-arabic{font-size:26px;margin:0}.modal-title{font-size:24px}.modal-desc{font-size:12.5px;line-height:1.4;margin:6px 0 10px}.rules-card{padding:10px 12px!important;margin-bottom:12px!important}.rules-item{font-size:12px;margin-bottom:4px!important}.btn-main-action{padding:11px 28px;font-size:18px;box-shadow:0 6px 0 #1e3a8a}.controls-hint{margin-top:10px;font-size:11px}}
+@media(max-height:540px){.modal-desc{display:none}.modal-box{padding:14px 18px}.rules-card{padding:8px 10px!important;margin-bottom:8px!important}}
+</style>
+</head>
+<body>
+
+  <!-- 3D Canvas -->
+  <canvas id="gameCanvas"></canvas>
+
+  <!-- Red Flash on Wall Crash -->
+  <div id="wallCrashFlash"></div>
+
+  <!-- Heads Up Display (HUD) -->
+  <div id="hud">
+    <!-- Top Stats -->
+<div class="hud-top">
+      <div class="mission">
+        <div class="mtile"><span class="target-arabic" id="targetArabic">ب</span></div>
+        <div class="target-details">
+          <span class="mission-badge">Misi Huruf</span>
+          <span class="target-name" id="targetName">Cari Huruf Ba</span>
+          <span class="target-hint" id="targetHint">Ucapkan "Baa"</span>
+        </div>
+      </div>
+      <div class="stats-group">
+        <div class="tile"><div class="tv"><img class="fi" data-fi="star" alt=""><b id="scoreText">0</b></div><span>SKOR</span></div>
+        <div class="tile"><div class="tv"><img class="fi" data-fi="fire" alt=""><b id="streakText">x1</b></div><span>STREAK</span></div>
+        <div class="tile"><div class="tv lv"><b id="levelText">Lv 1</b></div><span id="paceText">x1.0</span></div>
+      </div>
+      <div class="prog"><div class="trk"><i id="progFill"></i></div><b id="progText">0 / 28 huruf</b></div>
+    </div>
+    <div class="hud-bot"><button class="sq" id="btnKamus"><img class="fi" data-fi="books" alt=""><span>KAMUS</span></button><button class="sq pu" id="btnSet"><img class="fi" data-fi="gear" alt=""><span>PENGATURAN</span></button></div>
+    <div id="lvB"></div><div id="pwB"></div>
+
+    <div id="mNotif"><b id="mnA"></b><span id="mnT"></span></div>
+    <!-- Celebration Popup -->
+    <div id="celebrationToast">
+      ✨ Masya Allah! Benar: <span id="toastLetter">ب</span> (+100)
+    </div>
+
+    <!-- Crash Warning Popup -->
+    <div id="crashWarningToast">
+      💥 Menabrak Tembok! Gagal!
+    </div>
+
+    <!-- Mobile Touch Controls -->
+    <div class="touch-controls">
+      <button class="touch-btn" id="btnTouchLeft">◀ Kiri</button>
+      <button class="touch-btn jump-btn" id="btnTouchJump">▲ Lompat</button>
+      <button class="touch-btn" id="btnTouchRight">Kanan ▶</button>
+    </div>
+  </div>
+
+  <!-- Start Screen Modal -->
+  <div class="screen-overlay" id="startScreen">
+    <div class="modal-box">
+      <div class="modal-icon">🕌✨</div>
+      <div class="modal-arabic">بِسْمِ اللَّهِ الرَّحْمَٰنِ الرَّحِيمِ</div>
+      <h1 class="modal-title">Hijaiyah Sky Run 3D</h1>
+      <p class="modal-desc">
+        Ayo bantu si beruang berlari di Jembatan Langit! Ambil huruf hijaiyah yang diminta, hindari tembok dan lava.
+      </p>
+
+      <div class="rules-card">
+        <div class="rules-item"><span>💎</span><span><strong>Huruf Benar:</strong> +15 poin, salah −10</span></div>
+        <div class="rules-item"><span>🧱</span><span><strong>Tembok:</strong> Menabrak = langsung gagal!</span></div>
+        <div class="rules-item"><span>🌋</span><span><strong>Lava:</strong> Lompat saat sedang rendah!</span></div>
+      </div>
+
+      <button class="btn-main-action" id="btnStartGame">
+        ▶ Bismillah, Mulai Main
+      </button>
+
+      <div class="controls-hint">
+        <span><span class="hint-kbd">A / D</span> atau <span class="hint-kbd">Panah</span> geser • <span class="hint-kbd">Spasi</span> lompat • Di HP: <b>swipe</b></span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Game Over Screen Modal (NO "Kembali ke Portal" button!) -->
+  <div class="screen-overlay hidden" id="gameOverScreen">
+    <div class="modal-box">
+      <div class="modal-icon" id="gameOverIcon">⭐🤲</div>
+      <div class="modal-arabic" id="gameOverArabic">الْحَمْدُ لِلَّهِ</div>
+      <h2 class="modal-title" id="gameOverTitle">Alhamdulillah, Hebat!</h2>
+      <p class="modal-desc" id="gameOverDesc">
+        Kamu berhasil mengumpulkan huruf hijaiyah hari ini. Teruslah bersemangat belajar membaca Al-Qur'an!
+      </p>
+
+      <div style="background: #f1f5f9; border-radius: 20px; padding: 16px; margin-bottom: 24px; border: 1px solid #e2e8f0;">
+        <div style="font-size: 13px; font-weight: 800; color: #475569; text-transform: uppercase;">Skor Bintang Kebaikan</div>
+        <div style="font-size: 38px; font-weight: 900; color: #d97706; margin: 4px 0;" id="finalScore">0</div>
+        <div style="font-size: 13px; font-weight: 700; color: #1e293b;" id="finalStats">Huruf Dipelajari: 0 • Kombo Maks: 1x</div>
+      </div>
+
+      <div id="gMeta" style="font-weight:800;margin-bottom:10px;color:#475569"></div>
+      <div id="gReview" style="text-align:left;margin-bottom:16px;font-size:13px"></div>
+      <button class="btn-main-action" id="btnPractice" style="display:none;margin-bottom:10px">Latih huruf yang salah</button>
+      <button class="btn-main-action" id="btnShop" style="display:block;margin-bottom:10px;background:linear-gradient(180deg,#7fdcff,#35aef5)">Toko Skin</button>
+      <button class="btn-main-action" id="btnRestartGame">
+        🔄 Main Lagi
+      </button>
+    </div>
+  </div>
+
+  <div class="ov2" id="mdShop"><div class="cd"><h3>Toko Skin Beruang</h3><p><img class="fi" data-fi="coin" alt=""> <b id="shC">0</b> koin</p><div id="shL"></div><button class="bt2" data-close>Tutup</button></div></div>
+<div id="tut"><img class="fi" id="tutH" alt=""><span id="tutT"></span></div>
+<div class="ov2" id="mdK"><div class="cd"><h3>Kamus Hijaiyah</h3><p id="kSub"></p><div id="kGrid"></div><button class="bt2" data-close>Tutup</button></div></div>
+<div class="ov2" id="mdS"><div class="cd"><h3>Pengaturan</h3><label class="row2"><span>Musik</span><input type="checkbox" id="sMus"></label><label class="row2"><span>Efek suara</span><input type="checkbox" id="sSfx"></label><label class="row2"><span>Getaran HP</span><input type="checkbox" id="sVib"></label><label class="row2"><span>Grafis hemat baterai</span><input type="checkbox" id="sLow"></label><!-- Ikon: Fluent Emoji Flat (Microsoft, lisensi MIT) via Iconify --><button class="bt2 bl" id="sShop" style="margin:12px 0 0;display:block;width:100%">Toko Skin</button><div class="bts"><button class="bt2" data-close>Lanjut</button><button class="bt2 bl" id="sQuit">Mulai ulang</button></div></div></div>
+<script>
+    // =========================================================================
+    // 28 HIJAIYAH ALPHABET DATABASE
+    // =========================================================================
+    const FI = {'coin':'data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%2032%2032%22%3E%3Cg%20fill%3D%22none%22%3E%3Cpath%20fill%3D%22%23f9c23c%22%20d%3D%22M16%2030c7.732%200%2014-6.268%2014-14S23.732%202%2016%202S2%208.268%202%2016s6.268%2014%2014%2014%22%2F%3E%3Cpath%20fill%3D%22%23d3883e%22%20d%3D%22M27%2016c0%206.075-4.925%2011-11%2011S5%2022.075%205%2016S9.925%205%2016%205s11%204.925%2011%2011m-4.68%203.89a.54.54%200%200%200-.51-.37h.03v-7.76c.43-.28.51-.97-.01-1.28l-5.39-3.26a.73.73%200%200%200-.78%200l-5.4%203.26c-.52.31-.44%201-.02%201.28v7.77h-.11c-.24%200-.45.16-.51.39l-.35%201.25c-.1.34.16.68.51.68h12.45c.35-.01.61-.36.5-.71zM11.9%2011.88v7.64h1.66v-7.64zm3.31%200v7.64h1.69v-7.64zm3.35%200v7.64h1.62v-7.64z%22%20opacity%3D%22.53%22%2F%3E%3C%2Fg%3E%3C%2Fsvg%3E','backhand-index-pointing-up':'data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%2032%2032%22%3E%3Cg%20fill%3D%22none%22%3E%3Cpath%20fill%3D%22%23ffc83d%22%20d%3D%22M11.438%2024.313c-1.727-4.216-5.704-5.84-6.579-6.745c-.875-.907-.973-2.595%200-3.63c1.258-1.34%202.57-.995%204.094-.094c.516.304%202.219%201.437%202.219%201.437V5.031c0-2.11%201.262-3.041%202.422-3.041s2.562%201.166%202.562%203.041V9s.611-1.313%202.408-1.313s2.311%201.625%202.311%201.625s.383-.851%202.055-.851c1.578%200%202.242%201.648%202.242%201.648s.57-.601%201.976-.601c1.079%200%202.977%201.523%202.977%203.164c0%207.09-.702%2017.318-10.095%2017.318c-2.49.01-6.866-1.462-8.593-5.677%22%2F%3E%3Cpath%20fill%3D%22%23d67d00%22%20d%3D%22M12.156%205.984c0-2.261.5-3.517.924-3.933c-.99.239-1.908%201.181-1.908%202.98v8.875c.01.58.015%201.095.015%201.492c0%20.797.97.86.97%200zm4%203.016l-.008%203.516a.5.5%200%201%200%201%200V8.024c-.718.389-.992.976-.992.976m4.719.313s.21-.468%201-.71v2.928a.5.5%200%200%201-1%200zm4.297.797l-.008-.02v3.41a.5.5%200%201%200%201%200V9.621c-.695.175-.992.488-.992.488%22%2F%3E%3C%2Fg%3E%3C%2Fsvg%3E','trophy':'data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%2032%2032%22%3E%3Cg%20fill%3D%22none%22%3E%3Cpath%20fill%3D%22%23d3883e%22%20d%3D%22M10.52%207.521a3.435%203.435%200%200%200-4.213-2.369a2%202%200%200%200-.163.046c-2.493.831-2.691%204.214-.455%205.45l4.97%202.75a.866.866%200%201%200%20.838-1.516l-4.97-2.75c-.982-.543-.823-1.956.16-2.288l.005-.002l.07-.018c.899-.25%201.834.27%202.093%201.175a.866.866%200%201%200%201.666-.478m11.939.478a1.7%201.7%200%200%201%202.118-1.168l.045.011l.007.002c.981.332%201.14%201.745.158%202.288l-4.97%202.75a.866.866%200%201%200%20.84%201.516l4.97-2.75c2.235-1.236%202.037-4.619-.456-5.45a2%202%200%200%200-.164-.046a3.435%203.435%200%200%200-4.213%202.37a.866.866%200%201%200%201.666.477m-5.133%209.511v-4.22h-3.34v4.22c0%20.74-.33%201.45-.9%201.92l-1.92%201.6h8.98l-1.92-1.6a2.51%202.51%200%200%201-.9-1.92%22%2F%3E%3Cpath%20fill%3D%22%23ffb02e%22%20d%3D%22M15.658%2016.54a6.97%206.97%200%200%201-6.97-6.97V2.71c0-.39.32-.71.71-.71h12.53c.39%200%20.71.32.71.71v6.86c0%203.85-3.12%206.97-6.98%206.97%22%2F%3E%3Cpath%20fill%3D%22%236d4534%22%20d%3D%22M22.792%2021.03H8.197c-.77%200-1.423.51-1.571%201.22l-1.614%207.09c-.073.33.19.64.549.64h19.878c.359%200%20.622-.31.549-.64l-1.614-7.09c-.158-.71-.812-1.22-1.582-1.22%22%2F%3E%3Cpath%20fill%3D%22%23ffb02e%22%20d%3D%22M18.383%2023.96h-5.766a.625.625%200%200%200-.613.64v1.81c0%20.35.268.64.613.64h5.766c.335%200%20.613-.28.613-.64V24.6c0-.35-.268-.64-.613-.64%22%2F%3E%3C%2Fg%3E%3C%2Fsvg%3E',"star":"data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%2032%2032%22%3E%3Cpath%20fill%3D%22%23fcd53f%22%20d%3D%22m18.7%204.627l2.247%204.31a2.27%202.27%200%200%200%201.686%201.189l4.746.65c2.538.35%203.522%203.479%201.645%205.219l-3.25%202.999a2.23%202.23%200%200%200-.683%202.04l.793%204.398c.441%202.45-2.108%204.36-4.345%203.24l-4.536-2.25a2.28%202.28%200%200%200-2.006%200l-4.536%202.25c-2.238%201.11-4.786-.79-4.345-3.24l.793-4.399c.14-.75-.12-1.52-.682-2.04l-3.251-2.998c-1.877-1.73-.893-4.87%201.645-5.22l4.746-.65a2.23%202.23%200%200%200%201.686-1.189l2.248-4.309c1.144-2.17%204.264-2.17%205.398%200%22%2F%3E%3C%2Fsvg%3E","fire":"data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%2032%2032%22%3E%3Cg%20fill%3D%22none%22%3E%3Cpath%20fill%3D%22%23ff6723%22%20d%3D%22M26%2019.34c0%206.1-5.05%2011.005-11.15%2010.641c-6.269-.374-10.56-6.403-9.752-12.705c.489-3.833%202.286-7.12%204.242-9.67c.34-.445.689%203.136%201.038%202.742c.35-.405%203.594-6.019%204.722-7.991a.694.694%200%200%201%201.028-.213C18.394%203.854%2026%2010.277%2026%2019.34%22%2F%3E%3Cpath%20fill%3D%22%23ffb02e%22%20d%3D%22M23%2021.851c0%204.042-3.519%207.291-7.799%207.144c-4.62-.156-7.788-4.384-7.11-8.739C9.07%2014.012%2015.48%2010%2015.48%2010S23%2014.707%2023%2021.851%22%2F%3E%3C%2Fg%3E%3C%2Fsvg%3E","books":"data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%2032%2032%22%3E%3Cg%20fill%3D%22none%22%3E%3Cpath%20fill%3D%22%2300a6ed%22%20d%3D%22M17.045%2027.286H30V13a2%202%200%200%200-2-2H17.045z%22%2F%3E%3Cpath%20fill%3D%22%23d3d3d3%22%20d%3D%22M15.682%2027.964H30v1.357H15.682z%22%2F%3E%3Cpath%20fill%3D%22%230074ba%22%20d%3D%22M16.023%2011A1.02%201.02%200%200%200%2015%2012.018v16.625h.682a.68.68%200%200%201%20.682-.679h.681V11z%22%2F%3E%3Cpath%20fill%3D%22%230074ba%22%20d%3D%22M16.023%2027.286A1.02%201.02%200%200%200%2015%2028.304v.678A1.02%201.02%200%200%200%2016.023%2030h12.954c.446%200%20.824-.283.965-.678H16.364a.68.68%200%200%201-.682-.68a.68.68%200%200%201%20.682-.678H30v-.678z%22%2F%3E%3Cpath%20fill%3D%22%23ca0b4a%22%20d%3D%22M10.045%2023.286H23V9a2%202%200%200%200-2-2H10.045z%22%2F%3E%3Cpath%20fill%3D%22%23d3d3d3%22%20d%3D%22M8.682%2023.964H23v1.357H8.682z%22%2F%3E%3Cpath%20fill%3D%22%23990838%22%20d%3D%22M9.023%207A1.02%201.02%200%200%200%208%208.018v16.625h.682a.68.68%200%200%201%20.682-.679h.681V7z%22%2F%3E%3Cpath%20fill%3D%22%23990838%22%20d%3D%22M9.023%2023.286A1.02%201.02%200%200%200%208%2024.304v.678A1.02%201.02%200%200%200%209.023%2026h12.954c.446%200%20.824-.283.965-.678H9.364a.68.68%200%200%201-.682-.68a.68.68%200%200%201%20.682-.678H23v-.678z%22%2F%3E%3Cpath%20fill%3D%22%2386d72f%22%20d%3D%22M4.045%2020.286H17V6a2%202%200%200%200-2-2H4.045z%22%2F%3E%3Cpath%20fill%3D%22%23d3d3d3%22%20d%3D%22M2.682%2020.964H17v1.357H2.682z%22%2F%3E%3Cpath%20fill%3D%22%2344911b%22%20d%3D%22M3.023%204A1.02%201.02%200%200%200%202%205.018v16.625h.682a.68.68%200%200%201%20.682-.679h.681V4z%22%2F%3E%3Cpath%20fill%3D%22%23008463%22%20d%3D%22M3.023%2020.286A1.02%201.02%200%200%200%202%2021.304v.678A1.02%201.02%200%200%200%203.023%2023h12.954c.446%200%20.824-.283.965-.678H3.364a.68.68%200%200%201-.682-.68a.68.68%200%200%201%20.682-.678H17v-.678z%22%2F%3E%3C%2Fg%3E%3C%2Fsvg%3E","gear":"data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%2032%2032%22%3E%3Cg%20fill%3D%22none%22%3E%3Cpath%20fill%3D%22%23b4acbc%22%20d%3D%22M12.847%203.834A2%202%200%200%201%2014.84%202h2.32a2%202%200%200%201%201.993%201.834l.235%202.825a.5.5%200%200%200%20.821.34l2.164-1.831a2%202%200%200%201%202.706.112l1.64%201.64a2%202%200%200%201%20.113%202.707l-1.83%202.163a.5.5%200%200%200%20.34.822l2.824.235A2%202%200%200%201%2030%2014.84v2.32a2%202%200%200%201-1.834%201.993l-2.825.235a.5.5%200%200%200-.34.821l1.831%202.164a2%202%200%200%201-.112%202.706l-1.64%201.64a2%202%200%200%201-2.707.113l-2.164-1.83a.5.5%200%200%200-.82.34l-.236%202.824A2%202%200%200%201%2017.16%2030h-2.32a2%202%200%200%201-1.993-1.834l-.235-2.825a.5.5%200%200%200-.822-.34l-2.163%201.831a2%202%200%200%201-2.706-.112l-1.64-1.64a2%202%200%200%201-.113-2.707l1.83-2.164a.5.5%200%200%200-.34-.82l-2.824-.236A2%202%200%200%201%202%2017.16v-2.32a2%202%200%200%201%201.834-1.993l2.825-.235a.5.5%200%200%200%20.34-.822L5.168%209.628A2%202%200%200%201%205.28%206.92l1.64-1.64a2%202%200%200%201%202.707-.113l2.163%201.83a.5.5%200%200%200%20.822-.34zM21%2016a5%205%200%201%200-10%200a5%205%200%200%200%2010%200%22%2F%3E%3Cpath%20fill%3D%22%23998ea4%22%20d%3D%22M24%2016a8%208%200%201%201-16%200a8%208%200%200%201%2016%200m-3.5%200a4.5%204.5%200%201%200-9%200a4.5%204.5%200%200%200%209%200%22%2F%3E%3Cpath%20fill%3D%22%23cdc4d6%22%20d%3D%22M10.5%2016a5.5%205.5%200%201%201%2011%200a5.5%205.5%200%200%201-11%200M21%2016a5%205%200%201%200-10%200a5%205%200%200%200%2010%200%22%2F%3E%3C%2Fg%3E%3C%2Fsvg%3E","check-mark-button":"data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%2032%2032%22%3E%3Cg%20fill%3D%22none%22%3E%3Cpath%20fill%3D%22%2300d26a%22%20d%3D%22M2%206a4%204%200%200%201%204-4h20a4%204%200%200%201%204%204v20a4%204%200%200%201-4%204H6a4%204%200%200%201-4-4z%22%2F%3E%3Cpath%20fill%3D%22%23f4f4f4%22%20d%3D%22M13.242%2023c-.383%200-.766-.143-1.059-.43l-5.744-5.642a1.453%201.453%200%200%201%200-2.08a1.517%201.517%200%200%201%202.118%200l4.685%204.601L23.443%209.431a1.517%201.517%200%200%201%202.118%200a1.45%201.45%200%200%201%200%202.08l-11.26%2011.058a1.5%201.5%200%200%201-1.059.431%22%2F%3E%3C%2Fg%3E%3C%2Fsvg%3E","cross-mark":"data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%2032%2032%22%3E%3Cpath%20fill%3D%22%23f92f60%22%20d%3D%22M24.879%202.879A3%203%200%201%201%2029.12%207.12l-8.79%208.79a.125.125%200%200%200%200%20.177l8.79%208.79a3%203%200%201%201-4.242%204.243l-8.79-8.79a.125.125%200%200%200-.177%200l-8.79%208.79a3%203%200%201%201-4.243-4.242l8.79-8.79a.125.125%200%200%200%200-.177l-8.79-8.79A3%203%200%200%201%207.12%202.878l8.79%208.79a.125.125%200%200%200%20.177%200z%22%2F%3E%3C%2Fsvg%3E","rocket":"data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%2032%2032%22%3E%3Cg%20fill%3D%22none%22%3E%3Cpath%20fill%3D%22%23ca0b4a%22%20d%3D%22M29.2%202.95c-.947-.947-2.7-.998-3.818-.425c-.913.314-1.874.667-2.854%201.063l.01.01c-2.575%201.095-6.427%203.04-9.51%205.902c-2.164%202.01-3.404%203.556-4.235%204.965l-5.298%201.95a1%201%200%200%200-.362%201.646l11.138%2011.137a1%201%200%200%200%201.645-.362l2.204-5.986c1.608-.958%203.223-2.165%204.908-3.85c2.39-2.39%204.366-6.56%205.513-9.357l.009.008c.4-.99.758-1.961%201.074-2.883c.573-1.118.74-2.654-.424-3.818%22%2F%3E%3Cpath%20fill%3D%22%23f4f4f4%22%20d%3D%22M23.299%204.365c-2.517%201.04-6.478%202.978-9.59%205.868c-2.015%201.87-3.172%203.294-3.94%204.55c-.769%201.255-1.175%202.38-1.663%203.74l-.002.007c-.17.474-.35.977-.559%201.514l4.556%204.556c3.602-1.48%206.74-2.828%2010.22-6.307c2.351-2.352%204.339-6.642%205.454-9.421z%22%2F%3E%3Cpath%20fill%3D%22%239b9b9b%22%20d%3D%22M24.528%2011.25a3.25%203.25%200%201%201-6.5%200a3.25%203.25%200%200%201%206.5%200%22%2F%3E%3Cpath%20fill%3D%22%2383cbff%22%20d%3D%22M23.528%2011.25a2.25%202.25%200%201%201-4.5%200a2.25%202.25%200%200%201%204.5%200%22%2F%3E%3Cpath%20fill%3D%22%23ff8257%22%20d%3D%22M2.451%2029.61C1.744%2028.905%202.028%2024%204.528%2023c0%200%202.5-1%204.11.6c1.612%201.601.89%203.4.89%203.4c-.707%202.121-3.718%202.965-4.071%202.61c-.195-.194.156-.55%200-.706c-.157-.157-.398.022-1.06.353c-.472.236-1.663.637-1.946.354%22%2F%3E%3Cpath%20fill%3D%22%23533566%22%20d%3D%22M6.088%2021.06a1.5%201.5%200%200%201%202.122%200l3.535%203.536a1.5%201.5%200%201%201-2.121%202.122l-3.536-3.536a1.5%201.5%200%200%201%200-2.121%22%2F%3E%3Cpath%20fill%3D%22%23f92f60%22%20d%3D%22M15.535%2018.722c.442-1.2-.725-2.368-1.926-1.926l-7.114%202.619a1%201%200%200%200-.362%201.646l5.138%205.137a1%201%200%200%200%201.645-.362z%22%2F%3E%3C%2Fg%3E%3C%2Fsvg%3E","running-shoe":"data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%2032%2032%22%3E%3Cg%20fill%3D%22none%22%3E%3Cpath%20fill%3D%22%23635994%22%20d%3D%22M18.5%2011.41L14.79%207.7l.43-.43c1.51-1.51%204.08-.9%204.75%201.12l1.71%204.5z%22%2F%3E%3Cpath%20fill%3D%22%239b9b9b%22%20d%3D%22m26.32%2023.53l-5.05-11.79c-.26-.61-.17-.7-.64-1.17l-.52-.52c-.41-.41-1.08-.41-1.49%200s-1.08.41-1.49%200L12.7%205.61c-.41-.41-.41-1.08%200-1.49s.41-1.08%200-1.49l-.02-.02c-.82-.82-2.16-.82-2.98%200L2.35%209.97c-.45.45-.45%201.18%200%201.63l20.82%2017.24c.45.45%204.67.86%205.12.41l.82-.56c3.09-2.72-2.04-3.42-2.79-5.16%22%2F%3E%3Cpath%20fill%3D%22%23e6e6e6%22%20fill-rule%3D%22evenodd%22%20d%3D%22M18.74%2014.1c-.19-.19-.31-.45-.31-.74c0-.58.47-1.05%201.05-1.05h2.44a1.05%201.05%200%201%201%200%202.1h-2.44c-.28%200-.55-.12-.74-.31m1.59%203.34c-.19-.19-.31-.45-.31-.74c0-.58.47-1.05%201.05-1.05h2.44a1.05%201.05%200%201%201%200%202.1h-2.44c-.28%200-.55-.12-.74-.31m1.01%202.79c0%20.29.12.55.31.74s.45.3.74.31h2.44a1.05%201.05%200%201%200%200-2.1h-2.44c-.58%200-1.05.47-1.05%201.05%22%20clip-rule%3D%22evenodd%22%2F%3E%3Cpath%20fill%3D%22%23635994%22%20d%3D%22m7.34%204.97l5.01%205.11a6.48%206.48%200%200%201%201.84%204.53l-.01%202.93L4.2%208.07z%22%2F%3E%3Cpath%20fill%3D%22%23bebebe%22%20d%3D%22M26.2%2029.8s-4-.4-8.93-3.73C12.94%2023.16%202.35%2011.6%202.35%2011.6c-.46-.46-.46-1.21%200-1.67l2.91-2.91s9.05%208.56%2010.46%2012.95c2.54%207.96%2013.52%208.69%2013.52%208.69l-.7.7c-.46.46-1.09.64-2.34.44%22%2F%3E%3C%2Fg%3E%3C%2Fsvg%3E"};
+    const fi = (n) => `<img class="fi" src="${FI[n]}" alt="">`;
+    document.querySelectorAll('[data-fi]').forEach(e => { e.src = FI[e.dataset.fi]; });
+    const HIJAIYAH_LIST = [
+      { char: 'ا', name: 'Alif', sound: 'Alif', color: '#dc2626' },
+      { char: 'ب', name: 'Ba', sound: 'Baa', color: '#16a34a' },
+      { char: 'ت', name: 'Ta', sound: 'Taa', color: '#2563eb' },
+      { char: 'ث', name: 'Tsa', sound: 'Tsaa', color: '#d97706' },
+      { char: 'ج', name: 'Jim', sound: 'Jiim', color: '#7c3aed' },
+      { char: 'ح', name: 'Ha', sound: 'Haa', color: '#0d9488' },
+      { char: 'خ', name: 'Kha', sound: 'Khoo', color: '#ea580c' },
+      { char: 'د', name: 'Dal', sound: 'Daal', color: '#475569' },
+      { char: 'ذ', name: 'Dzal', sound: 'Dzaal', color: '#f59e0b' },
+      { char: 'ر', name: 'Ra', sound: 'Roo', color: '#059669' },
+      { char: 'ز', name: 'Zai', sound: 'Zaay', color: '#9333ea' },
+      { char: 'س', name: 'Sin', sound: 'Siin', color: '#0284c7' },
+      { char: 'ش', name: 'Syin', sound: 'Syiin', color: '#db2777' },
+      { char: 'ص', name: 'Shad', sound: 'Shood', color: '#10b981' },
+      { char: 'ض', name: 'Dhad', sound: 'Dhood', color: '#eab308' },
+      { char: 'ط', name: 'Tha', sound: 'Thoo', color: '#0ea5e9' },
+      { char: 'ظ', name: 'Zha', sound: 'Zhoo', color: '#e11d48' },
+      { char: 'ع', name: '\'Ain', sound: '‘Ain', color: '#14b8a6' },
+      { char: 'غ', name: 'Ghain', sound: 'Ghoin', color: '#f97316' },
+      { char: 'ف', name: 'Fa', sound: 'Faa', color: '#22c55e' },
+      { char: 'ق', name: 'Qaf', sound: 'Qoof', color: '#6366f1' },
+      { char: 'ك', name: 'Kaf', sound: 'Kaaf', color: '#8b5cf6' },
+      { char: 'ل', name: 'Lam', sound: 'Laam', color: '#64748b' },
+      { char: 'م', name: 'Mim', sound: 'Miim', color: '#10b981' },
+      { char: 'ن', name: 'Nun', sound: 'Nuun', color: '#f43f5e' },
+      { char: 'و', name: 'Wawu', sound: 'Waawu', color: '#4f46e5' },
+      { char: 'ه', name: 'Ha', sound: 'Haa besar', color: '#f59e0b' },
+      { char: 'ي', name: 'Ya', sound: 'Yaa', color: '#ec4899' }
+    ];
+
+    // =========================================================================
+    // PROCEDURAL AUDIO SYNTHESIZER
+    // =========================================================================
+    let audioCtx = null;
+    let isSoundOn = true;
+
+    function initAudio() {
+      if (!audioCtx) {
+        audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+      }
+      if (audioCtx.state === 'suspended') {
+        audioCtx.resume();
+      }
+    }
+
+    function playTone(freq, type = 'sine', duration = 0.15, vol = 0.22) {
+      if (!isSoundOn || !audioCtx) return;
+      try {
+        const osc = audioCtx.createOscillator();
+        const gain = audioCtx.createGain();
+        osc.type = type;
+        osc.frequency.setValueAtTime(freq, audioCtx.currentTime);
+        gain.gain.setValueAtTime(vol, audioCtx.currentTime);
+        gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + duration);
+        osc.connect(gain);
+        gain.connect(audioCtx.destination);
+        osc.start();
+        osc.stop(audioCtx.currentTime + duration);
+      } catch (e) {}
+    }
+
+    function soundSuccess() {
+      playTone(523.25, 'triangle', 0.12, 0.28);
+      setTimeout(() => playTone(659.25, 'triangle', 0.12, 0.28), 90);
+      setTimeout(() => playTone(783.99, 'triangle', 0.15, 0.32), 180);
+      setTimeout(() => playTone(1046.50, 'sine', 0.28, 0.35), 270);
+    }
+
+    function soundCoin() {
+      playTone(880, 'sine', 0.08, 0.18);
+    }
+
+    function soundJump() {
+      if (!isSoundOn || !audioCtx) return;
+      try {
+        const osc = audioCtx.createOscillator();
+        const gain = audioCtx.createGain();
+        osc.type = 'sine';
+        osc.frequency.setValueAtTime(280, audioCtx.currentTime);
+        osc.frequency.exponentialRampToValueAtTime(620, audioCtx.currentTime + 0.16);
+        gain.gain.setValueAtTime(0.22, audioCtx.currentTime);
+        gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.16);
+        osc.connect(gain);
+        gain.connect(audioCtx.destination);
+        osc.start();
+        osc.stop(audioCtx.currentTime + 0.16);
+      } catch(e) {}
+    }
+
+    function soundLaneShift() {
+      playTone(400, 'sine', 0.06, 0.15);
+    }
+
+    function soundCrash() {
+      if (!isSoundOn || !audioCtx) return;
+      try {
+        const osc = audioCtx.createOscillator();
+        const gain = audioCtx.createGain();
+        osc.type = 'sawtooth';
+        osc.frequency.setValueAtTime(160, audioCtx.currentTime);
+        osc.frequency.exponentialRampToValueAtTime(25, audioCtx.currentTime + 0.45);
+        gain.gain.setValueAtTime(0.5, audioCtx.currentTime);
+        gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.45);
+        osc.connect(gain);
+        gain.connect(audioCtx.destination);
+        osc.start();
+        osc.stop(audioCtx.currentTime + 0.45);
+      } catch(e) {}
+    }
+
+    function speakLetter(text) {
+      if (!('speechSynthesis' in window)) return;
+      try {
+        window.speechSynthesis.cancel();
+        const u = new SpeechSynthesisUtterance(text);
+        u.lang = 'id-ID';
+        u.rate = 0.9;
+        u.pitch = 1.1;
+        window.speechSynthesis.speak(u);
+      } catch (e) {}
+    }
+
+    // =========================================================================
+    // 3D SCENE SETUP & CONSTANTS
+    // =========================================================================
+    const canvas = document.getElementById('gameCanvas');
+    let scene, camera, renderer;
+    let playerGroup, playerInner, leftLegMesh, rightLegMesh, leftArmMesh, rightArmMesh;
+
+    ['contextmenu','dragstart','selectstart'].forEach(ev=>document.addEventListener(ev,e=>e.preventDefault()));
+    // 3 Safe Running Lanes
+    const LANE_DISTANCE = 3.0;
+    const lanes = [-LANE_DISTANCE, 0, LANE_DISTANCE]; // -2.6, 0, 2.6
+    let currentLane = 1;
+    let targetX = 0;
+
+    const TRACK_WIDTH = 8.6;
+    const groundY = 0.65;
+    let isJumping = false;
+    let jumpVelocity = 0;
+    const gravity = -32;
+
+    let gameRunning = false;
+    let score = 0;
+    let streak = 1;
+    let maxStreak = 1;
+    let lettersCollectedCount = 0;
+    let currentMissionIndex = 1; // Mulai 'Ba'
+    let targetLetter = HIJAIYAH_LIST[1];
+    let syncT = 0, bootsT = 0, camLookY = 1.5, paused = false, cool = 0, lvT = null, lastT = null, mTimer = null, runSpeed = 22, elapsed = 0, diff = 0, lvl = 1, graceT = 0, spawnPad = null;
+    let wallCrashActive = false;
+
+    const SEGMENT_LENGTH = 50;
+    const NUM_SEGMENTS = 5;
+    let trackSegments = [];
+    let collectibleItems = [];
+    let obstacles = [];
+    let particleSystems = [];
+    let backgroundClouds = [];
+    let distantIslands = [];
+
+    // =========================================================================
+    // PROCEDURAL TEXTURES (VIBRANT & BALANCED CONTRAST)
+    // =========================================================================
+    const textureCache = {};
+
+    function createSkyTexture() {
+      const c = document.createElement('canvas');
+      c.width = 512; c.height = 512;
+      const ctx = c.getContext('2d');
+      const grad = ctx.createLinearGradient(0, 0, 0, 512);
+      grad.addColorStop(0.0, '#1e40af'); // Deep royal blue
+      grad.addColorStop(0.45, '#3b82f6'); // Azure blue
+      grad.addColorStop(0.8, '#93c5fd'); // Soft horizon
+      grad.addColorStop(1.0, '#fed7aa'); // Warm golden sunset haze
+      ctx.fillStyle = grad;
+      ctx.fillRect(0, 0, 512, 512);
+      return new THREE.CanvasTexture(c);
+    }
+
+    // Rich Islamic Turquoise & Navy Mosaic Track
+    function createMosaicTrackTexture() {
+      const c = document.createElement('canvas');
+      c.width = 512; c.height = 512;
+      const ctx = c.getContext('2d');
+
+      // Base royal navy cobblestone
+      ctx.fillStyle = '#0f2942';
+      ctx.fillRect(0, 0, 512, 512);
+
+      // Tile paving blocks
+      ctx.strokeStyle = '#1a3e61';
+      ctx.lineWidth = 4;
+      for (let y = 0; y < 512; y += 64) {
+        for (let x = 0; x < 512; x += 64) {
+          ctx.strokeRect(x + 2, y + 2, 60, 60);
+        }
+      }
+
+      // Three running lane guides (Glowing golden lines)
+      ctx.fillStyle = 'rgba(245, 158, 11, 0.45)';
+      ctx.fillRect(166, 0, 10, 512);
+      ctx.fillRect(336, 0, 10, 512);
+
+      // Golden geometric star insets along center
+      ctx.fillStyle = '#f59e0b';
+      for (let y = 32; y < 512; y += 128) {
+        ctx.beginPath();
+        ctx.arc(256, y, 10, 0, Math.PI * 2);
+        ctx.fill();
+      }
+
+      // Outer gold edge curbs
+      ctx.fillStyle = '#f59e0b';
+      ctx.fillRect(0, 0, 18, 512);
+      ctx.fillRect(494, 0, 18, 512);
+
+      const tex = new THREE.CanvasTexture(c);
+      tex.wrapS = THREE.RepeatWrapping;
+      tex.wrapT = THREE.RepeatWrapping;
+      tex.repeat.set(1, 4);
+      return tex;
+    }
+
+    // Huruf MURNI: hanya glyph (tanpa koin/chip/panel), dengan outline tebal agar tetap terbaca
+    function getMedallionTexture(char, bgColor, isTarget) {
+      const key = `${char}_${bgColor}_${isTarget}`;
+      if (textureCache[key]) return textureCache[key];
+      const c = document.createElement('canvas');
+      c.width = c.height = 384;
+      const ctx = c.getContext('2d');
+      ctx.font = 'bold 290px "Amiri", serif';
+      ctx.textAlign = 'center'; ctx.textBaseline = 'middle'; ctx.lineJoin = 'round';
+      ctx.shadowColor = isTarget ? 'rgba(250,204,21,.9)' : 'rgba(15,23,42,.45)';
+      ctx.shadowBlur = isTarget ? 38 : 14;
+      ctx.strokeStyle = isTarget ? '#047857' : '#0f172a'; ctx.lineWidth = 46; ctx.strokeText(char, 192, 206);
+      ctx.shadowBlur = 0;
+      ctx.strokeStyle = '#ffffff'; ctx.lineWidth = 22; ctx.strokeText(char, 192, 206);
+      ctx.fillStyle = isTarget ? '#fde047' : (bgColor || '#38bdf8'); ctx.fillText(char, 192, 206);
+      const tex = new THREE.CanvasTexture(c);
+      textureCache[key] = tex;
+      return tex;
+    }
+
+    // Carved Stone Arabesque Pattern for Walls
+    function createStoneWallTexture() {
+      const c = document.createElement('canvas');
+      c.width = 256; c.height = 256;
+      const ctx = c.getContext('2d');
+      ctx.fillStyle = '#e2e8f0';
+      ctx.fillRect(0, 0, 256, 256);
+
+      ctx.strokeStyle = '#94a3b8';
+      ctx.lineWidth = 5;
+      ctx.strokeRect(6, 6, 244, 118);
+      ctx.strokeRect(6, 130, 244, 118);
+
+      // Arabesque floral arch engraving
+      ctx.strokeStyle = '#64748b';
+      ctx.lineWidth = 6;
+      ctx.beginPath();
+      ctx.arc(128, 65, 34, 0, Math.PI, true);
+      ctx.stroke();
+      ctx.beginPath();
+      ctx.arc(128, 189, 34, 0, Math.PI, true);
+      ctx.stroke();
+
+      return new THREE.CanvasTexture(c);
+    }
+
+    // =========================================================================
+    // INITIALIZE THREE.JS SCENE
+    // =========================================================================
+    function initThree() {
+      scene = new THREE.Scene();
+
+      // Sky Dome
+      const skyGeo = new THREE.SphereGeometry(240, 32, 16);
+      const skyMat = new THREE.MeshBasicMaterial({
+        map: createSkyTexture(),
+        side: THREE.BackSide
+      });
+      scene.add(new THREE.Mesh(skyGeo, skyMat));
+
+      scene.fog = new THREE.FogExp2(0x93c5fd, 0.008);
+
+      // Elevated Camera Angle with panoramic field of view
+      camera = new THREE.PerspectiveCamera(54, window.innerWidth / window.innerHeight, 0.1, 350);
+      fitCam();
+      camera.position.set(0, 0.65 + 4.35 * camK, 7.8 * camK);
+      camera.lookAt(0, 1.4, -6);
+
+      // Renderer
+      renderer = new THREE.WebGLRenderer({ canvas, antialias: true, powerPreference: 'high-performance' });
+      renderer.setSize(window.innerWidth, window.innerHeight);
+      renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+      renderer.shadowMap.enabled = true;
+      renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+
+      // Lights - Soft balanced studio lighting
+      const ambientLight = new THREE.AmbientLight(0xfff7ed, 0.75);
+      scene.add(ambientLight);
+
+      const sunLight = new THREE.DirectionalLight(0xfffae8, 1.1);
+      sunLight.position.set(20, 35, 25);
+      sunLight.castShadow = true;
+      sunLight.shadow.mapSize.width = 1024;
+      sunLight.shadow.mapSize.height = 1024;
+      sunLight.shadow.camera.near = 5;
+      sunLight.shadow.camera.far = 80;
+      sunLight.shadow.camera.left = -16;
+      sunLight.shadow.camera.right = 16;
+      sunLight.shadow.camera.top = 16;
+      sunLight.shadow.camera.bottom = -16;
+      scene.add(sunLight);
+
+      const hemiLight = new THREE.HemisphereLight(0x60a5fa, 0x1e293b, 0.55);
+      scene.add(hemiLight);
+
+      createFloatingIslands();
+      createBackgroundClouds();
+      createPlayer();
+      createInitialTrack();
+
+      window.addEventListener('resize', onWindowResize);
+    }
+
+    // =========================================================================
+    // AHMAD 3D CHARACTER (RICH BACK VIEW & SATCHEL BAG)
+    // =========================================================================
+    function createPlayer() {
+      playerGroup = new THREE.Group();
+      playerInner = new THREE.Group();
+
+      // Beruang kotak: warna polos bersih (tanpa corak), gaya Minecraft-kartun
+      const mk = (c) => new THREE.MeshLambertMaterial({ color: c, emissive: c, emissiveIntensity: 0.18 });
+      const fm = mk(0x8a5530), hm = mk(0x9c6339), lm = mk(0xe3b98a), dm = mk(0x3b2314), pm = mk(0x4a2c17), ym = mk(0xffc928);
+      BEAR = { fm, hm, lm };
+      const bx = (w, h, d, m, X, Y, Z) => { const e = new THREE.Mesh(new THREE.BoxGeometry(w, h, d), m); e.position.set(X, Y, Z); e.castShadow = true; return e; };
+      playerInner.add(bx(0.8, 0.92, 0.52, fm, 0, 1.02, 0), bx(0.5, 0.6, 0.06, lm, 0, 1.0, -0.28), bx(0.88, 0.76, 0.76, hm, 0, 1.84, 0),
+        bx(0.3, 0.3, 0.22, hm, -0.36, 2.34, 0), bx(0.3, 0.3, 0.22, hm, 0.36, 2.34, 0), bx(0.15, 0.15, 0.24, lm, -0.36, 2.34, -0.02), bx(0.15, 0.15, 0.24, lm, 0.36, 2.34, -0.02),
+        bx(0.4, 0.28, 0.16, lm, 0, 1.72, -0.45), bx(0.14, 0.1, 0.06, dm, 0, 1.8, -0.55), bx(0.1, 0.12, 0.05, dm, -0.2, 1.92, -0.39), bx(0.1, 0.12, 0.05, dm, 0.2, 1.92, -0.39),
+        bx(0.34, 0.4, 0.12, ym, 0, 1.1, 0.32), bx(0.26, 0.24, 0.12, ym, 0, 1.44, 0.32), bx(0.1, 0.26, 0.1, ym, -0.24, 1.12, 0.32), bx(0.1, 0.26, 0.1, ym, 0.24, 1.12, 0.32));
+      leftArmMesh = bx(0.26, 0.74, 0.28, fm, -0.55, 1.05, 0); rightArmMesh = bx(0.26, 0.74, 0.28, fm, 0.55, 1.05, 0);
+      leftLegMesh = bx(0.32, 0.56, 0.34, fm, -0.2, 0.28, 0); rightLegMesh = bx(0.32, 0.56, 0.34, fm, 0.2, 0.28, 0);
+      leftLegMesh.add(bx(0.34, 0.12, 0.4, pm, 0, -0.26, -0.03)); rightLegMesh.add(bx(0.34, 0.12, 0.4, pm, 0, -0.26, -0.03));
+      playerInner.add(leftArmMesh, rightArmMesh, leftLegMesh, rightLegMesh);
+      applySkin(SKIN);
+
+      // Soft Golden Aura Ring under Ahmad
+      const ringGeo = new THREE.RingGeometry(0.65, 0.85, 32);
+      const ringMat = new THREE.MeshBasicMaterial({ color: 0xf59e0b, side: THREE.DoubleSide, transparent: true, opacity: 0.75 });
+      const aura = new THREE.Mesh(ringGeo, ringMat);
+      aura.rotation.x = Math.PI / 2;
+      aura.position.y = 0.05;
+      playerInner.add(aura);
+
+      playerGroup.add(playerInner);
+      playerGroup.position.set(0, groundY, 0);
+      scene.add(playerGroup);
+    }
+
+    // =========================================================================
+    // BACKGROUND ISLAMIC ISLANDS & CLOUDS
+    // =========================================================================
+    function createFloatingIslands() {
+      for (let i = 0; i < 8; i++) {
+        const island = new THREE.Group();
+
+        // Rocky base
+        const rockGeo = new THREE.ConeGeometry(6 + Math.random() * 3, 9, 7);
+        const rockMat = new THREE.MeshStandardMaterial({ color: 0x334155, roughness: 0.9, flatShading: true });
+        const rock = new THREE.Mesh(rockGeo, rockMat);
+        rock.rotation.x = Math.PI;
+        island.add(rock);
+
+        // Lush grass terrace
+        const grassGeo = new THREE.CylinderGeometry(6.2, 6.2, 1.2, 7);
+        const grassMat = new THREE.MeshStandardMaterial({ color: 0x10b981, roughness: 0.6 });
+        const grass = new THREE.Mesh(grassGeo, grassMat);
+        grass.position.y = 0.6;
+        island.add(grass);
+
+        // Mosque with golden dome
+        const mosque = createMiniMosque();
+        mosque.position.y = 1.2;
+        island.add(mosque);
+
+        const side = i % 2 === 0 ? 1 : -1;
+        island.position.set(
+          (26 + Math.random() * 24) * side,
+          1 + (Math.random() - 0.5) * 14,
+          -30 - i * 40
+        );
+        scene.add(island);
+        distantIslands.push(island);
+      }
+    }
+
+    function createMiniMosque() {
+      const g = new THREE.Group();
+      const whiteMat = new THREE.MeshStandardMaterial({ color: 0xffffff, roughness: 0.3 });
+      const goldMat = new THREE.MeshStandardMaterial({ color: 0xf59e0b, metalness: 0.85, roughness: 0.2 });
+
+      // Prayer Hall
+      const hall = new THREE.Mesh(new THREE.BoxGeometry(4.2, 3.2, 4.2), whiteMat);
+      hall.position.y = 1.6;
+      g.add(hall);
+
+      // Golden Dome
+      const dome = new THREE.Mesh(new THREE.SphereGeometry(2.5, 20, 14, 0, Math.PI * 2, 0, Math.PI / 2), goldMat);
+      dome.position.y = 3.2;
+      g.add(dome);
+
+      // Minaret
+      const minaret = new THREE.Mesh(new THREE.CylinderGeometry(0.4, 0.5, 7.5, 10), whiteMat);
+      minaret.position.set(2.2, 3.75, 2.2);
+      const minDome = new THREE.Mesh(new THREE.ConeGeometry(0.55, 1.4, 10), goldMat);
+      minDome.position.set(2.2, 8.2, 2.2);
+      g.add(minaret, minDome);
+
+      return g;
+    }
+
+    function createBackgroundClouds() {
+      for (let i = 0; i < 22; i++) {
+        const cloud = new THREE.Group();
+        const puffMat = new THREE.MeshStandardMaterial({ color: 0xffffff, roughness: 0.9, transparent: true, opacity: 0.88 });
+        const numPuffs = 4 + Math.floor(Math.random() * 3);
+
+        for (let p = 0; p < numPuffs; p++) {
+          const r = 2.4 + Math.random() * 2.6;
+          const puff = new THREE.Mesh(new THREE.SphereGeometry(r, 10, 8), puffMat);
+          puff.position.set((p - numPuffs / 2) * 2.2, (Math.random() - 0.5) * 1.5, (Math.random() - 0.5) * 2);
+          cloud.add(puff);
+        }
+
+        const lowc = i % 4 === 0, side = Math.random() < 0.5 ? -1 : 1;
+        cloud.position.set(lowc ? (Math.random() - 0.5) * 60 : side * (14 + Math.random() * 56), lowc ? -16 + Math.random() * 6 : -4 + Math.random() * 22, -Math.random() * 220);
+        scene.add(cloud);
+        backgroundClouds.push(cloud);
+      }
+    }
+
+    // =========================================================================
+    // JEMBATAN LANGIT TRACK & GRAND ARCHES
+    // =========================================================================
+    const mosaicTrackTex = createMosaicTrackTexture();
+    const stoneWallTex = createStoneWallTexture();
+
+    // ===== Tema dunia: Batu (tanah + batu) -> Kayu, berganti tiap 3 level; gedung ikut berubah =====
+    function cv(w, h, fn) { const c = document.createElement('canvas'); c.width = w; c.height = h; fn(c.getContext('2d'), w, h); const t = new THREE.CanvasTexture(c); t.wrapS = t.wrapT = THREE.RepeatWrapping; t.magFilter = THREE.NearestFilter; return t; }
+    const rnd = (a, b) => a + Math.random() * (b - a);
+    function rr(x, X, Y, w, h, r, f, st) { x.fillStyle = f; x.strokeStyle = st; x.lineWidth = 3; x.beginPath(); x.moveTo(X + r, Y); x.arcTo(X + w, Y, X + w, Y + h, r); x.arcTo(X + w, Y + h, X, Y + h, r); x.arcTo(X, Y + h, X, Y, r); x.arcTo(X, Y, X + w, Y, r); x.closePath(); x.fill(); x.stroke(); }
+    const FLOORMAT = new THREE.MeshStandardMaterial({ roughness: 0.9, metalness: 0 }), RAILMAT = new THREE.MeshStandardMaterial({ color: 0x9a8f7e, roughness: 0.8 });
+    let TH = null, curTheme = 0;
+    function getTH() {
+      if (TH) return TH;
+      const stoneFloor = cv(256, 256, (x) => {
+        x.fillStyle = '#8a5a33'; x.fillRect(0, 0, 256, 256);
+        for (let i = 0; i < 70; i++) { x.fillStyle = Math.random() < 0.5 ? '#7a4c28' : '#9a6a3f'; x.fillRect(rnd(0, 250), rnd(0, 250), 6, 6); }
+        for (let r = 0; r < 3; r++) for (let c = 0; c < 4; c++) { const X = c * 85 + 6 - (r % 2 ? 40 : 0), Y = r * 85 + 6; rr(x, X, Y, 73, 73, 14, '#d3cbba', '#4b2f17'); x.fillStyle = 'rgba(255,255,255,.3)'; x.fillRect(X + 12, Y + 9, 44, 8); }
+      });
+      const woodFloor = cv(256, 256, (x) => {
+        for (let p = 0; p < 4; p++) { x.fillStyle = p % 2 ? '#b8803c' : '#c48a45'; x.fillRect(p * 64, 0, 64, 256); x.fillStyle = '#6b3f1c'; x.fillRect(p * 64, 0, 3, 256); x.strokeStyle = '#9a6430'; x.lineWidth = 2; for (let g = 0; g < 5; g++) { const gx = p * 64 + rnd(8, 56); x.beginPath(); x.moveTo(gx, 0); x.lineTo(gx + rnd(-4, 4), 256); x.stroke(); } }
+        x.fillStyle = '#6b3f1c'; x.fillRect(0, 100, 256, 3); x.fillRect(0, 200, 256, 3); x.fillStyle = '#4a2c12'; for (let p = 0; p < 4; p++) [104, 204].forEach(y => x.fillRect(p * 64 + 8, y, 4, 4));
+      });
+      stoneFloor.repeat.set(2, 10); woodFloor.repeat.set(2, 10);
+      const win = (x, glass) => { [10, 40].forEach(X => { x.fillStyle = '#3b2a1a'; x.fillRect(X - 2, 12, 18, 36); x.fillStyle = glass; x.fillRect(X, 14, 14, 32); }); };
+      const wall = (kind, fl) => { const t = cv(64, 64, (x) => {
+        if (kind === 0) { x.fillStyle = '#c4bcab'; x.fillRect(0, 0, 64, 64); x.strokeStyle = '#8f8777'; x.lineWidth = 2; for (let y = 0; y <= 64; y += 16) { x.beginPath(); x.moveTo(0, y); x.lineTo(64, y); x.stroke(); for (let X = (y / 16) % 2 ? 8 : 0; X < 64; X += 16) { x.beginPath(); x.moveTo(X, y); x.lineTo(X, y + 16); x.stroke(); } } win(x, '#4a6fa5'); }
+        else { x.fillStyle = '#a9743d'; x.fillRect(0, 0, 64, 64); x.fillStyle = '#6e4521'; for (let y = 0; y < 64; y += 8) x.fillRect(0, y, 64, 2); win(x, '#ffe9a8'); }
+      }); t.repeat.set(2, fl); return t; };
+      TH = [
+        { name: 'Batu', floor: stoneFloor, rail: 0x9a8f7e, wall: [2, 3, 4].map(f => wall(0, f)), tint: [0xffffff, 0xf3ece0, 0xe3e8f0, 0xf0e0d8, 0xe6efdc] },
+        { name: 'Kayu', floor: woodFloor, rail: 0x7a4a22, wall: [2, 3, 4].map(f => wall(1, f)), tint: [0xffffff, 0xf1d9bf, 0xd9b28a, 0xe8c9a0, 0xc99f70] }
+      ];
+      FLOORMAT.map = TH[0].floor; RAILMAT.color.setHex(TH[0].rail);
+      return TH;
+    }
+    function applyTheme(i) {
+      const T = getTH()[i]; FLOORMAT.map = T.floor; FLOORMAT.needsUpdate = true; RAILMAT.color.setHex(T.rail);
+      if (SC) SC.bm.forEach((row, ci) => row.forEach((m, hi) => { m.map = T.wall[hi]; m.color.setHex(T.tint[ci % T.tint.length]); m.needsUpdate = true; }));
+    }
+
+    // Tepi jalur: rumput kotak bergaya Minecraft-kartun, semak blok, dan gedung bertema
+    let SC = null;
+    function createSideScenery(g) {
+      if (!SC) {
+        const grass = cv(64, 64, (x) => {
+          for (let r = 0; r < 4; r++) for (let c = 0; c < 4; c++) { x.fillStyle = (r + c) % 2 ? '#86cf3a' : '#78c030'; x.fillRect(c * 16, r * 16, 16, 16); }
+          for (let i = 0; i < 14; i++) { x.fillStyle = '#5fa526'; const X = rnd(0, 60), Y = rnd(0, 58); x.fillRect(X, Y, 2, 5); x.fillRect(X + 3, Y + 2, 2, 3); }
+          [[12, 14], [44, 40]].forEach(([X, Y]) => { x.fillStyle = '#fff'; x.fillRect(X - 3, Y - 1, 7, 3); x.fillRect(X - 1, Y - 3, 3, 7); x.fillStyle = '#ffb21f'; x.fillRect(X - 1, Y - 1, 3, 3); });
+        });
+        grass.repeat.set(6, 30);
+        const dirt = (rx) => { const t = cv(32, 32, (x) => { x.fillStyle = '#7a4a24'; x.fillRect(0, 0, 32, 32); for (let i = 0; i < 18; i++) { x.fillStyle = Math.random() < 0.5 ? '#633a1b' : '#8d5a2d'; x.fillRect(((Math.random() * 8) | 0) * 4, ((Math.random() * 8) | 0) * 4, 4, 4); } x.fillStyle = '#78c030'; x.fillRect(0, 0, 32, 7); x.fillStyle = '#5fa526'; x.fillRect(0, 7, 32, 2); }); t.repeat.set(rx, 1); return t; };
+        const dx = new THREE.MeshLambertMaterial({ map: dirt(30) }), dz = new THREE.MeshLambertMaterial({ map: dirt(6) }), gm = new THREE.MeshLambertMaterial({ map: grass });
+        const leaf = cv(16, 16, (x) => { x.fillStyle = '#3fae3a'; x.fillRect(0, 0, 16, 16); for (let i = 0; i < 10; i++) { x.fillStyle = Math.random() < 0.5 ? '#2e8f2f' : '#5cc84a'; x.fillRect(((Math.random() * 4) | 0) * 4, ((Math.random() * 4) | 0) * 4, 4, 4); } });
+        const H = [5.5, 8, 11], T0 = getTH()[curTheme];
+        SC = {
+          H, box: new THREE.BoxGeometry(1, 1, 1), dome: new THREE.SphereGeometry(1, 14, 8, 0, Math.PI * 2, 0, Math.PI / 2),
+          bm: T0.tint.map(c => T0.wall.map(t => new THREE.MeshLambertMaterial({ color: c, map: t }))),
+          gold: new THREE.MeshStandardMaterial({ color: 0xf59e0b, metalness: 0.7, roughness: 0.3 }), roof: new THREE.MeshLambertMaterial({ color: 0x8b5e3c }),
+          leaf: new THREE.MeshLambertMaterial({ map: leaf }), curb: new THREE.MeshLambertMaterial({ color: 0xf1e2bf }),
+          platGeo: new THREE.BoxGeometry(9.6, 1.4, SEGMENT_LENGTH), platMat: [dx, dx, gm, dz, dz, dz], curbGeo: new THREE.BoxGeometry(0.5, 0.25, SEGMENT_LENGTH)
+        };
+      }
+      for (const sd of [-1, 1]) {
+        const pl = new THREE.Mesh(SC.platGeo, SC.platMat); pl.position.set(sd * 10.4, -0.7, 0); pl.receiveShadow = true; g.add(pl);
+        const cb = new THREE.Mesh(SC.curbGeo, SC.curb); cb.position.set(sd * 5.45, 0.12, 0); g.add(cb);
+        for (let z = -3; z > -SEGMENT_LENGTH + 2; z -= 5 + Math.random() * 3) {
+          const r = Math.random();
+          if (r < 0.42) {
+            const hi = (Math.random() * 3) | 0, w = 3 + Math.random() * 1.4, h = SC.H[hi], d = 3 + Math.random(), bx = sd * (9.8 + Math.random() * 2.8);
+            const b = new THREE.Mesh(SC.box, SC.bm[(Math.random() * SC.bm.length) | 0][hi]); b.scale.set(w, h, d); b.position.set(bx, h / 2, z); b.castShadow = true; g.add(b);
+            if (Math.random() < 0.55) { const dm = new THREE.Mesh(SC.dome, SC.gold); dm.scale.setScalar(w * 0.4); dm.position.set(bx, h, z); g.add(dm); }
+            else { const rf = new THREE.Mesh(SC.box, SC.roof); rf.scale.set(w + 0.3, 0.35, d + 0.3); rf.position.set(bx, h + 0.17, z); g.add(rf); }
+          } else if (r < 0.7) {
+            const x0 = sd * (7.2 + Math.random() * 2.4), n = 1 + ((Math.random() * 3) | 0);
+            for (let k = 0; k < n; k++) { const s2 = 0.7 + Math.random() * 0.5, c = new THREE.Mesh(SC.box, SC.leaf); c.scale.setScalar(s2); c.position.set(x0 + (k % 2) * 0.6 * sd, s2 / 2 + (k > 1 ? 0.6 : 0), z + (k > 0 ? 0.5 : 0)); c.castShadow = true; g.add(c); }
+          }
+        }
+      }
+    }
+
+    function createTrackSegment(zPos) {
+      const segGroup = new THREE.Group();
+
+      // Mosaic Track Floor
+      const floorGeo = new THREE.BoxGeometry(TRACK_WIDTH, 1.4, SEGMENT_LENGTH);
+      getTH(); const floorMat = FLOORMAT;
+      const floorMesh = new THREE.Mesh(floorGeo, floorMat);
+      floorMesh.position.y = -0.7;
+      floorMesh.receiveShadow = true;
+      segGroup.add(floorMesh);
+
+      // Gold Balustrade Rails (LEFT & RIGHT)
+      const railGeo = new THREE.BoxGeometry(0.35, 0.95, SEGMENT_LENGTH);
+      const railMat = RAILMAT;
+
+      const leftRail = new THREE.Mesh(railGeo, railMat);
+      leftRail.position.set(-TRACK_WIDTH / 2 + 0.18, 0.45, 0);
+      leftRail.castShadow = true;
+
+      const rightRail = new THREE.Mesh(railGeo, railMat);
+      rightRail.position.set(TRACK_WIDTH / 2 - 0.18, 0.45, 0);
+      rightRail.castShadow = true;
+
+      // Glowing Cyan Laser Runner on Rails
+      const laserGeo = new THREE.BoxGeometry(0.12, 0.12, SEGMENT_LENGTH);
+      const laserMat = new THREE.MeshBasicMaterial({ color: 0x38bdf8 });
+      const leftLaser = new THREE.Mesh(laserGeo, laserMat);
+      leftLaser.position.set(-TRACK_WIDTH / 2 + 0.18, 0.95, 0);
+      const rightLaser = new THREE.Mesh(laserGeo, laserMat);
+      rightLaser.position.set(TRACK_WIDTH / 2 - 0.18, 0.95, 0);
+
+      segGroup.add(leftRail, rightRail, leftLaser, rightLaser);
+
+      createSideScenery(segGroup); // gedung & pohon di kiri-kanan (menggantikan portal)
+
+      segGroup.position.z = zPos;
+      scene.add(segGroup);
+      return segGroup;
+    }
+
+    // Wide Grand Arch (Width 13 so pillars never obscure runner view)
+    function createGrandArch() {
+      const g = new THREE.Group();
+      const stoneMat = new THREE.MeshStandardMaterial({ map: stoneWallTex, roughness: 0.4 });
+      const goldMat = new THREE.MeshStandardMaterial({ color: 0xf59e0b, metalness: 0.8, roughness: 0.2 });
+
+      // Left Pillar (Far outside left track)
+      const leftPillar = new THREE.Mesh(new THREE.BoxGeometry(1.2, 9, 1.2), stoneMat);
+      leftPillar.position.set(-6.5, 4.5, 0);
+
+      // Right Pillar (Far outside right track)
+      const rightPillar = new THREE.Mesh(new THREE.BoxGeometry(1.2, 9, 1.2), stoneMat);
+      rightPillar.position.set(6.5, 4.5, 0);
+
+      // Overhead Arched Architrave
+      const topBeam = new THREE.Mesh(new THREE.BoxGeometry(14.2, 1.5, 1.4), stoneMat);
+      topBeam.position.set(0, 9.2, 0);
+
+      // Golden Arch Crown
+      const crown = new THREE.Mesh(new THREE.ConeGeometry(1.6, 2.2, 8), goldMat);
+      crown.position.set(0, 10.8, 0);
+
+      // Hanging Lantern with PointLight
+      const lantern = new THREE.Mesh(new THREE.OctahedronGeometry(0.5), new THREE.MeshBasicMaterial({ color: 0xfef08a }));
+      lantern.position.set(0, 7.8, 0);
+
+      const lanternLight = new THREE.PointLight(0xffea79, 1.2, 16);
+      lanternLight.position.set(0, 7.8, 0);
+
+      g.add(leftPillar, rightPillar, topBeam, crown, lantern, lanternLight);
+      return g;
+    }
+
+    function createInitialTrack() {
+      for (let i = 0; i < NUM_SEGMENTS; i++) {
+        const z = -i * SEGMENT_LENGTH;
+        const seg = createTrackSegment(z);
+        trackSegments.push(seg);
+        if (i > 0) {
+          spawnSpawnersForSegment(z);
+        }
+      }
+    }
+
+    // =========================================================================
+    // SPAWNING LETTERS & OBSTACLES (SPASI SANGAT LEGA & NYAMAN)
+    // =========================================================================
+    function spawnSpawnersForSegment(segZ) {
+      // Dua titik kemunculan per 50 unit (Jarak 25 unit antar titik — sangat lega!)
+      // Tiga titik per 50 unit (jarak 15): huruf, rintangan ekstra, rintangan/huruf. Makin jauh makin padat.
+      spawnLetterWave(segZ - 8);
+      if (Math.random() < 0.25 + diff * 0.6) spawnObstacleWave(segZ - 23);
+      if (Math.random() < 0.7 + diff * 0.25) spawnObstacleWave(segZ - 38);
+      else spawnLetterWave(segZ - 38);
+      const pr = Math.random();
+      if (pr < 0.22) spawnPower('boots', lanes[(Math.random() * 3) | 0], segZ - 16);
+    }
+
+    // Misi acak: tiap gelombang membawa 1 misi dari "kantong acak" (tidak berulang sampai semua huruf keluar).
+    // Isi gelombang ditentukan SAAT DIBUAT dan tidak pernah berubah; target di HUD = misi gelombang terdekat di depan.
+    let bag = [], lastM = null, waves = [], waveId = 0, okSet = new Map(), badSet = new Map(), confuse = [], practice = null, practiceNext = null, lastBad = [];
+    function nextMission() {
+      if (!bag.length) {
+        bag = (practice || HIJAIYAH_LIST).slice();
+        for (let i = bag.length - 1; i > 0; i--) { const j = (Math.random() * (i + 1)) | 0; [bag[i], bag[j]] = [bag[j], bag[i]]; }
+        if (lastM && bag[bag.length - 1] === lastM) bag.unshift(bag.pop());
+      }
+      return (lastM = bag.pop());
+    }
+    function spawnLetterWave(zPos) {
+      const lt = nextMission(), ti = (Math.random() * 3) | 0, used = new Set([lt.char]);
+      waves.push({ id: waveId++, letter: lt, z: zPos });
+      for (let li = 0; li < 3; li++) {
+        let L = lt;
+        if (li !== ti) { do { L = HIJAIYAH_LIST[(Math.random() * HIJAIYAH_LIST.length) | 0]; } while (used.has(L.char)); used.add(L.char); }
+        spawnLetterMedallion(lanes[li], zPos, L, li === ti);
+      }
+    }
+
+    let lastSafe = 1;
+    function spawnObstacleWave(zPos) {
+      // Makin sulit: peluang 2 lane terblokir naik, selalu ada 1 lane aman
+      const opts = [0, 1, 2].filter(l => Math.abs(l - lastSafe) <= 1), safe = opts[Math.floor(Math.random() * opts.length)];
+      lastSafe = safe;
+      const two = diff > 0.35 && Math.random() < diff * 0.7;
+      for (let li = 0; li < 3; li++) {
+        if (li === safe) continue;
+        if (!two && li !== (safe + 1) % 3) continue;
+        if (Math.random() < 0.5) spawnStoneWall(lanes[li], zPos); else spawnLava(lanes[li], zPos);
+      }
+      spawnBonusStar(lanes[safe], zPos);
+    }
+
+    // =========================================================================
+    // 3D COLLECTIBLE COINS & OBSTACLES
+    // =========================================================================
+    // Huruf hijaiyah langsung melayang (pure glyph, tanpa disc/panel)
+    function spawnLetterMedallion(x, z, letterData, isTarget) {
+      const group = new THREE.Group();
+      const mat = new THREE.MeshBasicMaterial({ map: getMedallionTexture(letterData.char, letterData.color, false), transparent: true, depthWrite: false });
+      group.add(new THREE.Mesh(new THREE.PlaneGeometry(2.3, 2.3), mat));
+      group.position.set(x, 1.5, z);
+      group.userData = { type: 'letter', isTarget: isTarget, letter: letterData, rotSpeed: 0, baseY: 1.5 };
+      scene.add(group);
+      collectibleItems.push(group);
+    }
+
+    // Carved Stone Wall Obstacle — "Kalo kena tembok gagal!"
+    function spawnStoneWall(x, z) {
+      const wallGroup = new THREE.Group();
+
+      const wallGeo = new THREE.BoxGeometry(2.3, 3.6, 0.8);
+      const wallMat = new THREE.MeshStandardMaterial({ map: stoneWallTex, roughness: 0.5 });
+      const wallMesh = new THREE.Mesh(wallGeo, wallMat);
+      wallMesh.position.y = 1.8;
+      wallMesh.castShadow = true;
+      wallGroup.add(wallMesh);
+
+      // Red Hazard Trim
+      const hazardGeo = new THREE.BoxGeometry(1.8, 0.45, 0.86);
+      const hazardMat = new THREE.MeshBasicMaterial({ color: 0xef4444 });
+      const hazard = new THREE.Mesh(hazardGeo, hazardMat);
+      hazard.position.y = 1.9;
+      wallGroup.add(hazard);
+
+      wallGroup.position.set(x, 0, z);
+      wallGroup.userData = { type: 'wall' };
+
+      scene.add(wallGroup);
+      obstacles.push(wallGroup);
+    }
+
+    // Pilar Lava berdiri — tinggi naik-turun, lompat saat rendah
+    let lavaTex = null;
+    function spawnLava(x, z) {
+      if (!lavaTex) {
+        const c = document.createElement('canvas'); c.width = c.height = 128;
+        const g = c.getContext('2d');
+        g.fillStyle = '#ff4d00'; g.fillRect(0, 0, 128, 128);
+        for (let i = 0; i < 26; i++) { g.fillStyle = i % 3 ? '#ff9a1f' : '#ffd84a'; g.beginPath(); g.arc(Math.random() * 128, Math.random() * 128, 6 + Math.random() * 14, 0, 6.3); g.fill(); }
+        for (let i = 0; i < 8; i++) { g.fillStyle = 'rgba(90,20,5,.65)'; g.beginPath(); g.arc(Math.random() * 128, Math.random() * 128, 5 + Math.random() * 9, 0, 6.3); g.fill(); }
+        lavaTex = new THREE.CanvasTexture(c); lavaTex.wrapS = lavaTex.wrapT = THREE.RepeatWrapping;
+      }
+      const grp = new THREE.Group();
+      const col = new THREE.Mesh(new THREE.BoxGeometry(2.1, 1, 0.9), new THREE.MeshBasicMaterial({ map: lavaTex }));
+      grp.add(col);
+      const cap = new THREE.Mesh(new THREE.PlaneGeometry(2.5, 1.2), new THREE.MeshBasicMaterial({ color: 0xffd84a, transparent: true, opacity: 0.5, blending: THREE.AdditiveBlending, depthWrite: false }));
+      cap.rotation.x = -Math.PI / 2; grp.add(cap);
+      const fl = [];
+      for (let k = 0; k < 3; k++) { const f = new THREE.Mesh(new THREE.ConeGeometry(0.32, 0.9, 6), new THREE.MeshBasicMaterial({ color: k % 2 ? 0xffb300 : 0xff5a1f })); f.position.x = (k - 1) * 0.65; grp.add(f); fl.push(f); }
+      const rim = new THREE.Mesh(new THREE.BoxGeometry(2.6, 0.18, 1.5), new THREE.MeshStandardMaterial({ color: 0x3b1a12, roughness: 0.9 }));
+      rim.position.y = 0.09; grp.add(rim);
+      const glow = new THREE.Mesh(new THREE.PlaneGeometry(3.4, 3), new THREE.MeshBasicMaterial({ color: 0xff7a1a, transparent: true, opacity: 0.25, blending: THREE.AdditiveBlending, depthWrite: false }));
+      glow.rotation.x = -Math.PI / 2; glow.position.y = 0.05; grp.add(glow);
+      grp.position.set(x, 0, z);
+      grp.userData = { type: 'lava', ph: Math.random() * 6.28, col, cap, fl, h: 1.2 };
+      scene.add(grp);
+      obstacles.push(grp);
+    }
+    function animLava(o, time) {
+      const u = o.userData;
+      u.h = 1.15 + 0.65 * Math.sin(time * (2.2 + diff * 1.8) + u.ph);
+      u.col.scale.y = u.h; u.col.position.y = u.h / 2 + 0.06;
+      u.cap.position.y = u.h + 0.08;
+      u.fl.forEach((f, k) => { f.position.y = u.h + 0.4 + Math.sin(time * 9 + k * 2 + u.ph) * 0.12; f.scale.set(1, 0.8 + Math.sin(time * 11 + k) * 0.35, 1); });
+      lavaTex.offset.y = (time * 0.6) % 1;
+      return u.h;
+    }
+
+    // Jumpable Wooden Hurdle
+    function spawnHurdle(x, z) {
+      const hurdleGroup = new THREE.Group();
+
+      const woodGeo = new THREE.BoxGeometry(2.2, 0.75, 0.35);
+      const woodMat = new THREE.MeshStandardMaterial({ color: 0xb45309, roughness: 0.6 });
+      const bar = new THREE.Mesh(woodGeo, woodMat);
+      bar.position.y = 0.45;
+      bar.castShadow = true;
+
+      const postGeo = new THREE.CylinderGeometry(0.12, 0.12, 0.9, 8);
+      const postMat = new THREE.MeshStandardMaterial({ color: 0x78350f });
+      const p1 = new THREE.Mesh(postGeo, postMat);
+      p1.position.set(-1.0, 0.45, 0);
+      const p2 = new THREE.Mesh(postGeo, postMat);
+      p2.position.set(1.0, 0.45, 0);
+
+      hurdleGroup.add(bar, p1, p2);
+      hurdleGroup.position.set(x, 0, z);
+      hurdleGroup.userData = { type: 'hurdle' };
+
+      scene.add(hurdleGroup);
+      obstacles.push(hurdleGroup);
+    }
+
+    function spawnBonusStar(x, z) {
+      const starGeo = new THREE.OctahedronGeometry(0.48);
+      const starMat = new THREE.MeshStandardMaterial({ color: 0xf59e0b, metalness: 0.8, emissive: 0xd97706, emissiveIntensity: 0.4 });
+      const star = new THREE.Mesh(starGeo, starMat);
+      star.position.set(x, 1.4, z);
+      star.userData = { type: 'star', rotSpeed: 3.0, baseY: 1.4 };
+      scene.add(star);
+      collectibleItems.push(star);
+    }
+
+    // =========================================================================
+    // PARTICLE EFFECTS ENGINE
+    // =========================================================================
+    function spawnCollectBurst(pos, isTarget) {
+      const count = isTarget ? 36 : 18;
+      const pGeo = new THREE.BufferGeometry();
+      const positions = new Float32Array(count * 3);
+      const velocities = [];
+
+      for (let i = 0; i < count; i++) {
+        positions[i * 3] = pos.x;
+        positions[i * 3 + 1] = pos.y;
+        positions[i * 3 + 2] = pos.z;
+
+        const theta = Math.random() * Math.PI * 2;
+        const phi = Math.random() * Math.PI;
+        const spd = 4 + Math.random() * 7;
+        velocities.push({
+          x: Math.sin(phi) * Math.cos(theta) * spd,
+          y: Math.abs(Math.cos(phi)) * spd + 2,
+          z: Math.sin(phi) * Math.sin(theta) * spd
+        });
+      }
+
+      pGeo.setAttribute('position', new THREE.BufferAttribute(positions, 3));
+      const pMat = new THREE.PointsMaterial({
+        color: isTarget ? 0xfef08a : 0x38bdf8,
+        size: 0.35,
+        transparent: true,
+        opacity: 1
+      });
+      const pSystem = new THREE.Points(pGeo, pMat);
+      scene.add(pSystem);
+
+      particleSystems.push({ mesh: pSystem, velocities: velocities, life: 0.75, maxLife: 0.75 });
+    }
+
+    // =========================================================================
+    // CONTROLS & LANE MOVEMENT
+    // =========================================================================
+    function moveLeft() {
+      if (!gameRunning || wallCrashActive || paused) return;
+      if (currentLane > 0) {
+        currentLane--;
+        targetX = lanes[currentLane];
+        soundLaneShift();
+      }
+    }
+
+    function moveRight() {
+      if (!gameRunning || wallCrashActive || paused) return;
+      if (currentLane < 2) {
+        currentLane++;
+        targetX = lanes[currentLane];
+        soundLaneShift();
+      }
+    }
+
+    function jump() {
+      if (!gameRunning || wallCrashActive || paused) return;
+      if (!isJumping) {
+        isJumping = true;
+        jumpVelocity = (13 + Math.min(2.5, (lvl - 1) * 0.25)) * (bootsT > 0 ? 1.35 : 1);
+        soundJump();
+      }
+    }
+
+    window.addEventListener('keydown', (e) => {
+      if (!gameRunning || paused) return;
+      if (e.key === 'ArrowLeft' || e.key === 'a' || e.key === 'A') moveLeft();
+      if (e.key === 'ArrowRight' || e.key === 'd' || e.key === 'D') moveRight();
+      if (e.key === 'ArrowUp' || e.key === 'w' || e.key === 'W' || e.key === ' ') jump();
+    });
+
+
+    // Kontrol swipe (HP): geser kiri/kanan = pindah jalur, geser ke atas = lompat
+    let sw = null;
+    window.addEventListener('touchstart', (e) => { if (!gameRunning || wallCrashActive || paused) { sw = null; return; } const t = e.touches[0]; sw = { x: t.clientX, y: t.clientY, done: false }; }, { passive: true });
+    window.addEventListener('touchmove', (e) => {
+      if (!sw || sw.done || !gameRunning || wallCrashActive) return;
+      const t = e.touches[0], dx = t.clientX - sw.x, dy = t.clientY - sw.y;
+      if (Math.max(Math.abs(dx), Math.abs(dy)) < 26) return;
+      sw.done = true;
+      if (Math.abs(dx) > Math.abs(dy)) { dx < 0 ? moveLeft() : moveRight(); } else if (dy < 0) { jump(); }
+      if (e.cancelable) e.preventDefault();
+    }, { passive: false });
+    window.addEventListener('touchend', () => { sw = null; });
+    window.addEventListener('touchcancel', () => { sw = null; });
+    document.getElementById('btnTouchLeft').addEventListener('touchstart', (e) => { e.preventDefault(); moveLeft(); });
+    document.getElementById('btnTouchRight').addEventListener('touchstart', (e) => { e.preventDefault(); moveRight(); });
+    document.getElementById('btnTouchJump').addEventListener('touchstart', (e) => { e.preventDefault(); jump(); });
+    document.getElementById('btnTouchLeft').addEventListener('click', moveLeft);
+    document.getElementById('btnTouchRight').addEventListener('click', moveRight);
+    document.getElementById('btnTouchJump').addEventListener('click', jump);
+
+
+    // =========================================================================
+    // HUD & MISSIONS
+    // =========================================================================
+    function updateHUD() {
+      document.getElementById('targetArabic').textContent = targetLetter.char;
+      document.getElementById('targetName').textContent = 'Cari Huruf ' + targetLetter.name;
+      document.getElementById('targetHint').textContent = `Ucapkan "${targetLetter.sound}"`;
+      document.getElementById('scoreText').textContent = score;
+      document.getElementById('streakText').textContent = 'x' + streak;
+      if (targetLetter && lastT !== targetLetter) {
+        lastT = targetLetter;
+        const mi = document.getElementById('mNotif');
+        if (mi) {
+          document.getElementById('mnA').textContent = targetLetter.char;
+          document.getElementById('mnT').textContent = document.getElementById('targetName').textContent;
+          const ms = document.querySelector('.mission'); if (ms) { ms.classList.add('ready'); setTimeout(() => ms.classList.remove('ready'), 1800); }
+          mi.classList.add('show'); clearTimeout(mTimer); mTimer = setTimeout(() => mi.classList.remove('show'), 2500);
+        }
+      }
+      const pf = document.getElementById('progFill'), pt = document.getElementById('progText');
+      if (pf) { pf.style.width = Math.min(100, lettersCollectedCount / HIJAIYAH_LIST.length * 100) + '%'; pt.textContent = lettersCollectedCount + ' / ' + HIJAIYAH_LIST.length + ' huruf'; }
+    }
+
+    const lj = (k, d) => { try { return JSON.parse(localStorage.getItem(k)) ?? d; } catch (e) { return d; } };
+    const sv = (k, v) => { try { localStorage.setItem(k, JSON.stringify(v)); } catch (e) {} };
+    let BEST = lj('hj_best', 0), COINS = lj('hj_coins', 0), OWN = lj('hj_own', [0]), SKIN = lj('hj_skin', 0), runCoins = 0, BEAR = null, ACC = null;
+    const SKINS = [
+      { n: 'Cokelat', p: 0, f: 0x8a5530, h: 0x9c6339, sw: '#8a5530' }, { n: 'Madu', p: 15, f: 0xd9942e, h: 0xe8a845, sw: '#d9942e' },
+      { n: 'Kutub', p: 15, f: 0xe3dccf, h: 0xf2ece0, sw: '#e3dccf' }, { n: 'Peci', p: 25, f: 0x8a5530, h: 0x9c6339, sw: '#8a5530', acc: 'peci' },
+      { n: 'Hijab', p: 25, f: 0xe3dccf, h: 0xf2ece0, sw: '#f472b6', acc: 'hijab' }
+    ];
+    function applySkin(i) {
+      if (!BEAR) return;
+      const k = SKINS[i] || SKINS[0];
+      [[BEAR.fm, k.f], [BEAR.hm, k.h]].forEach(([m, c]) => { m.color.setHex(c); m.emissive.setHex(c); });
+      if (ACC) { playerInner.remove(ACC); ACC = null; }
+      if (k.acc) {
+        ACC = new THREE.Group();
+        const B = (w, h, d, c, x, y, z) => { const e = new THREE.Mesh(new THREE.BoxGeometry(w, h, d), new THREE.MeshLambertMaterial({ color: c, emissive: c, emissiveIntensity: 0.18 })); e.position.set(x, y, z); e.castShadow = true; ACC.add(e); };
+        if (k.acc === 'peci') { B(0.56, 0.22, 0.56, 0xffffff, 0, 2.3, 0); B(0.58, 0.05, 0.58, 0xf59e0b, 0, 2.2, 0); }
+        else { B(0.98, 0.46, 0.86, 0xf472b6, 0, 2.1, 0.02); B(0.1, 0.8, 0.74, 0xf472b6, -0.47, 1.78, 0.02); B(0.1, 0.8, 0.74, 0xf472b6, 0.47, 1.78, 0.02); B(0.9, 0.9, 0.1, 0xf472b6, 0, 1.7, 0.4); }
+        playerInner.add(ACC);
+      }
+    }
+    function renderShop() {
+      document.getElementById('shC').textContent = COINS;
+      document.getElementById('shL').innerHTML = SKINS.map((k, i) => { const own = OWN.includes(i), on = SKIN === i;
+        return `<div class="row2"><span style="display:flex;align-items:center;gap:10px"><i style="width:26px;height:26px;border-radius:50%;background:${k.sw};border:3px solid #fff;box-shadow:0 2px 0 rgba(0,0,0,.25)"></i>${k.n}</span><button class="bt2" style="margin:0;padding:6px 14px;font-size:14px" data-k="${i}" ${on ? 'disabled' : ''}>${on ? 'Dipakai' : own ? 'Pakai' : k.p + ' koin'}</button></div>`; }).join('');
+      document.querySelectorAll('#shL button').forEach(b => b.onclick = () => {
+        const i = +b.dataset.k;
+        if (!OWN.includes(i)) { if (COINS < SKINS[i].p) { b.textContent = 'Koin kurang'; return; } COINS -= SKINS[i].p; OWN.push(i); sv('hj_coins', COINS); sv('hj_own', OWN); }
+        SKIN = i; sv('hj_skin', i); applySkin(i); renderShop();
+      });
+    }
+    function runTutorial() {
+      if (lj('hj_tut', false)) return;
+      const t = document.getElementById('tut'), tx = document.getElementById('tutT'); document.getElementById('tutH').src = FI['backhand-index-pointing-up'];
+      const step = (cls, txt, next) => { t.className = 'show ' + cls; tx.textContent = txt; setTimeout(next, 3600); };
+      step('tx', 'Geser kiri / kanan untuk pindah jalur', () => step('ty', 'Geser ke atas untuk melompat', () => { t.className = ''; sv('hj_tut', true); }));
+    }
+    document.getElementById('btnShop').onclick = () => { renderShop(); openM('mdShop'); };
+    document.getElementById('sShop').onclick = () => { closeM(); renderShop(); openM('mdShop'); };
+    function renderReview() {
+      const nb = score > BEST; if (nb) BEST = score; COINS += runCoins; sv('hj_best', BEST); sv('hj_coins', COINS);
+      document.getElementById('gMeta').innerHTML = fi('trophy') + ' Rekor ' + BEST + (nb ? ' — rekor baru!' : '') + ' &nbsp;•&nbsp; ' + fi('coin') + ' +' + runCoins + ' (total ' + COINS + ')';
+      const by = (ch) => HIJAIYAH_LIST.find(l => l.char === ch), ar = 'font-family:Amiri,serif;font-size:1.35em;line-height:1';
+      const chip = (l, bg, fg, extra) => `<span style="display:inline-flex;align-items:center;gap:4px;margin:2px;padding:3px 10px;border-radius:12px;background:${bg};color:${fg};font-weight:800"><b style="${ar}">${l.char}</b>${l.name}${extra || ''}</span>`;
+      const ok = [...okSet.keys()].map(by), bad = [...badSet.keys()].map(by), cf = {};
+      confuse.forEach(x => { const k = x.g.char + '|' + x.w.char; cf[k] = (cf[k] || 0) + 1; });
+      const top = Object.entries(cf).sort((a, b) => b[1] - a[1]).slice(0, 3);
+      let h = `<div style="font-weight:800;color:#047857">Benar (${ok.length})</div><div>${ok.length ? ok.map(l => chip(l, '#d1fae5', '#065f46')).join('') : '<span style="opacity:.6">Belum ada</span>'}</div>`;
+      h += `<div style="font-weight:800;color:#b91c1c;margin-top:8px">Perlu dilatih (${bad.length})</div><div>${bad.length ? bad.map(l => chip(l, '#fee2e2', '#991b1b', ' ×' + badSet.get(l.char))).join('') : '<span style="opacity:.6">Tidak ada, hebat!</span>'}</div>`;
+      if (top.length) h += `<div style="margin-top:8px;color:#475569;font-weight:700">Sering tertukar:</div>` + top.map(([k, n]) => { const [g, w] = k.split('|'); return `<div>Diambil <b style="${ar}">${g}</b> ${by(g).name} saat dicari <b style="${ar}">${w}</b> ${by(w).name} (×${n})</div>`; }).join('');
+      document.getElementById('gReview').innerHTML = h;
+      lastBad = bad;
+      document.getElementById('btnPractice').style.display = bad.length ? 'block' : 'none';
+    }
+    document.getElementById('btnPractice').onclick = () => { practiceNext = lastBad.slice(); startGame(); };
+    function advanceToNextLetter() {
+      runCoins += 2;
+      okSet.set(targetLetter.char, (okSet.get(targetLetter.char) || 0) + 1);
+      learned.add(targetLetter.char); try { localStorage.setItem('hj_learned', JSON.stringify([...learned])); } catch (e) {}
+      lettersCollectedCount++;
+      streak++;
+      if (streak > maxStreak) maxStreak = streak;
+      updateHUD();
+    }
+
+    function showToast(char, points) {
+      const toast = document.getElementById('celebrationToast');
+      if (!toast) return;
+      toast.classList.remove('bad'); toast.innerHTML = fi('check-mark-button') + ` Benar: <strong>${char}</strong> (+${points})`; vib(25);
+      toast.classList.add('show');
+      setTimeout(() => toast.classList.remove('show'), 1200);
+    }
+
+    // =========================================================================
+    // WALL COLLISION -> INSTANT FAIL / GAME OVER!
+    // "kalo kena tembok gagal"
+    // =========================================================================
+    function triggerWallCrash(reason = "Menabrak Tembok!") {
+      vib(160); stopMusic();
+      if (wallCrashActive) return;
+      wallCrashActive = true;
+      gameRunning = false;
+
+      soundCrash();
+
+      const flash = document.getElementById('wallCrashFlash');
+      flash.style.opacity = '1';
+
+      const warningToast = document.getElementById('crashWarningToast');
+      warningToast.textContent = `💥 ${reason} Gagal!`;
+      warningToast.classList.add('show');
+
+      // Camera Shake
+      camera.position.y += 0.6;
+      camera.position.x += (Math.random() - 0.5) * 1.2;
+
+      setTimeout(() => {
+        flash.style.opacity = '0';
+        warningToast.classList.remove('show');
+        setTimeout(() => {
+          endGame();
+        }, 300);
+      }, 700);
+    }
+
+    const PACE = ['Jalan santai', 'Jalan cepat', 'Jalan agak cepat', 'Lari kecil', 'Lari', 'Lari kencang', 'Sprint'];
+    function levelUp() {
+      const m = Math.min(3, 1 + 0.2 * (lvl - 1)).toFixed(1), nm = PACE[Math.min(lvl - 1, PACE.length - 1)];
+      document.getElementById('levelText').textContent = 'Lv ' + lvl;
+      document.getElementById('paceText').textContent = 'x' + m;
+      const nt = Math.floor((lvl - 1) / 3) % 2; let ex = '';
+      if (nt !== curTheme) { curTheme = nt; applyTheme(nt); ex = ' · Dunia ' + getTH()[nt].name; }
+      const b = document.getElementById('lvB');
+      b.innerHTML = fi('fire') + '<span>Level ' + lvl + ' · ' + nm + '<small>Kecepatan x' + m + ex + ' — bersiap…</small></span>';
+      b.classList.add('show'); clearTimeout(lvT); lvT = setTimeout(() => b.classList.remove('show'), 2800);
+      vib(40); soundLevel();
+    }
+
+    // Titik spawn: dunia di-reset penuh, pemain mulai di pad hijau tanpa rintangan di depannya
+    function resetWorld() {
+      collectibleItems.forEach(o => scene.remove(o)); collectibleItems.length = 0;
+      obstacles.forEach(o => scene.remove(o)); obstacles.length = 0;
+      trackSegments.forEach((seg, i) => { seg.position.z = -i * SEGMENT_LENGTH; });
+      elapsed = 0; diff = 0; lvl = 1; runSpeed = 6; cool = 0; waves = []; bag = []; lastM = null; bootsT = 0; camLookY = 1.5; curTheme = 0; applyTheme(0); graceT = 1.8; lastSafe = 1;
+      isJumping = false; jumpVelocity = 0;
+      for (let i = 1; i < NUM_SEGMENTS; i++) spawnSpawnersForSegment(-i * SEGMENT_LENGTH);
+      if (!spawnPad) {
+        spawnPad = new THREE.Group();
+        const disc = new THREE.Mesh(new THREE.CylinderGeometry(1.8, 1.8, 0.08, 32), new THREE.MeshBasicMaterial({ color: 0x10b981, transparent: true, opacity: 0.85 }));
+        const ring = new THREE.Mesh(new THREE.TorusGeometry(2.1, 0.09, 8, 40), new THREE.MeshBasicMaterial({ color: 0xfde047 }));
+        ring.rotation.x = Math.PI / 2;
+        const ring2 = new THREE.Mesh(new THREE.TorusGeometry(1.3, 0.06, 8, 32), new THREE.MeshBasicMaterial({ color: 0xffffff }));
+        ring2.rotation.x = Math.PI / 2;
+        spawnPad.add(disc, ring, ring2); scene.add(spawnPad);
+      }
+      spawnPad.position.set(0, 0.07, 0); spawnPad.visible = true;
+      playerGroup.visible = true;
+      camera.position.set(0, 0.65 + 4.35 * camK, 7.8 * camK);
+      if (practice) { const pb = document.getElementById('lvB'); pb.innerHTML = fi('books') + '<span>Mode Latihan<small>' + practice.length + ' huruf yang tadi salah</small></span>'; pb.classList.add('show'); clearTimeout(lvT); lvT = setTimeout(() => pb.classList.remove('show'), 3200); }
+      runTutorial();
+      const lt = document.getElementById('levelText'); if (lt) lt.textContent = 'Lv 1';
+      const pt0 = document.getElementById('paceText'); if (pt0) pt0.textContent = 'x1.0';
+    }
+
+    function startGame() {
+      initAudio();
+      document.getElementById('startScreen').classList.add('hidden');
+      document.getElementById('gameOverScreen').classList.add('hidden');
+
+      score = 0;
+      streak = 1;
+      maxStreak = 1;
+      okSet = new Map(); badSet = new Map(); confuse = []; runCoins = 0;
+      practice = practiceNext; practiceNext = null;
+      lettersCollectedCount = 0;
+      currentMissionIndex = 1; // Mulai dari 'Ba'
+      targetLetter = HIJAIYAH_LIST[currentMissionIndex];
+      currentLane = 1;
+      targetX = lanes[1];
+      wallCrashActive = false;
+      lastT = null;
+
+      playerGroup.position.set(0, groundY, 0);
+      resetWorld();
+      updateHUD();
+      gameRunning = true;
+      try { startMusic(); } catch (e) {}
+
+      setTimeout(() => speakLetter(targetLetter.sound), 300);
+    }
+
+    function endGame() {
+      gameRunning = false;
+      document.getElementById('finalScore').textContent = score;
+      renderReview();
+      document.getElementById('finalStats').textContent = `Huruf Dipelajari: ${lettersCollectedCount} • Kombo Maks: ${maxStreak}x`;
+      document.getElementById('gameOverScreen').classList.remove('hidden');
+
+      if (score >= 150) {
+        document.getElementById('gameOverTitle').textContent = 'Subhanallah! Juara Langit!';
+        document.getElementById('gameOverDesc').textContent = 'Prestasi mengagumkan! Kamu menghafal dan mengumpulkan banyak huruf suci Al-Qur\'an dengan luar biasa!';
+      } else {
+        document.getElementById('gameOverTitle').textContent = 'Alhamdulillah, Tetap Semangat!';
+        document.getElementById('gameOverDesc').textContent = 'Setiap huruf Al-Qur\'an yang dipelajari bernilai 10 kebaikan pahala. Ayo coba lagi dan hindari tembok!';
+      }
+    }
+
+    document.getElementById('btnStartGame').addEventListener('click', startGame);
+    document.getElementById('btnRestartGame').addEventListener('click', startGame);
+
+    // =========================================================================
+    // MAIN ANIMATION LOOP
+    // =========================================================================
+    // Kamus, pengaturan & getar
+    const ld = (k, d) => { try { return JSON.parse(localStorage.getItem(k)) ?? d; } catch (e) { return d; } };
+    const learned = new Set(ld('hj_learned', [])), SET = Object.assign({ vib: true, low: false, music: true, sfx: true }, ld('hj_set', {}));
+    const vib = (ms) => { if (SET.vib && navigator.vibrate) navigator.vibrate(ms); };
+    const gid = (i) => document.getElementById(i);
+    function applySet() { try { renderer.setPixelRatio(SET.low ? 1 : Math.min(window.devicePixelRatio, 2)); } catch (e) {} localStorage.setItem('hj_set', JSON.stringify(SET)); }
+    function openM(id) { paused = true; gid(id).classList.add('on'); }
+    function closeM() { paused = false; document.querySelectorAll('.ov2').forEach(e => e.classList.remove('on')); }
+    gid('btnKamus').onclick = () => {
+      gid('kSub').textContent = learned.size + ' / ' + HIJAIYAH_LIST.length + ' huruf dipelajari';
+      gid('kGrid').innerHTML = HIJAIYAH_LIST.map(l => `<div class="kc ${learned.has(l.char) ? 'ok' : ''}"><b>${l.char}</b><span>${l.name}</span></div>`).join('');
+      openM('mdK');
+    };
+    gid('btnSet').onclick = () => { gid('sVib').checked = SET.vib; gid('sLow').checked = SET.low; gid('sMus').checked = SET.music; gid('sSfx').checked = SET.sfx; openM('mdS'); };
+    gid('sVib').onchange = (e) => { SET.vib = e.target.checked; applySet(); };
+    gid('sLow').onchange = (e) => { SET.low = e.target.checked; applySet(); };
+    gid('sMus').onchange = (e) => { SET.music = e.target.checked; applySet(); if (SET.music && gameRunning && !wallCrashActive) startMusic(); else stopMusic(); };
+    gid('sSfx').onchange = (e) => { SET.sfx = e.target.checked; applySet(); };
+    gid('sQuit').onclick = () => location.reload();
+    document.querySelectorAll('[data-close]').forEach(b => b.onclick = closeM);
+
+    // Power-up: Sepatu Pegas (lompat lebih tinggi)
+    function spawnPower(kind, x, z) {
+      const g = new THREE.Group();
+      const bx = new THREE.Mesh(new THREE.BoxGeometry(0.75, 0.32, 0.42), new THREE.MeshStandardMaterial({ color: 0x22c55e })); bx.position.y = 0.3; g.add(bx);
+      for (let k = 0; k < 2; k++) { const c = new THREE.Mesh(new THREE.TorusGeometry(0.2, 0.05, 6, 14), new THREE.MeshStandardMaterial({ color: 0xfacc15 })); c.rotation.x = Math.PI / 2; c.position.y = 0.02 - k * 0.15; g.add(c); }
+      g.scale.setScalar(1.4);
+      const wrap = new THREE.Group(); wrap.add(g);
+      wrap.add(new THREE.Mesh(new THREE.TorusGeometry(0.85, 0.05, 8, 28), new THREE.MeshBasicMaterial({ color: 0xfde047 })));
+      wrap.position.set(x, 1.6, z);
+      wrap.userData = { type: 'power', kind, rotSpeed: 2.2, baseY: 1.6 };
+      scene.add(wrap); collectibleItems.push(wrap);
+    }
+    function activatePower(k) { bootsT = 15; vib(40); soundPower(); }
+
+    let clock = new THREE.Clock();
+
+    function animate() {
+      requestAnimationFrame(animate);
+
+      const delta = paused ? (clock.getDelta(), 0) : Math.min(clock.getDelta(), 0.08);
+      const time = clock.getElapsedTime();
+
+      if (gameRunning && !wallCrashActive) {
+        elapsed += delta; graceT = Math.max(0, graceT - delta);
+        const nl = 1 + Math.floor(lettersCollectedCount / 3);
+        if (nl > lvl) { lvl = nl; cool = 3.2; levelUp(); }
+        diff = Math.min(1, (lvl - 1) / 9);
+        cool = Math.max(0, cool - delta);
+        const cf = cool > 0 ? 0.55 + 0.45 * (1 - cool / 3.2) : 1;
+        runSpeed += (12 * Math.min(3, 1 + 0.2 * (lvl - 1)) * cf - runSpeed) * Math.min(1, delta * 2.2);
+        playerGroup.visible = graceT <= 0 || Math.floor(graceT * 10) % 2 === 0;
+        const moveDist = runSpeed * delta;
+        if (spawnPad && spawnPad.visible) { spawnPad.position.z += moveDist; spawnPad.rotation.y += delta; if (spawnPad.position.z > 18) spawnPad.visible = false; }
+
+        // Smooth Lane lerp
+        playerGroup.position.x += (targetX - playerGroup.position.x) * 16 * delta;
+
+        if (isJumping) {
+          playerGroup.position.y += jumpVelocity * delta;
+          jumpVelocity += gravity * delta;
+          if (playerGroup.position.y <= groundY) {
+            playerGroup.position.y = groundY;
+            isJumping = false;
+            jumpVelocity = 0;
+          }
+        }
+
+        // Limb swinging animation
+        if (!isJumping) {
+          const runPhase = time * 18;
+          leftLegMesh.rotation.x = Math.sin(runPhase) * 0.55;
+          rightLegMesh.rotation.x = -Math.sin(runPhase) * 0.55;
+          leftArmMesh.rotation.x = -Math.sin(runPhase) * 0.55;
+          rightArmMesh.rotation.x = Math.sin(runPhase) * 0.55;
+          playerInner.position.y = Math.abs(Math.sin(runPhase * 2)) * 0.08;
+        } else {
+          leftLegMesh.rotation.x = -0.4;
+          rightLegMesh.rotation.x = -0.4;
+          leftArmMesh.rotation.x = 0.5;
+          rightArmMesh.rotation.x = 0.5;
+          playerInner.position.y = 0;
+        }
+
+        // Advance Track Segments
+        trackSegments.forEach(seg => {
+          seg.position.z += moveDist;
+          if (seg.position.z > 35) {
+            let minZ = 0;
+            trackSegments.forEach(s => { if (s.position.z < minZ) minZ = s.position.z; });
+            seg.position.z = minZ - SEGMENT_LENGTH;
+            spawnSpawnersForSegment(seg.position.z);
+          }
+        });
+
+        // Misi aktif = huruf gelombang terdekat di depan pemain
+        waves.forEach(w => { w.z += moveDist; });
+        while (waves.length && waves[0].z > playerGroup.position.z + 12) waves.shift();
+        let cw = null;
+        for (const w of waves) if (w.z < playerGroup.position.z + 1.2 && (!cw || w.z > cw.z)) cw = w;
+        if (cw && cw.letter !== targetLetter) { targetLetter = cw.letter; currentMissionIndex = HIJAIYAH_LIST.indexOf(cw.letter); updateHUD(); }
+
+        // Collectibles (Coins & Stars)
+        for (let i = collectibleItems.length - 1; i >= 0; i--) {
+          const item = collectibleItems[i];
+          item.position.z += moveDist;
+
+          // Rotation & gentle float
+          item.rotation.y += delta * item.userData.rotSpeed;
+          if (item.userData.type === 'letter') item.scale.setScalar(1 + Math.sin(time * 4 + i) * 0.03);
+          item.position.y = item.userData.baseY + Math.sin(time * 3 + i) * 0.12;
+
+          // Collision detection
+          const dx = Math.abs(playerGroup.position.x - item.position.x);
+          const dz = Math.abs(playerGroup.position.z - item.position.z);
+          const dy = Math.abs(playerGroup.position.y - item.position.y);
+
+          if (dx < 0.95 && dz < 1.1 && dy < 1.4) {
+            if (item.userData.type === 'letter') {
+              if (item.userData.isTarget) {
+                // Correct target letter!
+                const points = 15;
+                score += points;
+                soundSuccess();
+                spawnCollectBurst(item.position, true);
+                showToast(item.userData.letter.char, points);
+                advanceToNextLetter();
+              } else {
+                // Huruf salah: skor berkurang 15 (tidak pernah di bawah 0), streak kembali x1
+                const lost = Math.min(score, 10);
+                score -= lost;
+                streak = 1;
+                spawnCollectBurst(item.position, false);
+                updateHUD();
+                vib(70); soundWrong();
+                badSet.set(targetLetter.char, (badSet.get(targetLetter.char) || 0) + 1); confuse.push({ g: item.userData.letter, w: targetLetter });
+                const wt = document.getElementById('celebrationToast');
+                if (wt) { wt.classList.add('bad'); wt.innerHTML = fi('cross-mark') + '<span>Itu <b style="font-family:Amiri,serif;font-size:1.5em">' + item.userData.letter.char + '</b> ' + item.userData.letter.name + ' — dicari <b style="font-family:Amiri,serif;font-size:1.5em">' + targetLetter.char + '</b> ' + targetLetter.name + (lost > 0 ? ' (−' + lost + ')' : '') + '</span>'; wt.classList.add('show'); setTimeout(() => { wt.classList.remove('show'); wt.classList.remove('bad'); }, 2600); }
+                const hs = document.getElementById('scoreText');
+                if (hs) { const tv = hs.parentElement; tv.style.transition = 'none'; tv.style.background = 'linear-gradient(180deg,#fecaca,#f87171)'; setTimeout(() => { tv.style.transition = 'background .5s'; tv.style.background = ''; }, 150); }
+              }
+            } else if (item.userData.type === 'power') {
+              activatePower(item.userData.kind);
+              spawnCollectBurst(item.position, true);
+            } else if (item.userData.type === 'star') {
+              score += 10; runCoins += 1;
+              soundCoin();
+              spawnCollectBurst(item.position, false);
+              updateHUD();
+            }
+
+            scene.remove(item);
+            collectibleItems.splice(i, 1);
+            continue;
+          }
+
+          if (item.position.z > 15) {
+            scene.remove(item);
+            collectibleItems.splice(i, 1);
+          }
+        }
+
+        // ============================================================
+        // OBSTACLES: STONE WALLS & JUMPABLE HURDLES
+        // "kalo kena tembok gagal"
+        // ============================================================
+        for (let i = obstacles.length - 1; i >= 0; i--) {
+          const obs = obstacles[i];
+          obs.position.z += moveDist;
+
+          const dx = Math.abs(playerGroup.position.x - obs.position.x);
+          const dz = Math.abs(playerGroup.position.z - obs.position.z);
+          const pY = playerGroup.position.y;
+
+          if (obs.userData.type === 'wall') {
+            // Tembok batu tidak bisa dilompati — Tabrak = GAGAL!
+            if (graceT <= 0 && dx < 1.15 && dz < 0.85) {
+              triggerWallCrash("Menabrak Pilar Tembok!");
+              break;
+            }
+          } else if (obs.userData.type === 'lava') {
+            const lh = animLava(obs, time);
+            if (graceT <= 0 && dx < 1.15 && dz < 0.8 && (pY - groundY) < lh - 0.05) {
+              triggerWallCrash("Terkena Lava!");
+              break;
+            }
+          } else if (obs.userData.type === 'hurdle') {
+            // Palang rintangan — Jika tidak melompat = GAGAL!
+            if (dx < 1.05 && dz < 0.75 && pY < (groundY + 0.6)) {
+              triggerWallCrash("Menabrak Palang Kayu!");
+              break;
+            }
+          }
+
+          if (obs.position.z > 15) {
+            scene.remove(obs);
+            obstacles.splice(i, 1);
+          }
+        }
+
+        // Camera Follow
+        camera.position.x = playerGroup.position.x * 0.32;
+        bootsT = Math.max(0, bootsT - delta);
+        const fo = 0;
+        camera.position.y += (0.65 + 4.35 * camK + fo * 0.7 - camera.position.y) * 0.1;
+        camera.position.z = 7.8 * camK;
+        camLookY += (1.5 + fo * 0.55 - camLookY) * 0.1;
+        camera.lookAt(playerGroup.position.x * 0.12, camLookY, -6);
+        const pwEl = document.getElementById('pwB');
+        if (pwEl) {
+          const tx = (bootsT > 0 ? '<span>' + fi('running-shoe') + ' Pegas ' + Math.ceil(bootsT) + 's</span>' : '');
+          if (tx) { if (pwEl._t !== tx) { pwEl.innerHTML = tx; pwEl._t = tx; } pwEl.classList.add('show'); } else pwEl.classList.remove('show');
+        }
+      }
+
+      // Animate Particles
+      for (let pIdx = particleSystems.length - 1; pIdx >= 0; pIdx--) {
+        const ps = particleSystems[pIdx];
+        ps.life -= delta;
+        const positions = ps.mesh.geometry.attributes.position.array;
+
+        for (let i = 0; i < ps.velocities.length; i++) {
+          positions[i * 3] += ps.velocities[i].x * delta;
+          positions[i * 3 + 1] += ps.velocities[i].y * delta;
+          positions[i * 3 + 2] += ps.velocities[i].z * delta;
+          ps.velocities[i].y -= 9.8 * delta;
+        }
+        ps.mesh.geometry.attributes.position.needsUpdate = true;
+        ps.mesh.material.opacity = Math.max(0, ps.life / ps.maxLife);
+
+        if (ps.life <= 0) {
+          scene.remove(ps.mesh);
+          particleSystems.splice(pIdx, 1);
+        }
+      }
+
+      // Background Drift
+      backgroundClouds.forEach(c => {
+        c.position.z += 1.5 * delta;
+        if (c.position.z > 25) c.position.z = -220;
+      });
+
+      distantIslands.forEach((isl, idx) => {
+        isl.position.y += Math.sin(time * 0.8 + idx) * 0.005;
+      });
+
+      renderer.render(scene, camera);
+    }
+
+    let camK = 1;
+    function fitCam() {
+      const a = window.innerWidth / window.innerHeight;
+      if (a < 0.9) { camera.fov = 66; camK = Math.min(2.1, Math.max(1, 4.6 / (Math.tan(33 * Math.PI / 180) * a) / 8.9)); }
+      else { camera.fov = 54; camK = 1; }
+      camera.aspect = a; camera.updateProjectionMatrix();
+    }
+    function onWindowResize() {
+      fitCam();
+      renderer.setSize(window.innerWidth, window.innerHeight);
+    }
+
+    initThree();
+    animate();
+  
+    // ===== Audio sintetis (WebAudio): musik latar ceria + efek suara =====
+    (function () {
+      let AC = null, mG, sG, timer = null, nextT = 0, st = 0, nb = null;
+      const NOTE = (n) => 440 * Math.pow(2, (n - 69) / 12);
+      const PROG = [[48, 52, 55], [45, 48, 52], [41, 45, 48], [43, 47, 50]];
+      function init() {
+        if (!AC) { try { AC = new (window.AudioContext || window.webkitAudioContext)(); mG = AC.createGain(); sG = AC.createGain(); mG.gain.value = 0.2; sG.gain.value = 0.5; mG.connect(AC.destination); sG.connect(AC.destination);
+          nb = AC.createBuffer(1, AC.sampleRate * 0.5, AC.sampleRate); const d = nb.getChannelData(0); for (let i = 0; i < d.length; i++) d[i] = Math.random() * 2 - 1; } catch (e) { return false; } }
+        if (AC.state === 'suspended') AC.resume();
+        return true;
+      }
+      function tone(t, f, d, ty, v, dest, sl) {
+        const o = AC.createOscillator(), g = AC.createGain(); o.type = ty; o.frequency.setValueAtTime(f, t); if (sl) o.frequency.exponentialRampToValueAtTime(sl, t + d);
+        g.gain.setValueAtTime(0.0001, t); g.gain.exponentialRampToValueAtTime(v, t + 0.012); g.gain.exponentialRampToValueAtTime(0.0001, t + d);
+        o.connect(g); g.connect(dest); o.start(t); o.stop(t + d + 0.03);
+      }
+      function noise(t, d, v, hp, dest) {
+        const s = AC.createBufferSource(), f = AC.createBiquadFilter(), g = AC.createGain(); s.buffer = nb; f.type = 'highpass'; f.frequency.value = hp;
+        g.gain.setValueAtTime(v, t); g.gain.exponentialRampToValueAtTime(0.0001, t + d); s.connect(f); f.connect(g); g.connect(dest); s.start(t); s.stop(t + d);
+      }
+      const fx = (fn) => { if (SET.sfx !== false && AC) fn(AC.currentTime); };
+      window.initAudio = init;
+      window.soundJump = () => fx(t => tone(t, 300, 0.16, 'square', 0.1, sG, 640));
+      window.soundLaneShift = () => fx(t => noise(t, 0.07, 0.12, 2600, sG));
+      window.soundCoin = () => fx(t => { tone(t, 988, 0.08, 'triangle', 0.14, sG); tone(t + 0.07, 1319, 0.14, 'triangle', 0.14, sG); });
+      window.soundSuccess = () => fx(t => [523, 659, 784, 1047].forEach((f, i) => tone(t + i * 0.07, f, 0.2, 'triangle', 0.16, sG)));
+      window.soundWrong = () => fx(t => { tone(t, 230, 0.22, 'sawtooth', 0.1, sG, 110); tone(t + 0.1, 170, 0.24, 'sawtooth', 0.09, sG, 80); });
+      window.soundCrash = () => fx(t => { tone(t, 190, 0.5, 'sawtooth', 0.16, sG, 40); noise(t, 0.4, 0.3, 300, sG); });
+      window.soundLevel = () => fx(t => [392, 523, 659, 784, 1047].forEach((f, i) => tone(t + i * 0.09, f, 0.24, 'square', 0.08, sG)));
+      window.soundPower = () => fx(t => tone(t, 440, 0.32, 'triangle', 0.15, sG, 1320));
+      window.speakLetter = () => {};
+      function mstep() {
+        const t = nextT, ch = PROG[((st / 8) | 0) % 4], k = st % 8;
+        if (k % 4 === 0) tone(t, NOTE(ch[0] - 12), 0.42, 'triangle', 0.5, mG);
+        tone(t, NOTE(ch[[0, 1, 2, 1, 2, 1, 0, 2][k]] + 12), 0.2, 'triangle', 0.26, mG);
+        if (k === 0 && ((st / 8) | 0) % 2) tone(t, NOTE(ch[2] + 24), 0.5, 'sine', 0.12, mG);
+        if (k % 2) noise(t, 0.04, 0.05, 6000, mG);
+        st++; nextT += 60 / (100 + Math.min(36, (lvl - 1) * 4)) / 2;
+      }
+      window.startMusic = () => { if (!init() || SET.music === false || timer) return; nextT = AC.currentTime + 0.05; st = 0; timer = setInterval(() => { while (nextT < AC.currentTime + 0.25) mstep(); }, 80); };
+      window.stopMusic = () => { clearInterval(timer); timer = null; };
+    })();
+</script>
+</body>
+</html>

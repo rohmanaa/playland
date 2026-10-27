@@ -1,0 +1,725 @@
+<!DOCTYPE html>
+<html lang="id"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Roda Jelajah Islami</title>
+<link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600;700&display=swap" rel="stylesheet">
+<style>
+:root{--W:min(100vw,540px,max(250px,calc((100dvh - 412px)/.7)));--deckH:calc(var(--W)*.2 + 50px);--WH:calc(var(--W)*.7 + 84px);--wb:calc(var(--deckH) - 4px);--CW:min(86vw,350px);--gold:#ffc93c;--gold2:#e8920c;--ink:#3b2208;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{height:100%;margin:0}
+body{font-family:Fredoka,"Baloo 2","Trebuchet MS",system-ui,sans-serif;color:#fff;overflow:hidden;background:linear-gradient(#35b3c4,#1d7bb0 55%,#143f86);user-select:none;display:flex;flex-direction:column;height:calc(100dvh - env(safe-area-inset-top,0px) - env(safe-area-inset-bottom,0px))}
+button{font:inherit;color:inherit;border:0;cursor:pointer}
+svg.i{width:24px;height:24px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+.rays{z-index:1;position:fixed;inset:0;background:conic-gradient(from 200deg at 50% -10%,#fff0 0 8%,#fff3 12%,#fff0 18%,#fff2 26%,#fff0 34%,#fff2 42%,#fff0 50%);animation:sway 9s ease-in-out infinite alternate;pointer-events:none}
+@keyframes sway{to{transform:rotate(7deg) scale(1.1)}}
+.bub{position:fixed;bottom:-30px;border-radius:50%;border:2px solid #fff8;background:radial-gradient(circle at 30% 30%,#fff9,#fff1);animation:rise linear infinite;pointer-events:none}
+@keyframes rise{to{transform:translateY(-110vh) translateX(var(--dx,20px))}}
+.top{display:flex;align-items:center;gap:8px;padding:10px 12px;position:relative;z-index:5}
+.chip{margin-right:auto;font-weight:700;font-size:18px;padding:6px 14px;border-radius:20px;background:#0a3a6a99;box-shadow:inset 0 -3px #0003;text-shadow:0 2px #0005}
+.rb{width:42px;height:42px;border-radius:50%;display:grid;place-items:center;background:linear-gradient(#ffd75e,var(--gold2));color:var(--ink);box-shadow:0 4px #a85f05,0 6px 10px #0004;transition:transform .12s}
+.rb:active{transform:translateY(3px);box-shadow:0 1px #a85f05}
+.rb.off{filter:grayscale(.9) brightness(.85)}
+.rb{position:relative}.rb.off::after{content:"";position:absolute;width:26px;height:2.5px;background:var(--ink);border-radius:2px;transform:rotate(45deg)}
+#stage{flex:1;display:grid;place-items:center;position:relative;min-height:0;perspective:1200px;z-index:3}
+#empty{position:absolute;text-align:center;font-weight:600;font-size:20px;opacity:.9;animation:bob 2.4s ease-in-out infinite;text-shadow:0 2px #0004;padding:0 24px}
+#empty small{display:block;font-size:14px;opacity:.75;font-weight:500;margin-top:4px}
+@keyframes bob{50%{transform:translateY(-8px)}}
+.card{width:var(--CW);height:min(100%,330px);min-height:230px;position:relative;transform-style:preserve-3d;display:none;cursor:pointer}
+.card.show{display:block;animation:pop .8s cubic-bezier(.2,1.3,.3,1) both}
+.card.shake{animation:shake .5s}
+@keyframes pop{from{transform:translateY(160px) scale(.2) rotate(-12deg);opacity:0}60%{opacity:1}to{transform:none;opacity:1}}
+@keyframes shake{20%{transform:translateX(-10px) rotate(-2deg)}40%{transform:translateX(10px) rotate(2deg)}60%{transform:translateX(-6px)}80%{transform:translateX(6px)}}
+.inner{position:absolute;inset:0;transform-style:preserve-3d;transition:transform .8s cubic-bezier(.3,1.2,.4,1)}
+.card.flipped .inner{transform:rotateY(180deg)}
+.face{position:absolute;inset:0;border-radius:26px;backface-visibility:hidden;-webkit-backface-visibility:hidden;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:26px 22px 20px;gap:8px;background:linear-gradient(160deg,var(--c1),var(--c2));border:5px solid #fff;box-shadow:0 8px 0 #0003,0 18px 34px #0006,inset 0 -8px #0002,inset 0 6px #fff5}
+.face.back{transform:rotateY(180deg);background:linear-gradient(160deg,#fff7d6,#ffe08a);color:var(--ink)}
+.tag{position:absolute;top:-16px;padding:5px 16px;border-radius:16px;background:#fff;color:var(--c2);font-weight:700;font-size:14px;letter-spacing:.5px;box-shadow:0 3px #0003}
+.ttl{font-size:25px;font-weight:700;line-height:1.15;text-shadow:0 2px #0004}
+.det{font-size:16px;font-weight:500;opacity:.95;line-height:1.3}
+.ar{font-size:42px;line-height:1.5;font-family:"Amiri","Noto Naskh Arabic","Traditional Arabic",serif;text-shadow:0 2px #0004}
+.hint{margin-top:auto;font-size:13px;opacity:.85;padding:4px 12px;border-radius:12px;background:#0003}
+.face .big{width:54px;height:54px;stroke-width:1.6;filter:drop-shadow(0 3px #0004)}
+.face.back h4{margin:0;font-size:15px;letter-spacing:2px;color:#b36b00}
+.face.back p{margin:0;font-size:22px;font-weight:600;line-height:1.3}
+#tm{position:absolute;top:6px;right:calc(50% - var(--CW)/2 - 4px);width:60px;height:60px;z-index:6;display:none;filter:drop-shadow(0 4px 4px #0005);transition:transform .3s}
+#tm.show{display:block}#tm.up{animation:shake .5s,blink .5s .5s infinite alternate}
+@keyframes blink{to{transform:scale(1.15)}}
+#tm svg{width:60px;height:60px;transform:rotate(-90deg)}
+#tm .bg{fill:#0b2f5c;stroke:#fff;stroke-width:4}#tm .fg{fill:none;stroke:#52e07b;stroke-width:6;stroke-linecap:round;stroke-dasharray:157;transition:stroke .3s}
+#tm b{position:absolute;inset:0;display:grid;place-items:center;font-size:22px}
+#fx{position:fixed;inset:0;pointer-events:none;z-index:20}
+.sp{position:absolute;width:12px;height:12px;border-radius:3px;animation:fly 1s ease-out forwards}
+@keyframes fly{to{transform:translate(var(--dx),var(--dy)) rotate(540deg) scale(.2);opacity:0}}
+#toast{position:fixed;left:50%;top:70px;transform:translate(-50%,-30px);opacity:0;background:#0a3a6af0;padding:10px 18px;border-radius:18px;z-index:30;transition:.4s;font-weight:600;text-align:center;width:max-content;max-width:90vw;border:2px solid #fff6}
+#toast.on{opacity:1;transform:translate(-50%,0)}
+#wrap{position:relative;width:var(--W);height:var(--WH);margin:0 auto;flex:none;z-index:4}
+#deck{position:absolute;left:50%;width:100vw;margin-left:-50vw;z-index:3;top:calc(34px + var(--W)*.5);bottom:0;background:linear-gradient(#ff9cb8,#f06a98 14%,#f7dcc5 15%,#fff0dc);border-top:8px solid #ffd15e;border-radius:0;box-shadow:0 -8px 20px #0003}
+#whl{z-index:2;position:absolute;left:0;top:34px;width:var(--W);height:var(--W);will-change:transform;filter:drop-shadow(0 10px 8px #0005)}
+#whl svg{width:100%;height:100%;display:block}
+#ptr{position:absolute;left:50%;top:6px;width:15%;margin-left:-7.5%;z-index:6;transform-origin:50% 10%;filter:drop-shadow(0 4px 2px #0005)}
+#ptr.flap{animation:flap .12s}
+@keyframes flap{40%{transform:rotate(-16deg)}}
+#hub{position:absolute;left:50%;top:calc(34px + var(--W)*.5);width:calc(var(--W)*.4);height:calc(var(--W)*.4);margin:calc(var(--W)*-.2) 0 0 calc(var(--W)*-.2);border-radius:50%;background:radial-gradient(#4a1c14 55%,#7a3a1e 56% 68%,var(--gold) 69%);border:6px solid var(--gold2);box-shadow:0 6px 12px #0006,inset 0 0 18px #000a;z-index:5}
+#spin{position:absolute;left:50%;top:calc(34px + var(--W)*.5);width:calc(var(--W)*.29);height:calc(var(--W)*.29);margin:calc(var(--W)*-.145) 0 0 calc(var(--W)*-.145);border-radius:50%;background:radial-gradient(circle at 50% 28%,#ff7a6d,#e23a3a 60%,#b81f2f);box-shadow:0 10px #8a1422,0 16px 14px #0006,inset 0 5px #fff4;font-weight:700;font-size:calc(var(--W)*.075);letter-spacing:1px;text-shadow:0 3px #8a1422;z-index:7;transition:transform .1s,box-shadow .1s;animation:idle 1.8s ease-in-out infinite}
+@keyframes idle{50%{transform:scale(1.05)}}
+#spin:active{transform:translateY(8px) scale(.98);box-shadow:0 2px #8a1422,0 6px 8px #0006,inset 0 5px #fff4;animation:none}
+#spin:disabled{filter:grayscale(.7) brightness(.8);animation:none}
+#cnt{position:absolute;left:50%;bottom:12px;transform:translateX(-50%);z-index:7;min-width:120px;text-align:center;padding:4px 16px;border-radius:14px;background:linear-gradient(#9af06b,#4fc43c);border:3px solid #fff;color:#14501a;font-weight:700;box-shadow:0 3px #0003}
+.cb{position:absolute;bottom:14px;width:66px;height:66px;border-radius:50%;z-index:7;background:radial-gradient(circle at 40% 30%,#ffe27a,#f0a020 70%);border:4px solid #fff;color:var(--ink);display:grid;place-items:center;box-shadow:0 5px #a85f05,0 8px 12px #0004;transition:transform .12s}
+.cb:active{transform:translateY(4px)}.cb svg{width:32px;height:32px}
+#bReset{left:10px;background:radial-gradient(circle at 40% 30%,#ff9d8f,#e0412f 70%);color:#fff}#bHist{right:10px}
+#bHist i{position:absolute;right:-4px;top:-4px;min-width:26px;height:26px;border-radius:13px;background:#e23a3a;color:#fff;font:700 14px/26px Fredoka,sans-serif;font-style:normal;border:2px solid #fff;padding:0 4px}
+.mod{position:fixed;inset:0;z-index:40;display:none;align-items:flex-end;justify-content:center;background:#04204a99;backdrop-filter:blur(3px)}
+.mod.on{display:flex;animation:fade .25s}
+@keyframes fade{from{opacity:0}}
+.sheet{width:min(100%,520px);max-height:82dvh;overflow:auto;background:linear-gradient(#fff8e0,#ffe9b0);color:var(--ink);border-radius:28px 28px 0 0;padding:20px 18px calc(22px + env(safe-area-inset-bottom,0px));border:5px solid var(--gold);border-bottom:0;animation:up .45s cubic-bezier(.2,1.2,.3,1)}
+@keyframes up{from{transform:translateY(100%)}}
+.sheet h3{margin:0 0 12px;font-size:22px;display:flex;align-items:center;gap:8px}
+.sheet h3 button{margin-left:auto;width:36px;height:36px;border-radius:50%;background:#0001;color:var(--ink);display:grid;place-items:center}
+.hi{display:flex;gap:10px;align-items:center;padding:10px;border-radius:16px;background:#fff;margin-bottom:8px;box-shadow:0 2px #0002}
+.hi .dot{width:36px;height:36px;border-radius:12px;display:grid;place-items:center;color:#fff;flex:none;background:linear-gradient(160deg,var(--c1),var(--c2))}
+.hi small{display:block;opacity:.65;font-size:12px}.hi b{font-weight:600;font-size:15px;line-height:1.2}
+.none{text-align:center;opacity:.7;padding:24px 0}
+.row{display:flex;gap:10px;align-items:center;justify-content:center;margin:14px 0}
+.row .num{font-size:44px;font-weight:700;min-width:100px;text-align:center}
+.row button,.pre button{height:46px;min-width:46px;border-radius:23px;background:linear-gradient(#ffd75e,var(--gold2));box-shadow:0 3px #a85f05;font-weight:700;color:var(--ink);padding:0 16px;font-size:18px}
+.pre{display:flex;gap:8px;justify-content:center}.pre button.sel{background:linear-gradient(#9af06b,#4fc43c);box-shadow:0 3px #2a8a22}
+.btns{display:flex;gap:10px;margin-top:16px}.btns button{flex:1;height:50px;border-radius:25px;font-weight:700;font-size:17px;background:#fff;box-shadow:0 3px #0003;color:var(--ink)}
+.btns .dg{background:linear-gradient(#ff8a7a,#e0412f);color:#fff}
+#splash{position:fixed;inset:0;z-index:60;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:18px;background:linear-gradient(#35b3c4,#1d7bb0 55%,#143f86);transition:opacity .6s,transform .6s;text-align:center;padding:24px}
+#splash.out{opacity:0;transform:scale(1.15);pointer-events:none}
+#splash h1{margin:0;font-size:clamp(34px,9vw,54px);line-height:1;text-shadow:0 4px #0a3a6a,0 8px 14px #0005;animation:bob 2.6s ease-in-out infinite}
+#splash h1 span{color:var(--gold)}#splash p{margin:0;opacity:.85;max-width:300px}
+#go{font-size:26px;font-weight:700;padding:14px 46px;border-radius:40px;background:linear-gradient(#ff7a6d,#e23a3a);box-shadow:0 8px #8a1422,0 14px 20px #0005;animation:idle 1.6s ease-in-out infinite;text-shadow:0 3px #8a1422}
+@media(max-height:640px){.card{height:240px;min-height:200px}.ttl{font-size:21px}}
+@media(prefers-reduced-motion:reduce){.rays,.bub{animation:none}}
+
+/* sea */
+#sea{position:fixed;inset:0;overflow:hidden;pointer-events:none;z-index:1}
+.fish{position:absolute;left:0;width:84px;height:49px;--f1:#ff9a4a;--f2:#ff6a2a;filter:drop-shadow(0 4px 3px #0003);opacity:.95;animation:swim 70s linear infinite}
+.f1{top:13%;animation-duration:78s;animation-delay:-20s}
+.f2{top:30%;width:62px;height:36px;--f1:#7fe0ff;--f2:#2f9ad8;animation-name:swimR;animation-duration:96s;animation-delay:-55s}
+.f3{top:47%;width:100px;height:58px;--f1:#9be86a;--f2:#3aa84a;animation-duration:110s;animation-delay:-70s}
+.f4{top:22%;width:48px;height:28px;--f1:#ffd23c;--f2:#f08a0a;animation-name:swimR;animation-duration:84s;animation-delay:-10s}
+@keyframes swim{0%{transform:translate(-140px,0) rotate(0)}25%{transform:translate(30vw,-10px) rotate(-2deg)}50%{transform:translate(60vw,8px) rotate(2deg)}75%{transform:translate(90vw,-8px) rotate(-2deg)}100%{transform:translate(calc(100vw + 140px),0) rotate(0)}}
+@keyframes swimR{0%{transform:translate(calc(100vw + 140px),0) scaleX(-1)}25%{transform:translate(70vw,10px) scaleX(-1) rotate(2deg)}50%{transform:translate(40vw,-8px) scaleX(-1) rotate(-2deg)}75%{transform:translate(10vw,8px) scaleX(-1) rotate(2deg)}100%{transform:translate(-140px,0) scaleX(-1)}}
+.weed{position:absolute;bottom:-4px;transform-origin:50% 100%;animation:sway2 7s ease-in-out infinite alternate;filter:drop-shadow(0 4px 4px #0003)}
+.w1{left:-2%;width:90px;height:180px}.w2{left:9%;width:62px;height:120px;animation-delay:-3s}.w3{right:-2%;width:96px;height:190px;animation-delay:-2s}.w4{right:11%;width:60px;height:110px;animation-delay:-5s}
+.coral{position:absolute;bottom:0;left:20%;width:64px;height:64px;opacity:.9}
+@keyframes sway2{from{transform:rotate(-3deg)}to{transform:rotate(3deg)}}
+/* emboss */
+.rb,.cb{box-shadow:0 5px #a85f05,0 9px 12px #0005,inset 0 3px 2px #fffa,inset 0 -4px 4px #a85f0566}
+.rb svg,.cb svg{filter:drop-shadow(0 2px 1px #0005)}
+.chip{background:linear-gradient(#1b78b8dd,#0a3a6add);border:2px solid #fff5;box-shadow:0 4px #072a50,0 8px 12px #0004,inset 0 2px #fff5;text-shadow:0 -1px #fff4,0 3px #0006}
+.face{box-shadow:0 10px 0 #0004,0 20px 30px #0006,inset 0 10px 8px #fff6,inset 0 -12px 10px #0003;border-color:#fffc}
+.face::before{content:"";position:absolute;inset:9px;border-radius:19px;border:2px solid #fff5;box-shadow:inset 0 4px 8px #0003,0 1px #fff4;pointer-events:none}
+.ttl{text-shadow:0 -1px #fff5,0 3px 0 #0005,0 6px 8px #0004}
+.tag{box-shadow:0 4px #0003,inset 0 -3px #0001,inset 0 2px #fff}
+.face .big{width:60px;height:60px;filter:drop-shadow(0 4px 2px #0006)}
+.hint{box-shadow:inset 0 2px 4px #0005,0 1px #fff3}
+#hub{box-shadow:0 8px 14px #0006,inset 0 0 22px #000b,inset 0 4px 3px #fff6}
+#spin{box-shadow:0 11px #8a1422,0 18px 16px #0007,inset 0 7px 5px #fff6,inset 0 -8px 8px #0004;text-shadow:0 -2px #fff5,0 4px #8a1422}
+#spin:active{box-shadow:0 3px #8a1422,0 7px 8px #0007,inset 0 5px 4px #fff5,inset 0 -6px 6px #0004}
+#cnt{box-shadow:0 4px #2a8a22,0 7px 8px #0003,inset 0 3px #fff8,inset 0 -3px #0002;text-shadow:0 1px #fff7}
+#deck{box-shadow:0 -8px 20px #0003,inset 0 8px 6px #fff8}
+#tm .bg{filter:drop-shadow(0 3px #0005)}
+.sheet{box-shadow:inset 0 6px 8px #fff9,0 -10px 30px #0005}.hi{box-shadow:0 3px #0002,inset 0 2px #fff,inset 0 -2px #0001}
+.row button,.pre button,.btns button,#go{box-shadow:0 4px #a85f05,inset 0 3px #fff8,inset 0 -3px #0002}
+.btns button{box-shadow:0 4px #0003,inset 0 3px #fff,inset 0 -3px #0001}.btns .dg{box-shadow:0 4px #8a1422,inset 0 3px #fff7}
+.pre button.sel{box-shadow:0 4px #2a8a22,inset 0 3px #fff8}
+#go{box-shadow:0 10px #8a1422,0 16px 20px #0005,inset 0 4px #fff6,inset 0 -5px #0003}
+@media(prefers-reduced-motion:reduce){.fish,.weed{animation:none}}
+/* responsif: rumput laut berdiri di tepi atas dek, roda setengah lingkaran */
+.weed{bottom:calc(var(--wb) + env(safe-area-inset-bottom,0px))}
+.coral{bottom:calc(var(--wb) - 6px + env(safe-area-inset-bottom,0px))}
+@media(max-height:640px){.ar{font-size:34px}}
+@media(orientation:landscape) and (min-width:760px) and (min-height:521px){
+ :root{--W:min(50vw,800px,calc((100dvh - 150px)/.7));--wb:-4px;--CW:min(calc(100vw - var(--W) - 90px),520px);--k:1.25}
+ body{display:grid;grid-template-columns:minmax(0,1fr) auto;grid-template-rows:auto minmax(0,1fr)}
+ .top{grid-column:1/-1;grid-row:1;padding:14px 22px}
+ #stage{grid-column:1;grid-row:2}
+ #wrap{grid-column:2;grid-row:2;align-self:end;margin:0 24px}
+ #deck{left:-24px;right:-24px;width:auto;margin-left:0;border-radius:26px 26px 0 0}
+ .card{height:min(calc(100% - 40px),480px);min-height:300px}
+ .face{padding:30px 26px 22px}.ttl{font-size:calc(25px*var(--k))}.det{font-size:calc(16px*var(--k))}.ar{font-size:calc(42px*var(--k))}.hint{font-size:calc(13px*var(--k))}.tag{font-size:calc(14px*var(--k))}.face.back p{font-size:calc(22px*var(--k))}
+ .chip{font-size:22px;padding:8px 20px}.rb{width:48px;height:48px}
+ .mod{align-items:center}.sheet{border-radius:28px;border-bottom:5px solid var(--gold);width:min(100%,560px)}.sheet.big{max-height:86dvh}
+}
+@media(orientation:landscape) and (max-height:520px){
+ :root{--W:min(46vw,540px,calc((100dvh - 150px)/.7));--wb:-4px;--CW:min(calc(100vw - var(--W) - 70px),350px)}
+ body{display:grid;grid-template-columns:minmax(0,1fr) auto;grid-template-rows:auto minmax(0,1fr)}
+ .top{grid-column:1/-1;grid-row:1}
+ #stage{grid-column:1;grid-row:2}
+ #wrap{grid-column:2;grid-row:2;align-self:end;margin:0 14px}
+ #deck{left:-14px;right:-14px;width:auto;margin-left:0;border-radius:22px 22px 0 0}
+ .face{padding:22px 16px 12px;gap:4px}.ar{font-size:30px;line-height:1.35}.ttl{font-size:20px}.det{font-size:14px}.hint{font-size:12px}
+}
+/* bank soal */
+.sheet.big{max-height:90dvh;display:flex;flex-direction:column;overflow:hidden;padding:16px 14px calc(10px + env(safe-area-inset-bottom,0px))}
+.sheet.big h3{margin-bottom:8px;flex:none}
+.srch{flex:none;width:100%;height:44px;border-radius:22px;border:3px solid var(--gold);padding:0 16px;font:600 16px Fredoka,sans-serif;background:#fff;color:var(--ink);outline:0;margin-bottom:8px}
+.cthead{flex:none;display:flex;align-items:center;gap:6px;margin-bottom:6px;font-size:14px}.cthead b{margin-right:auto}
+.cthead button,.vrow select{height:30px;border-radius:15px;padding:0 12px;background:#fff;color:var(--ink);font-weight:600;font-size:13px;box-shadow:0 2px #0003}
+.cats{flex:none;display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-bottom:8px}
+.ct{display:flex;align-items:center;gap:6px;padding:7px 9px;border-radius:12px;background:#fff;color:var(--ink);border:3px solid transparent;box-shadow:0 2px #0002;font-size:13px;font-weight:600;text-align:left;opacity:.55;min-width:0}
+.ct.on{opacity:1;border-color:var(--c2);background:linear-gradient(160deg,#fff,color-mix(in srgb,var(--c1) 30%,#fff))}
+.ct .cn{flex:1;min-width:0;line-height:1.15}.ct small{opacity:.7}
+.ck{flex:none;width:16px;height:16px;border-radius:50%;border:2px solid var(--c2);background:#fff}.ct.on .ck{background:var(--c2);box-shadow:inset 0 0 0 3px #fff}
+.vrow{flex:none;display:flex;align-items:center;gap:8px;margin-bottom:6px}.vrow select{flex:none;max-width:48%}.vrow small{opacity:.7;font-size:12px}
+#bl{flex:1;min-height:110px;overflow:auto;-webkit-overflow-scrolling:touch}
+.qi{display:flex;gap:8px;padding:9px 10px;border-radius:14px;background:#fff;margin-bottom:6px;box-shadow:0 2px #0002;cursor:pointer}
+.qi.off{opacity:.45}.qi .dot{flex:none;width:10px;border-radius:5px;background:linear-gradient(var(--c1),var(--c2))}
+.qi small{display:block;opacity:.65;font-size:11px}.qi b{display:block;font-weight:600;font-size:15px;line-height:1.3}.qi em{display:block;font-size:13px;opacity:.75;font-style:normal}
+.arq{display:block;font-family:"Amiri","Noto Naskh Arabic",serif;font-size:22px;line-height:1.6;font-weight:400}
+.qi .ans{display:none;margin-top:6px;padding:6px 10px;border-radius:10px;background:#e9f9d9;font-size:14px;font-weight:600}.qi.open .ans{display:block}
+.none{text-align:center;padding:20px;opacity:.7}
+@media(max-width:420px){.chip{font-size:15px;padding:5px 11px}.top{gap:6px;padding:10px 8px}.rb{width:38px;height:38px}}
+/* detail kategori + modal pilih soal */
+.ct{padding:0;gap:0;align-items:stretch;overflow:hidden}
+.cm,.cd{background:transparent}
+.cm{flex:1;min-width:0;display:flex;align-items:center;gap:6px;padding:7px 6px 7px 9px;text-align:left;color:inherit;font:inherit}
+.cd{flex:none;width:34px;border-left:2px solid #0001;font-size:22px;font-weight:700;color:var(--c2);line-height:1}
+.bhint{flex:none;margin:0 0 4px;font-size:12px;opacity:.75}
+.bfoot{flex:none;display:flex;align-items:center;gap:8px;padding-top:8px}.bfoot small{margin-right:auto;opacity:.8}
+.bfoot button{height:38px;padding:0 20px;border-radius:19px;background:linear-gradient(#6be08c,#1fa64a);color:#fff;font-weight:700;box-shadow:0 3px #12713a}
+.qtabs{flex:none;display:flex;gap:6px;margin-bottom:8px;overflow-x:auto}
+.lt{flex:1 1 0;min-width:0;white-space:nowrap;padding:6px 4px;text-align:center;border-radius:16px;background:#fff;color:var(--ink);font-weight:700;font-size:13px;box-shadow:0 2px #0003;border:2px solid transparent}
+.lt.on{border-color:var(--ink)}.lt.l0{color:#15803d}.lt.l1{color:#b45309}.lt.l2{color:#b91c1c}.lt small{display:block;opacity:.7;font-size:11px}
+.qbar{flex:none;display:flex;flex-wrap:wrap;align-items:center;gap:6px;margin-bottom:6px;font-size:13px}.qbar label{margin-right:auto;display:flex;align-items:center;gap:6px}
+.qbar button{height:30px;border-radius:15px;padding:0 12px;background:#fff;color:var(--ink);font-weight:600;font-size:13px;box-shadow:0 2px #0003}
+#ql{flex:1;min-height:110px;overflow:auto;-webkit-overflow-scrolling:touch;position:relative}
+.lh{position:sticky;top:0;z-index:2;display:flex;align-items:center;gap:8px;padding:6px 10px;margin:4px 0 6px;border-radius:12px;color:#fff;font-size:14px}
+.lh.l0{background:#16a34a}.lh.l1{background:#d97706}.lh.l2{background:#dc2626}.lh small{opacity:.9;margin-right:auto}
+.lh button{padding:3px 10px;border-radius:10px;background:#fff;color:var(--ink);font-size:12px;font-weight:700}
+.qr{display:flex;gap:10px;align-items:flex-start;padding:9px 10px;border-radius:14px;background:#fff;margin-bottom:6px;box-shadow:0 2px #0002;cursor:pointer}
+.qr .ck{margin-top:2px;border-color:#2563eb}.qr:not(.off) .ck{background:#2563eb;box-shadow:inset 0 0 0 3px #fff}
+.qr.off{opacity:.5}.qr b{display:block;font-weight:600;font-size:15px;line-height:1.3}.qr em{display:block;font-size:13px;opacity:.75;font-style:normal}
+.qr .ans{display:none;margin-top:6px;padding:6px 10px;border-radius:10px;background:#e9f9d9;font-size:14px;font-weight:600}.sa .qr .ans{display:block}
+/* jenjang cepat */
+#cnt{white-space:nowrap;font-size:clamp(11px,calc(var(--W)*.042),15px)}
+.pre2{flex:none;display:flex;gap:6px;margin-bottom:8px}
+.pre2 button{flex:1;padding:7px 4px;border-radius:14px;background:#fff;color:var(--ink);font-weight:700;font-size:14px;box-shadow:0 2px #0003;border:2px solid transparent}
+.pre2 button.sel{border-color:var(--ink);background:#ffe9a3}
+</style></head><body>
+<svg width="0" height="0" style="position:absolute"><defs>
+<linearGradient id="gBk" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#5eb6ff"/><stop offset="1" stop-color="#2557e0"/></linearGradient>
+<linearGradient id="gFl" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#ffb13c"/><stop offset="1" stop-color="#f0401c"/></linearGradient>
+<linearGradient id="gCo" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#fff0a0"/><stop offset="1" stop-color="#f5a30f"/></linearGradient>
+<linearGradient id="gSw" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#7ce88a"/><stop offset="1" stop-color="#1c8a4a"/></linearGradient>
+<linearGradient id="gFi" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#fff" stop-opacity=".55"/><stop offset=".5" stop-color="#fff" stop-opacity="0"/></linearGradient>
+<symbol id="i-book" viewBox="0 0 24 24" stroke-linecap="round" stroke-linejoin="round"><path d="M7 20h12.5v1.8H7a1.9 1.9 0 0 1 0-1.8z" fill="#fff" stroke="#1e3a8a" stroke-width="1.2"/><path d="M5 5a2 2 0 0 1 2-2h12.5v17H7a2 2 0 0 0-2 1z" fill="url(#gBk)" stroke="#1e3a8a" stroke-width="1.4"/><path d="M8.5 3v17" stroke="#1e3a8a" stroke-width="1.2"/><rect x="11" y="6.5" width="6" height="3" rx="1.2" fill="#ffd23c" stroke="#b36b00" stroke-width="1"/></symbol>
+<symbol id="i-reset" viewBox="0 0 24 24" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12a7.5 7.5 0 1 0 2.4-5.5" fill="none" stroke="#fff" stroke-width="3"/><path d="M3.5 3.5v6h6z" fill="#ffd23c" stroke="#ffd23c" stroke-width="1.5"/></symbol>
+<symbol id="i-music" viewBox="0 0 24 24" stroke-linecap="round" stroke-linejoin="round"><path d="M9 17V6l10-2v11" fill="none" stroke="#7c3aed" stroke-width="2.2"/><ellipse cx="6.5" cy="17.5" rx="3" ry="2.5" fill="#ec4899" stroke="#9d174d" stroke-width="1.4"/><ellipse cx="16.5" cy="15.5" rx="3" ry="2.5" fill="#ec4899" stroke="#9d174d" stroke-width="1.4"/></symbol>
+<symbol id="i-sound" viewBox="0 0 24 24" stroke-linecap="round" stroke-linejoin="round"><path d="M3.5 9.5v5h3.5l4.5 4v-13l-4.5 4z" fill="#3b82f6" stroke="#1e3a8a" stroke-width="1.5"/><path d="M15 9.2a4 4 0 0 1 0 5.6" fill="none" stroke="#e23a3a" stroke-width="2.2"/><path d="M17.6 6.4a8 8 0 0 1 0 11.2" fill="none" stroke="#f08a0a" stroke-width="2.2"/></symbol>
+<symbol id="i-timer" viewBox="0 0 24 24" stroke-linecap="round" stroke-linejoin="round"><rect x="9.5" y="1.8" width="5" height="2.6" rx="1" fill="#e23a3a" stroke="#8a1422" stroke-width="1"/><circle cx="12" cy="13.2" r="8.3" fill="#fff" stroke="#e23a3a" stroke-width="2.4"/><path d="M12 8.5v5l3 1.8" fill="none" stroke="#1e3a8a" stroke-width="2.2"/><path d="M12 5.4v1.2M12 20v1" stroke="#f0a020" stroke-width="1.6"/></symbol>
+<symbol id="i-list" viewBox="0 0 24 24" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="3" width="16" height="18" rx="3" fill="#fff" stroke="#1e3a8a" stroke-width="1.6"/><path d="M8 8h8M8 12h8M8 16h5" fill="none" stroke="#2563eb" stroke-width="2"/></symbol>
+<symbol id="i-full" viewBox="0 0 24 24" stroke-linecap="round" stroke-linejoin="round"><path d="M4 9V4h5M15 4h5v5M20 15v5h-5M9 20H4v-5" fill="none" stroke="#1e3a8a" stroke-width="2.6"/></symbol>
+<symbol id="i-fsx" viewBox="0 0 24 24" stroke-linecap="round" stroke-linejoin="round"><path d="M9 4v5H4M20 9h-5V4M15 20v-5h5M4 15h5v5" fill="none" stroke="#1e3a8a" stroke-width="2.6"/></symbol>
+<symbol id="i-x" viewBox="0 0 24 24" stroke-linecap="round" stroke-linejoin="round"><path d="M6 6l12 12M18 6L6 18" stroke="#e23a3a" stroke-width="3.2"/></symbol>
+<symbol id="i-q" viewBox="0 0 24 24" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10" fill="url(#gCo)" stroke="#b36b00" stroke-width="1.6"/><circle cx="12" cy="12" r="7.6" fill="none" stroke="#fff8" stroke-width="1"/><path d="M9.3 9.6a2.7 2.7 0 1 1 3.9 2.4c-.8.4-1.2 1-1.2 1.8" fill="none" stroke="#7a3b00" stroke-width="2.4"/><circle cx="12" cy="17.2" r="1.3" fill="#7a3b00" stroke="none"/></symbol>
+<symbol id="i-fire" viewBox="0 0 24 24" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2.2c.8 3.6 5.8 5.8 5.8 11a5.8 5.8 0 0 1-11.6 0c0-2.2 1-3.8 2.2-5 .1 1.6.8 2.6 1.7 2.8C9.8 8.4 10.8 5.2 12 2.2z" fill="url(#gFl)" stroke="#b3260a" stroke-width="1.4"/><path d="M12 12c.5 1.8 2.6 2.6 2.6 4.6a2.6 2.6 0 0 1-5.2 0c0-1.3.7-2 1.3-2.7.2.7.5 1 .9 1.1.2-1 .4-2 .4-3z" fill="#ffe27a" stroke="#f0a020" stroke-width=".8"/></symbol>
+<symbol id="i-hist" viewBox="0 0 24 24" stroke-linecap="round" stroke-linejoin="round"><circle cx="12.5" cy="12" r="8.2" fill="#fff" stroke="#7c3aed" stroke-width="2.2"/><path d="M12.5 7.5V12l3 1.8" fill="none" stroke="#7c3aed" stroke-width="2.2"/><path d="M2.5 5v5.5H8z" fill="#f08a0a" stroke="#f08a0a" stroke-width="1.2"/></symbol>
+<symbol id="i-fish" viewBox="0 0 120 70"><path d="M92 35 118 12c4 14 4 32 0 46z" style="fill:var(--f2)"/><ellipse cx="55" cy="35" rx="45" ry="27" style="fill:var(--f1)"/><ellipse cx="55" cy="35" rx="45" ry="27" fill="url(#gFi)"/><path d="M50 10c10-8 24-6 30 2-10 2-22 4-30-2z" style="fill:var(--f2)"/><path d="M45 52c8 8 22 8 26 2-9 0-18-1-26-2z" style="fill:var(--f2)" opacity=".8"/><path d="M62 10c6 16 6 34 0 50" fill="none" stroke="#fff" stroke-width="5" opacity=".45"/><circle cx="26" cy="29" r="7.5" fill="#fff"/><circle cx="24.5" cy="29.5" r="4" fill="#1d2a44"/><circle cx="23" cy="27.5" r="1.4" fill="#fff"/><path d="M12 42q5 4 10 2" fill="none" stroke="#0004" stroke-width="2.5" stroke-linecap="round"/></symbol>
+<symbol id="i-weed" viewBox="0 0 100 200"><path d="M50 200C30 150 70 120 45 70 35 45 50 20 48 5c14 30 10 50 8 70-2 35 25 60 4 125z" fill="url(#gSw)"/><path d="M30 200C10 160 28 130 14 95c-5-15 0-30 2-40 12 25 14 45 8 70-4 28 12 45 6 75z" fill="url(#gSw)" opacity=".85"/><path d="M72 200c-8-35 12-55 10-85-1-15 4-28 6-42 10 30 8 50 2 75-5 25 4 38-18 52z" fill="url(#gSw)" opacity=".9"/></symbol>
+<symbol id="i-coral" viewBox="0 0 100 100"><path d="M40 100V62C22 56 18 40 20 26M40 62c10-8 22-12 28-30M52 100V70c12-6 24-8 30-22" fill="none" stroke="#e8628a" stroke-width="11" stroke-linecap="round"/></symbol>
+</defs></svg>
+<div id="sea" aria-hidden="true">
+<svg class="fish f1" viewBox="0 0 120 70"><use href="#i-fish"/></svg>
+<svg class="fish f2" viewBox="0 0 120 70"><use href="#i-fish"/></svg>
+<svg class="fish f3" viewBox="0 0 120 70"><use href="#i-fish"/></svg>
+<svg class="fish f4" viewBox="0 0 120 70"><use href="#i-fish"/></svg>
+<svg class="weed w1" viewBox="0 0 100 200"><use href="#i-weed"/></svg>
+<svg class="weed w2" viewBox="0 0 100 200"><use href="#i-weed"/></svg>
+<svg class="weed w3" viewBox="0 0 100 200"><use href="#i-weed"/></svg>
+<svg class="weed w4" viewBox="0 0 100 200"><use href="#i-weed"/></svg>
+<svg class="coral" viewBox="0 0 100 100"><use href="#i-coral"/></svg></div>
+<div class="rays"></div><div id="bubs"></div><div id="fx"></div><div id="toast"></div>
+
+<div class="top"><div class="chip">Roda Jelajah Islami</div>
+<button class="rb" id="bFs" aria-label="Layar penuh"><svg class="i"><use href="#i-full"/></svg></button>
+<button class="rb" id="bBank" aria-label="Bank soal"><svg class="i"><use href="#i-list"/></svg></button>
+<button class="rb" id="bMusic" aria-label="Musik"><svg class="i"><use href="#i-music"/></svg></button>
+<button class="rb" id="bSfx" aria-label="Efek suara"><svg class="i"><use href="#i-sound"/></svg></button>
+<button class="rb" id="bSet" aria-label="Atur timer"><svg class="i"><use href="#i-timer"/></svg></button></div>
+
+<div id="stage"><div id="empty">Putar roda untuk membuka kartu!<small>Kartu yang sudah keluar tidak akan muncul lagi</small></div>
+<div id="tm"><svg viewBox="0 0 60 60"><circle class="bg" cx="30" cy="30" r="26"/><circle class="fg" id="fg" cx="30" cy="30" r="25"/></svg><b id="tn">20</b></div>
+<div class="card" id="card"></div></div>
+
+<div id="wrap"><div id="deck"></div><div id="whl"></div>
+<svg id="ptr" viewBox="0 0 60 60"><path d="M4 8Q30 -2 56 8 52 14 34 54Q30 60 26 54 8 14 4 8z" fill="#ffd23c" stroke="#e8920c" stroke-width="4" stroke-linejoin="round"/></svg>
+<div id="hub"></div><button id="spin">SPIN</button><div id="cnt">Sisa 0/0</div>
+<button class="cb" id="bReset" aria-label="Reset"><svg class="i"><use href="#i-reset"/></svg></button>
+<button class="cb" id="bHist" aria-label="Riwayat"><svg class="i"><use href="#i-book"/></svg><i id="hc">0</i></button></div>
+
+<div class="mod" id="mHist"><div class="sheet"><h3><svg class="i"><use href="#i-hist"/></svg>Riwayat Kartu<button data-x><svg class="i"><use href="#i-x"/></svg></button></h3><div id="hl"></div></div></div>
+<div class="mod" id="mBank"><div class="sheet big"><h3><svg class="i"><use href="#i-list"/></svg>Bank Soal<button data-x><svg class="i"><use href="#i-x"/></svg></button></h3>
+<div class="cthead"><b>Jenjang cepat</b></div>
+<div class="pre2" id="pr"></div>
+<div class="cthead"><b>Kategori</b><button id="cAll">Semua</button><button id="cNone">Kosongkan</button></div>
+<div class="cats" id="bc"></div>
+<p class="bhint">Ketuk kategori untuk mengaktifkan/menonaktifkan. Ketuk <b>›</b> di kanan untuk memilih soal. Jenjang: SD = Easy, SMP = Easy + Medium, SMA = Medium + Hard.</p>
+<div class="bfoot"><small id="bn"></small><button data-x>Selesai</button></div></div></div>
+<div class="mod" id="mQ"><div class="sheet big"><h3><span id="qt"></span><button data-x><svg class="i"><use href="#i-x"/></svg></button></h3>
+<input id="qq" class="srch" type="search" placeholder="Cari soal atau jawaban…" autocomplete="off">
+<div class="qtabs" id="qtabs"></div>
+<div class="qbar"><label><input type="checkbox" id="qa"> Jawaban</label><button id="qAll">Pilih semua</button><button id="qNone">Kosongkan</button></div>
+<div id="ql"></div>
+<div class="bfoot"><small id="qn"></small><button data-x>Selesai</button></div></div></div>
+<div class="mod" id="mSet"><div class="sheet"><h3><svg class="i"><use href="#i-timer"/></svg>Waktu Menjawab<button data-x><svg class="i"><use href="#i-x"/></svg></button></h3>
+<div class="row"><button id="tMinus">−5</button><div class="num"><span id="tv">20</span>s</div><button id="tPlus">+5</button></div>
+<div class="pre"><button data-t="10">10</button><button data-t="20">20</button><button data-t="30">30</button><button data-t="60">60</button></div></div></div>
+<div class="mod" id="mRes"><div class="sheet"><h3>Ulangi permainan?</h3><p>Semua kartu dikembalikan dan riwayat dihapus.</p><div class="btns"><button data-x>Batal</button><button class="dg" id="doReset">Ya, reset</button></div></div></div>
+
+<div id="splash"><h1>Roda<br><span>Jelajah Islami</span></h1><p>Putar roda, jawab soal, dan selesaikan tantangan seru bersama!</p><button id="go">Mulai</button></div>
+
+<script>
+const Q=[["Baca Surat", "Al-’Adiyat", "Bacalah Surat Al-’Adiyat (surat ke-100).", "Surat ke-100 dalam Al-Qur’an.", "وَالْعَادِيَاتِ"], ["Baca Surat", "Al-Qari’ah", "Bacalah Surat Al-Qari’ah (surat ke-101).", "Surat ke-101 dalam Al-Qur’an.", "الْقَارِعَةُ"], ["Baca Surat", "At-Takatsur", "Bacalah Surat At-Takatsur (surat ke-102).", "Surat ke-102 dalam Al-Qur’an.", "التَّكَاثُرُ"], ["Baca Surat", "Al-’Asr", "Bacalah Surat Al-’Asr (surat ke-103).", "Surat ke-103 dalam Al-Qur’an.", "الْعَصْرِ"], ["Baca Surat", "Al-Humazah", "Bacalah Surat Al-Humazah (surat ke-104).", "Surat ke-104 dalam Al-Qur’an.", "الْهُمَزَةُ"], ["Baca Surat", "Al-Fil", "Bacalah Surat Al-Fil (surat ke-105).", "Surat ke-105 dalam Al-Qur’an.", "الْفِيلِ"], ["Baca Surat", "Quraisy", "Bacalah Surat Quraisy (surat ke-106).", "Surat ke-106 dalam Al-Qur’an.", "قُرَيْشٍ"], ["Baca Surat", "Al-Ma’un", "Bacalah Surat Al-Ma’un (surat ke-107).", "Surat ke-107 dalam Al-Qur’an.", "الْمَاعُونَ"], ["Baca Surat", "Al-Kautsar", "Bacalah Surat Al-Kautsar (surat ke-108).", "Surat ke-108 dalam Al-Qur’an.", "الْكَوْثَرَ"], ["Baca Surat", "Al-Kafirun", "Bacalah Surat Al-Kafirun (surat ke-109).", "Surat ke-109 dalam Al-Qur’an.", "الْكَافِرُونَ"], ["Baca Surat", "An-Nasr", "Bacalah Surat An-Nasr (surat ke-110).", "Surat ke-110 dalam Al-Qur’an.", "النَّصْرِ"], ["Baca Surat", "Al-Lahab", "Bacalah Surat Al-Lahab (surat ke-111).", "Surat ke-111 dalam Al-Qur’an.", "الْمَسَدِ"], ["Baca Surat", "Al-Ikhlas", "Bacalah Surat Al-Ikhlas (surat ke-112).", "Surat ke-112 dalam Al-Qur’an.", "الْإِخْلَاصِ"], ["Baca Surat", "Al-Falaq", "Bacalah Surat Al-Falaq (surat ke-113).", "Surat ke-113 dalam Al-Qur’an.", "الْفَلَقِ"], ["Baca Surat", "An-Nas", "Bacalah Surat An-Nas (surat ke-114).", "Surat ke-114 dalam Al-Qur’an.", "النَّاسِ"], ["Rukun Islam", "Ada berapa rukun Islam?", "Sebutkan jumlah rukun Islam.", "Rukun Islam ada lima.", ""], ["Rukun Islam", "Apa rukun Islam pertama?", "Sebutkan rukun Islam yang pertama.", "Dua kalimat syahadat.", ""], ["Rukun Islam", "Apa rukun Islam kedua?", "Sebutkan rukun Islam yang kedua.", "Mendirikan salat.", ""], ["Rukun Islam", "Apa rukun Islam ketiga?", "Sebutkan rukun Islam yang ketiga.", "Menunaikan zakat.", ""], ["Rukun Islam", "Apa rukun Islam keempat?", "Sebutkan rukun Islam yang keempat.", "Berpuasa pada bulan Ramadan.", ""], ["Rukun Islam", "Apa rukun Islam kelima?", "Sebutkan rukun Islam yang kelima.", "Menunaikan haji bagi yang mampu.", ""], ["Wudhu", "Apa tujuan berwudhu?", "Untuk apa seorang Muslim berwudhu?", "Untuk bersuci dari hadas kecil agar dapat melaksanakan ibadah yang mensyaratkan wudhu.", ""], ["Wudhu", "Sebutkan anggota wudhu!", "Sebutkan anggota tubuh yang wajib dibasuh atau diusap dalam wudhu.", "Wajah, kedua tangan hingga siku, sebagian kepala, dan kedua kaki hingga mata kaki; sesuai tata cara wudhu.", ""], ["Wudhu", "Apa yang dibasuh pertama?", "Dalam urutan wudhu yang umum diajarkan, anggota apa yang dibasuh setelah niat dan membasuh telapak tangan?", "Membasuh wajah.", ""], ["Wudhu", "Apa yang diusap pada kepala?", "Saat berwudhu, bagian kepala apa yang diusap?", "Sebagian kepala, sesuai tuntunan yang diikuti.", ""], ["Wudhu", "Apa yang membatalkan wudhu?", "Sebutkan satu hal yang membatalkan wudhu!", "Contohnya buang air kecil, buang air besar, atau kentut.", ""], ["Wudhu", "Mengapa hemat air?", "Mengapa kita tidak boleh boros air ketika berwudhu?", "Islam mengajarkan tidak berlebih-lebihan dan menjaga nikmat air.", ""], ["Rukun Iman", "Ada berapa rukun iman?", "Sebutkan jumlah rukun iman.", "Rukun iman ada enam.", ""], ["Rukun Iman", "Rukun Iman ke-1", "Apa rukun iman yang pertama?", "Iman kepada Allah.", ""], ["Rukun Iman", "Rukun Iman ke-2", "Apa rukun iman yang kedua?", "Iman kepada malaikat-malaikat Allah.", ""], ["Rukun Iman", "Rukun Iman ke-3", "Apa rukun iman yang ketiga?", "Iman kepada kitab-kitab Allah.", ""], ["Rukun Iman", "Rukun Iman ke-4", "Apa rukun iman yang keempat?", "Iman kepada rasul-rasul Allah.", ""], ["Rukun Iman", "Rukun Iman ke-5", "Apa rukun iman yang kelima?", "Iman kepada hari akhir.", ""], ["Rukun Iman", "Rukun Iman ke-6", "Apa rukun iman yang keenam?", "Iman kepada qada dan qadar, baik dan buruknya.", ""], ["Malaikat", "Siapa penyampai wahyu?", "Malaikat siapa yang bertugas menyampaikan wahyu?", "Malaikat Jibril.", ""], ["Malaikat", "Siapa pencatat amal baik?", "Siapa malaikat yang dikenal mencatat amal baik?", "Malaikat pencatat amal baik, yang dalam pelajaran umum dikenal sebagai Raqib.", ""], ["Malaikat", "Siapa pencatat amal buruk?", "Siapa malaikat yang dikenal mencatat amal buruk?", "Malaikat pencatat amal buruk, yang dalam pelajaran umum dikenal sebagai Atid.", ""], ["Malaikat", "Siapa penjaga neraka?", "Siapa nama malaikat penjaga neraka?", "Malaikat Malik.", ""], ["Malaikat", "Siapa peniup sangkakala?", "Malaikat siapa yang bertugas meniup sangkakala?", "Malaikat Israfil.", ""], ["Malaikat", "Siapa pencabut nyawa?", "Apa sebutan malaikat yang bertugas mencabut nyawa?", "Malaikat maut; dalam pelajaran umum sering disebut Izrail.", ""], ["Nabi & Rasul", "Siapa nabi pertama?", "Siapakah nabi pertama?", "Nabi Adam a.s.", ""], ["Nabi & Rasul", "Siapa nabi terakhir?", "Siapakah nabi dan rasul terakhir?", "Nabi Muhammad ﷺ.", ""], ["Nabi & Rasul", "Siapa yang membuat kapal?", "Nabi siapa yang membuat kapal besar atas perintah Allah?", "Nabi Nuh a.s.", ""], ["Nabi & Rasul", "Siapa yang ditelan ikan?", "Nabi siapa yang pernah berada dalam perut ikan besar?", "Nabi Yunus a.s.", ""], ["Nabi & Rasul", "Siapa yang membangun Ka’bah?", "Nabi siapa yang bersama putranya membangun Ka’bah?", "Nabi Ibrahim a.s. bersama Nabi Ismail a.s.", ""], ["Nabi & Rasul", "Siapa nabi bertongkat?", "Nabi siapa yang memiliki mukjizat tongkat atas izin Allah?", "Nabi Musa a.s.", ""], ["Nabi & Rasul", "Siapa nabi yang sabar?", "Sebutkan nabi yang dikenal sabar saat diuji penyakit dan kehilangan.", "Nabi Ayyub a.s.", ""], ["Adab", "Adab kepada orang tua", "Sebutkan satu contoh adab baik kepada orang tua.", "Berbicara dengan lembut, menghormati, membantu, dan menaati mereka dalam kebaikan.", ""], ["Adab", "Salam ketika bertemu", "Apa ucapan salam ketika bertemu sesama Muslim?", "Assalamu’alaikum.", ""], ["Adab", "Adab sebelum makan", "Apa yang dianjurkan dibaca sebelum makan?", "Basmalah: Bismillah.", ""], ["Adab", "Adab ketika bersin", "Apa yang diucapkan seorang Muslim ketika bersin?", "Alhamdulillah.", ""], ["Adab", "Adab meminta izin", "Apa yang dilakukan sebelum masuk rumah orang lain?", "Meminta izin dan mengucapkan salam.", ""], ["Adab", "Adab menjaga lisan", "Sebutkan satu contoh menjaga lisan!", "Berkata jujur, berkata baik, tidak menghina atau menggunjing.", ""], ["Adab", "Adab terhadap tetangga", "Sebutkan satu cara berbuat baik kepada tetangga.", "Menghormati, membantu saat perlu, dan tidak mengganggu mereka.", ""]],CH=[["Coret wajahmu!", "Coret wajahmu dengan bedak, lalu tunjukkan ke semua teman."], ["Cium tangan", "Cium tangan semua orang di sekitarmu dengan sopan."], ["Kenalan dengan pohon", "Perkenalkan dirimu dengan lantang di depan sebuah pohon."], ["Cuci muka", "Pergi cuci muka sekarang, lalu kembali dengan wajah segar."], ["Penyanyi dadakan", "Nyanyikan satu lagu anak-anak favoritmu dengan penuh semangat."], ["Jalan jongkok", "Jalan jongkok 5 langkah sambil mengucap Bismillah di tiap langkah."], ["Suara hewan", "Tirukan suara hewan pilihan teman-temanmu."], ["Pidato kilat", "Berpidato 20 detik tentang makanan favoritmu."], ["Puji temanmu", "Bersalaman dengan teman di sebelahmu dan sebutkan satu kebaikannya."], ["Tahan tawa", "Tahan tawa selama 15 detik saat ditatap teman-temanmu."], ["Asmaul Husna", "Sebutkan 3 Asmaul Husna beserta artinya."], ["Qari cilik", "Bacalah Surat Al-Fatihah dengan suara merdu."], ["Lima nabi", "Sebutkan 5 nama nabi tanpa jeda dan tanpa salah."], ["Tiga ekspresi", "Ucapkan “Aku anak saleh” dengan gaya sedih, marah, lalu gembira."], ["Peragawan", "Berjalan ala model di catwalk sejauh 5 langkah, lalu berpose."]];
+const PAL={"Baca Surat":["#ff8ac0","#e0307f"],"Rukun Islam":["#5eb6ff","#2563eb"],"Wudhu":["#4fe3f5","#0891b2"],"Rukun Iman":["#b79bff","#6d28d9"],"Malaikat":["#ffd23c","#e08a0a"],"Nabi & Rasul":["#6ee79a","#16a34a"],"Adab":["#ffa45c","#e8590c"],"Tantangan":["#ff7a6d","#c81f2f"]};
+const $=id=>document.getElementById(id),N=12,STEP=30;
+let qP,cP,hist,R=0,busy=false,secs=20,cur=null,flipped=false,tEnd=0,tRaf=0,lastSec=0,musicOn=true,sfxOn=true;
+try{secs=+localStorage.getItem("jj_t")||20;musicOn=localStorage.getItem("jj_m")!=="0";sfxOn=localStorage.getItem("jj_s")!=="0"}catch(e){}
+const store=(k,v)=>{try{localStorage.setItem(k,v)}catch(e){}};
+const ic=(n,c="")=>`<svg class="i ${c}"><use href="#i-${n}"/></svg>`;
+const sleep=ms=>new Promise(r=>setTimeout(r,ms));
+/* bubbles */
+$("bubs").innerHTML=Array.from({length:16},()=>`<span class="bub" style="left:${Math.random()*100}%;width:${6+Math.random()*16}px;height:${6+Math.random()*16}px;animation-duration:${8+Math.random()*12}s;animation-delay:${-Math.random()*14}s;--dx:${Math.random()*60-30}px"></span>`).join("");
+/* wheel */
+const P=(r,a)=>{a=a*Math.PI/180;return[(r*Math.sin(a)).toFixed(1),(-r*Math.cos(a)).toFixed(1)]};
+const isC=i=>i%3===2;
+function wheelSVG(){let s=`<svg viewBox="-330 -330 660 660"><defs>
+<linearGradient id="gG" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#7be05a"/><stop offset="1" stop-color="#2fa83a"/></linearGradient>
+<linearGradient id="gC" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#ffe9cf"/><stop offset="1" stop-color="#f2c79a"/></linearGradient>
+<linearGradient id="gR" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#ff7a6d"/><stop offset="1" stop-color="#d12a3a"/></linearGradient>
+<linearGradient id="gY" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#ffe27a"/><stop offset="1" stop-color="#f3a915"/></linearGradient></defs>
+<radialGradient id="gS" gradientUnits="userSpaceOnUse" cx="0" cy="0" r="300"><stop offset=".36" stop-color="#000" stop-opacity=".32"/><stop offset=".55" stop-color="#000" stop-opacity="0"/><stop offset=".86" stop-color="#fff" stop-opacity=".3"/><stop offset="1" stop-color="#fff" stop-opacity="0"/></radialGradient>
+<circle r="324" fill="#c46f0a"/><circle r="322" fill="#f7a826"/><circle r="308" fill="#ffd45c"/><circle r="314" fill="none" stroke="#fff8" stroke-width="3"/>`;
+for(let i=0;i<N;i++){const a1=i*STEP-15,a2=i*STEP+15,[x1,y1]=P(300,a1),[x2,y2]=P(300,a2),[x3,y3]=P(110,a2),[x4,y4]=P(110,a1);
+const f=isC(i)?"gR":i%3===0?"gC":"gG";
+const dd=`M${x4} ${y4}L${x1} ${y1}A300 300 0 0 1 ${x2} ${y2}L${x3} ${y3}A110 110 0 0 0 ${x4} ${y4}z`;s+=`<path d="${dd}" fill="url(#${f})" stroke="#ffd45c" stroke-width="7" stroke-linejoin="round"/><path d="${dd}" fill="url(#gS)"/><path d="${dd}" fill="none" stroke="#fff7" stroke-width="2" transform="scale(.97)"/>`;
+const [sx,sy]=P(312,a1);s+=`<circle cx="${sx}" cy="${sy}" r="9" fill="#ffe9a0" stroke="#e8920c" stroke-width="3"/>`;
+s+=`<g transform="rotate(${i*STEP})"><g transform="translate(0 -205)"><use href="#i-${isC(i)?"fire":"q"}" x="-38" y="-38" width="76" height="76" style="filter:drop-shadow(0 5px 3px #0007)"/></g></g>`}
+return s+"</svg>"}
+$("whl").innerHTML=wheelSVG();
+/* audio */
+let ax=null,mg,sg,mTimer,mStep=0,mNext=0;
+const HZ=[0,1,4,5,7,8,10],fq=(d,o=0)=>293.66*Math.pow(2,(HZ[((d%7)+7)%7]+12*(Math.floor(d/7)+o))/12);
+const MEL=[7,9,8,7,11,9,8,7, 7,10,9,8,12,11,9,8, 7,9,11,12,11,9,8,7, 9,8,7,5,7,8,9,7];
+function ac(){if(!ax){const C=window.AudioContext||window.webkitAudioContext;if(!C)return null;ax=new C();mg=ax.createGain();mg.gain.value=musicOn?.5:0;mg.connect(ax.destination);sg=ax.createGain();sg.gain.value=sfxOn?1:0;sg.connect(ax.destination)}if(ax.state==="suspended")ax.resume();return ax}
+function tone(f,t,d,type="sine",v=.2,out=sg,f2){const o=ax.createOscillator(),g=ax.createGain();o.type=type;o.frequency.setValueAtTime(f,t);if(f2)o.frequency.exponentialRampToValueAtTime(f2,t+d);g.gain.setValueAtTime(.0001,t);g.gain.exponentialRampToValueAtTime(v,t+.012);g.gain.exponentialRampToValueAtTime(.0001,t+d);o.connect(g);g.connect(out);o.start(t);o.stop(t+d+.05)}
+function noise(t,d,f1,f2,v=.3,type="bandpass"){const b=ax.createBuffer(1,ax.sampleRate*d,ax.sampleRate),a=b.getChannelData(0);for(let i=0;i<a.length;i++)a[i]=Math.random()*2-1;const s=ax.createBufferSource();s.buffer=b;const fl=ax.createBiquadFilter();fl.type=type;fl.frequency.setValueAtTime(f1,t);fl.frequency.exponentialRampToValueAtTime(f2,t+d);const g=ax.createGain();g.gain.setValueAtTime(v,t);g.gain.exponentialRampToValueAtTime(.001,t+d);s.connect(fl);fl.connect(g);g.connect(sg);s.start(t)}
+const SFX={
+ click(){if(!ac())return;tone(700,ax.currentTime,.08,"triangle",.15,sg,1000)},
+ tick(){if(!ac())return;tone(1300,ax.currentTime,.04,"square",.07,sg,800)},
+ whoosh(){if(!ac())return;const t=ax.currentTime;noise(t,1.4,300,2200,.35);tone(220,t,1.2,"sawtooth",.05,sg,660)},
+ win(){if(!ac())return;const t=ax.currentTime;[523.25,659.25,783.99,1046.5,1318.5].forEach((f,i)=>{tone(f,t+i*.07,.4,"triangle",.2);tone(f*2,t+i*.07,.25,"sine",.06)})},
+ chal(){if(!ac())return;const t=ax.currentTime;[0,.14,.28].forEach(d=>tone(110,t+d,.2,"sine",.5,sg,60));[392,370,330,262].forEach((f,i)=>tone(f,t+.4+i*.09,.3,"sawtooth",.1))},
+ flip(){if(!ac())return;const t=ax.currentTime;noise(t,.3,3000,500,.25,"highpass");tone(500,t,.25,"triangle",.12,sg,900)},
+ beep(){if(!ac())return;tone(1000,ax.currentTime,.1,"square",.1)},
+ buzz(){if(!ac())return;const t=ax.currentTime;tone(180,t,.6,"sawtooth",.25,sg,70);tone(120,t,.6,"square",.12,sg,60)}};
+function sched(){if(!ax)return;while(mNext<ax.currentTime+.4){const t=Math.max(mNext,ax.currentTime),i=mStep%32,sd=.17;
+ tone(fq(MEL[i]-7,0)*2,t,.28,"triangle",.17,mg);
+ if(i%2===0)tone(fq(MEL[i]-7+2,0)*4,t,.16,"sine",.05,mg);
+ if(i%4===0){const b=[0,0,3,4][(i>>2)%4];tone(fq(b-7,-1),t,.6,"sine",.34,mg)}
+ if(i%8===4)noise(t,.06,6000,4000,.05,"highpass");
+ mNext+=sd;mStep++}}
+function startMusic(){if(!ac()||mTimer)return;mNext=ax.currentTime+.1;mTimer=setInterval(sched,100)}
+function applyAudio(){$("bMusic").classList.toggle("off",!musicOn);$("bSfx").classList.toggle("off",!sfxOn);if(ax){mg.gain.setTargetAtTime(musicOn?.5:0,ax.currentTime,.1);sg.gain.value=sfxOn?1:0}}
+/* bank soal */
+const mk=(cat,title,prompt,answer,ar="",lv)=>({kind:"q",cat,title,prompt,answer,ar,lv});
+const L=a=>a<=6?0:a<=11?1:2,WL=t=>{const w=t.split(" ").length;return w<=4?0:w<=7?1:2};
+const T=(cat,s)=>s.trim().split("\n").map(l=>{const p=l.split("|");return mk(cat,p[0].trim(),"",p[1].trim())});
+const CATS=["Baca Surat","Info Surat","Sambung Ayat","Tajwid","Fiqih Salat","Wudhu & Bersuci","Akidah","Adab & Akhlak","Sejarah & Nabi","Umum"];
+Object.assign(PAL,{"Baca Surat":["#ff8ac0","#e0307f"],"Info Surat":["#ff9ad5","#a21caf"],"Sambung Ayat":["#7dd3fc","#0369a1"],"Tajwid":["#fcd34d","#b45309"],"Fiqih Salat":["#5eead4","#0f766e"],"Wudhu & Bersuci":["#4fe3f5","#0891b2"],"Akidah":["#b79bff","#6d28d9"],"Adab & Akhlak":["#ffa45c","#e8590c"],"Sejarah & Nabi":["#6ee79a","#16a34a"],"Umum":["#5eb6ff","#2563eb"]});
+const SUR=`78|An-Naba’|النَّبَأِ|40
+79|An-Nazi’at|النَّازِعَاتِ|46
+80|‘Abasa|عَبَسَ|42
+81|At-Takwir|التَّكْوِيرُ|29
+82|Al-Infithar|الِانْفِطَارُ|19
+83|Al-Muthaffifin|الْمُطَفِّفِينَ|36
+84|Al-Insyiqaq|الِانْشِقَاقُ|25
+85|Al-Buruj|الْبُرُوجِ|22
+86|Ath-Thariq|الطَّارِقُ|17
+87|Al-A’la|الْأَعْلَى|19
+88|Al-Ghasyiyah|الْغَاشِيَةُ|26
+89|Al-Fajr|الْفَجْرِ|30
+90|Al-Balad|الْبَلَدِ|20
+91|Asy-Syams|الشَّمْسِ|15
+92|Al-Lail|اللَّيْلِ|21
+93|Adh-Dhuha|الضُّحَى|11
+94|Al-Insyirah|الشَّرْحِ|8
+95|At-Tin|التِّينِ|8
+96|Al-’Alaq|الْعَلَقِ|19
+97|Al-Qadr|الْقَدْرِ|5
+98|Al-Bayyinah|الْبَيِّنَةُ|8
+99|Az-Zalzalah|الزَّلْزَلَةُ|8
+100|Al-’Adiyat|الْعَادِيَاتِ|11
+101|Al-Qari’ah|الْقَارِعَةُ|11
+102|At-Takatsur|التَّكَاثُرُ|8
+103|Al-’Asr|الْعَصْرِ|3
+104|Al-Humazah|الْهُمَزَةِ|9
+105|Al-Fil|الْفِيلِ|5
+106|Quraisy|قُرَيْشٍ|4
+107|Al-Ma’un|الْمَاعُونَ|7
+108|Al-Kautsar|الْكَوْثَرِ|3
+109|Al-Kafirun|الْكَافِرُونَ|6
+110|An-Nasr|النَّصْرِ|3
+111|Al-Lahab|الْمَسَدِ|5
+112|Al-Ikhlas|الْإِخْلَاصِ|4
+113|Al-Falaq|الْفَلَقِ|5
+114|An-Nas|النَّاسِ|6`.split("\n").map(l=>{const p=l.split("|");return{no:+p[0],n:p[1],ar:p[2],ay:+p[3]}});
+const AY={"Al-Fatihah":["بِسْمِ اللَّهِ الرَّحْمَٰنِ الرَّحِيمِ","الْحَمْدُ لِلَّهِ رَبِّ الْعَالَمِينَ","الرَّحْمَٰنِ الرَّحِيمِ","مَالِكِ يَوْمِ الدِّينِ","إِيَّاكَ نَعْبُدُ وَإِيَّاكَ نَسْتَعِينُ","اهْدِنَا الصِّرَاطَ الْمُسْتَقِيمَ","صِرَاطَ الَّذِينَ أَنْعَمْتَ عَلَيْهِمْ غَيْرِ الْمَغْضُوبِ عَلَيْهِمْ وَلَا الضَّالِّينَ"],
+"Al-Ikhlas":["قُلْ هُوَ اللَّهُ أَحَدٌ","اللَّهُ الصَّمَدُ","لَمْ يَلِدْ وَلَمْ يُولَدْ","وَلَمْ يَكُنْ لَهُ كُفُوًا أَحَدٌ"],
+"Al-Falaq":["قُلْ أَعُوذُ بِرَبِّ الْفَلَقِ","مِنْ شَرِّ مَا خَلَقَ","وَمِنْ شَرِّ غَاسِقٍ إِذَا وَقَبَ","وَمِنْ شَرِّ النَّفَّاثَاتِ فِي الْعُقَدِ","وَمِنْ شَرِّ حَاسِدٍ إِذَا حَسَدَ"],
+"An-Nas":["قُلْ أَعُوذُ بِرَبِّ النَّاسِ","مَلِكِ النَّاسِ","إِلَٰهِ النَّاسِ","مِنْ شَرِّ الْوَسْوَاسِ الْخَنَّاسِ","الَّذِي يُوَسْوِسُ فِي صُدُورِ النَّاسِ","مِنَ الْجِنَّةِ وَالنَّاسِ"],
+"Al-Kautsar":["إِنَّا أَعْطَيْنَاكَ الْكَوْثَرَ","فَصَلِّ لِرَبِّكَ وَانْحَرْ","إِنَّ شَانِئَكَ هُوَ الْأَبْتَرُ"],
+"Al-’Asr":["وَالْعَصْرِ","إِنَّ الْإِنْسَانَ لَفِي خُسْرٍ","إِلَّا الَّذِينَ آمَنُوا وَعَمِلُوا الصَّالِحَاتِ وَتَوَاصَوْا بِالْحَقِّ وَتَوَاصَوْا بِالصَّبْرِ"],
+"An-Nasr":["إِذَا جَاءَ نَصْرُ اللَّهِ وَالْفَتْحُ","وَرَأَيْتَ النَّاسَ يَدْخُلُونَ فِي دِينِ اللَّهِ أَفْوَاجًا","فَسَبِّحْ بِحَمْدِ رَبِّكَ وَاسْتَغْفِرْهُ إِنَّهُ كَانَ تَوَّابًا"]};
+const ALL=[];
+Q.filter(x=>x[0]!=="Baca Surat").forEach(x=>ALL.push(mk(({"Rukun Islam":"Umum","Wudhu":"Wudhu & Bersuci","Rukun Iman":"Akidah","Malaikat":"Akidah","Nabi & Rasul":"Sejarah & Nabi","Adab":"Adab & Akhlak"})[x[0]]||x[0],x[1],x[2],x[3],x[4])));
+SUR.forEach(s=>ALL.push(mk("Baca Surat",s.n,`Bacalah Surat ${s.n} (surat ke-${s.no}).`,`Surat ke-${s.no}, ${s.ay} ayat.`,s.ar,L(s.ay))));
+SUR.forEach((s,i)=>{const k=i%3;ALL.push(k==0?mk("Info Surat",`Surat ke-${s.no}`,`Sebutkan nama surat ke-${s.no} dalam Al-Qur’an.`,s.n,"",Math.min(2,L(s.ay)+1)):k==1?mk("Info Surat",`Jumlah ayat ${s.n}`,`Ada berapa ayat dalam Surat ${s.n}?`,`${s.ay} ayat.`,"",L(s.ay)):mk("Info Surat",`Urutan ${s.n}`,`Surat ${s.n} adalah surat ke berapa?`,`Surat ke-${s.no}.`,"",L(s.ay)))});
+const SA=[],KB=[];Object.entries(AY).forEach(([n,a])=>a.forEach((t,i)=>{
+ if(i<a.length-1)SA.push(mk("Sambung Ayat","Sambung ayat",`Lanjutkan ayat ke-${i+1} Surat ${n}.`,a[i+1],t,WL(a[i+1])));
+ KB.push(mk("Sambung Ayat","Ayat keberapa?",`Ayat ini adalah ayat ke berapa dalam Surat ${n}?`,`Ayat ke-${i+1}.`,t,Math.min(2,WL(t)+1)))}));
+ALL.push(...SA,...KB.filter((_,i)=>[0,3,6,9,12,15,18,21,24,27,1,5,10,14,19,22].includes(i)));
+[["Al-Fatihah",6],["Al-’Asr",2],["An-Nas",3]].forEach(([n,i])=>{const a=AY[n];ALL.push(mk("Baca Surat",`${n} ayat ${i+1}`,`Bacalah ayat ke-${i+1} Surat ${n}.`,`Ayat ke-${i+1} dari ${a.length} ayat.`,a[i],n=="Al-Fatihah"?2:1))});
+ALL.push(mk("Info Surat","Juz Amma","Juz Amma adalah juz ke berapa?","Juz ke-30.","",0),mk("Info Surat","Surat pertama juz Amma","Surat apa yang pertama dalam juz Amma?","An-Naba’ (surat ke-78).","",1),mk("Info Surat","Jumlah surat juz Amma","Ada berapa surat dalam juz Amma?","37 surat (surat ke-78 sampai ke-114).","",2));
+ALL.push(...T("Tajwid",`Apa arti tajwid?|Memperindah bacaan; ilmu cara membaca Al-Qur’an dengan benar sesuai makhraj dan sifat huruf.
+Apa arti makhraj?|Tempat keluarnya huruf.
+Ada berapa hukum bacaan nun mati dan tanwin?|Lima: izhar, idgham bighunnah, idgham bilaghunnah, iqlab, dan ikhfa.
+Sebutkan huruf izhar halqi!|Hamzah (ء), ha (ه), ain (ع), ha (ح), ghain (غ), kha (خ): enam huruf.
+Sebutkan huruf idgham bighunnah!|Ya, nun, mim, wau (yanmu); dibaca dengan dengung.
+Sebutkan huruf idgham bilaghunnah!|Lam (ل) dan ra (ر); dibaca tanpa dengung.
+Apa huruf iqlab?|Huruf ba (ب); nun mati/tanwin dibaca seperti mim dengan dengung.
+Ada berapa huruf ikhfa haqiqi?|Lima belas huruf.
+Mad thabi’i dibaca berapa harakat?|Dua harakat.
+Sebutkan huruf qalqalah!|Qaf, tha, ba, jim, dal (qutbu jadin).
+Mad wajib muttasil terjadi jika…|Mad thabi’i bertemu hamzah dalam satu kata; dibaca 4–5 harakat.
+Mad jaiz munfasil terjadi jika…|Mad thabi’i bertemu hamzah di kata berikutnya; boleh dibaca 2, 4, atau 5 harakat.
+Apa hukum mim mati bertemu huruf ba?|Ikhfa syafawi.
+Apa hukum mim mati bertemu mim?|Idgham mimi (mitslain shaghir).
+Alif lam syamsiyah dibaca bagaimana?|Lam tidak dibaca, huruf sesudahnya dibaca bertasydid.
+Alif lam qamariyah dibaca bagaimana?|Lam dibaca jelas.
+Apa hukum mempelajari ilmu tajwid?|Fardhu kifayah; membaca Al-Qur’an dengan tajwid fardhu ain.
+Apa arti waqaf?|Berhenti sejenak saat membaca Al-Qur’an.
+Apa hukum nun mati bertemu huruf ba?|Iqlab.
+Berapa harakat dengung pada mim atau nun bertasydid?|Dua harakat.
+Apa hukum nun mati bertemu huruf lam?|Idgham bilaghunnah.
+Apa hukum nun mati bertemu huruf kha?|Izhar halqi (dibaca jelas).
+Apa hukum nun mati bertemu huruf jim?|Ikhfa haqiqi (dibaca samar dengan dengung).
+Apa itu mad lin?|Mad pada wau atau ya sukun yang didahului fathah, ketika dibaca waqaf; 2, 4, atau 6 harakat.
+Apa itu mad arid lissukun?|Mad thabi’i yang bertemu huruf yang disukunkan karena waqaf; 2, 4, atau 6 harakat.
+Apa arti tasydid?|Tanda yang menunjukkan huruf dibaca ganda (ditekan).
+Apa hukum mim mati bertemu huruf selain mim dan ba?|Izhar syafawi (dibaca jelas).
+Lam pada lafaz Allah setelah fathah atau dhammah dibaca…|Tafkhim (tebal).
+Apa itu ghunnah?|Dengung yang keluar dari pangkal hidung.
+Apa nama tanda baca fathah, kasrah, dan dhammah?|Harakat.
+Apa itu izhar?|Membaca huruf dengan jelas tanpa dengung.
+Apa yang dimaksud mad?|Memanjangkan bacaan.
+Apa itu idgham?|Memasukkan satu huruf ke huruf berikutnya sehingga dibaca seperti satu huruf bertasydid.
+Apa itu ikhfa?|Membaca samar, antara izhar dan idgham, disertai dengung.
+Apa itu qalqalah?|Pantulan bunyi pada huruf yang bersukun.
+Satu harakat panjangnya kira-kira berapa?|Satu ketukan, seperti satu kali menggerakkan jari.
+Apa arti tanda waqaf لا?|Dilarang berhenti.
+Apa itu hamzah washal?|Hamzah di awal kata yang dibaca saat memulai bacaan dan hilang jika disambung.
+Apa itu mad shilah?|Mad pada ha dhamir (ه) yang berada di antara dua huruf berharakat.
+Apa arti tanda waqaf م?|Waqaf lazim: harus berhenti.`));
+ALL.push(...T("Fiqih Salat",`Ada berapa salat fardhu sehari semalam?|Lima waktu.
+Berapa rakaat salat Subuh?|Dua rakaat.
+Berapa rakaat salat Zuhur?|Empat rakaat.
+Berapa rakaat salat Asar?|Empat rakaat.
+Berapa rakaat salat Magrib?|Tiga rakaat.
+Berapa rakaat salat Isya?|Empat rakaat.
+Apa bacaan takbiratul ihram?|Allahu Akbar.
+Apa bacaan rukuk?|Subhana rabbiyal ‘azhimi wa bihamdih.
+Apa bacaan sujud?|Subhana rabbiyal a’la wa bihamdih.
+Sebutkan anggota sujud!|Dahi, dua telapak tangan, dua lutut, dan ujung jari kedua kaki.
+Sebutkan syarat sah salat!|Suci dari hadas dan najis, menutup aurat, menghadap kiblat, dan masuk waktu salat.
+Apa yang dimaksud salat jamak?|Menggabungkan dua salat dalam satu waktu, misalnya Zuhur dengan Asar.
+Apa yang dimaksud salat qasar?|Meringkas salat empat rakaat menjadi dua rakaat saat bepergian.
+Ke mana kiblat umat Islam?|Ka’bah di Masjidil Haram, Makkah.
+Bagaimana hukum salat Jumat bagi laki-laki balig yang mukim?|Fardhu ain.
+Salat sunah malam setelah tidur disebut…|Salat tahajud.
+Salat Id dikerjakan pada hari…|Idulfitri (1 Syawal) dan Iduladha (10 Zulhijah).
+Apa rukun salat yang pertama?|Niat.
+Apa bacaan salam di akhir salat?|Assalamu’alaikum warahmatullah (ke kanan lalu ke kiri).
+Bagaimana hukum salat fardhu lima waktu?|Wajib (fardhu ain) bagi setiap Muslim yang balig dan berakal.
+Berapa rakaat salat Witir yang paling sedikit?|Satu rakaat.
+Kapan waktu salat Zuhur dimulai?|Setelah matahari tergelincir ke barat.
+Kapan waktu salat Isya?|Setelah hilang mega merah hingga terbit fajar (waktu utama sampai tengah malam).
+Apa nama salat sunah dua rakaat saat masuk masjid?|Tahiyatul masjid.
+Salat sunah di pagi hari setelah matahari naik disebut…|Salat Duha.
+Apa bacaan saat bangkit dari rukuk (iktidal)?|Sami’allahu liman hamidah.
+Apa bacaan saat duduk di antara dua sujud?|Rabbighfirli warhamni wajburni warfa’ni warzuqni wahdini wa ‘afini wa’fu ‘anni.
+Salat untuk meminta turunnya hujan disebut…|Salat istisqa.
+Siapa makmum masbuq?|Makmum yang tertinggal satu rakaat atau lebih dari imam.
+Apa itu sujud sahwi?|Dua sujud yang dilakukan karena lupa dalam salat.
+Apa nama salat yang dikerjakan saat terjadi gerhana?|Salat gerhana (kusuf untuk matahari, khusuf untuk bulan).
+Salat Tarawih dikerjakan pada bulan…|Ramadan.
+Berapa kali takbir dalam salat jenazah?|Empat kali takbir.
+Apakah salat jenazah memakai rukuk dan sujud?|Tidak.
+Apa nama sujud saat membaca ayat sajdah?|Sujud tilawah.
+Doa setelah takbiratul ihram disebut…|Doa iftitah.
+Apa arti iqamah?|Panggilan tanda salat berjamaah akan segera dimulai.
+Siapa yang lebih berhak menjadi imam?|Yang paling baik bacaan Al-Qur’annya dan paling paham tentang salat.
+Di mana posisi makmum jika berdua dengan imam?|Di sebelah kanan imam, sedikit ke belakang.
+Salat yang dikerjakan setelah waktunya habis disebut…|Salat qada.`));
+ALL.push(...T("Wudhu & Bersuci",`Sebutkan rukun wudhu!|Niat, membasuh wajah, membasuh tangan hingga siku, mengusap sebagian kepala, membasuh kaki hingga mata kaki, dan tertib.
+Sebutkan hal yang membatalkan wudhu!|Buang air kecil/besar, buang angin, tidur nyenyak, dan hilang akal (pingsan atau mabuk).
+Apa itu tayamum?|Bersuci dengan debu yang suci sebagai pengganti wudhu atau mandi bila tidak ada air atau tidak boleh terkena air.
+Hadas besar disucikan dengan…|Mandi wajib.
+Sebutkan sebab mandi wajib!|Keluar mani, haid, nifas, dan melahirkan.
+Air yang suci dan menyucikan disebut…|Air mutlak.
+Apa itu najis mughalazah?|Najis berat, yaitu najis anjing dan babi; disucikan dengan dibasuh tujuh kali, salah satunya dengan tanah.
+Apa bacaan setelah wudhu?|Asyhadu an laa ilaaha illallaah wahdahu laa syariika lah, wa asyhadu anna Muhammadan ‘abduhu wa rasuuluh.
+Berapa kali sunah membasuh anggota wudhu?|Tiga kali.
+Sebutkan sunah wudhu!|Membaca basmalah, bersiwak, membasuh telapak tangan, berkumur, dan menghirup air ke hidung.
+Apa rukun wudhu yang kedua setelah niat?|Membasuh wajah.
+Apa hukum berwudhu sebelum salat?|Wajib bagi orang yang berhadas.
+Apa itu hadas kecil?|Keadaan tidak suci yang disucikan dengan wudhu.
+Apa itu hadas besar?|Keadaan tidak suci yang disucikan dengan mandi wajib.
+Apa itu istinja?|Membersihkan diri dari najis setelah buang air kecil atau besar.
+Apa yang dipakai untuk bertayamum?|Debu atau tanah yang suci.
+Berapa kali menepukkan tangan pada tayamum menurut mazhab Syafi’i?|Dua kali tepukan; untuk wajah dan kedua tangan.
+Apa itu najis mukhaffafah?|Najis ringan, misalnya air seni bayi laki-laki yang hanya minum ASI; disucikan dengan memercikkan air.
+Apa itu najis mutawassithah?|Najis sedang, seperti kotoran dan air seni; dibasuh sampai hilang warna, bau, dan rasanya.
+Bolehkah menyentuh mushaf Al-Qur’an tanpa wudhu?|Menurut jumhur ulama tidak boleh; berwudhu dahulu.
+Air hujan dan air laut termasuk air…|Air mutlak (suci dan menyucikan).
+Apa ucapan sebelum berwudhu?|Bismillah.
+Apa inti niat wudhu?|Berniat menghilangkan hadas kecil karena Allah Ta’ala.
+Sebutkan mandi sunah!|Mandi Jumat, mandi hari raya, dan mandi ihram.
+Apa arti thaharah?|Bersuci.
+Apa itu junub?|Keadaan berhadas besar, misalnya karena keluar mani.
+Apa saja yang diusap pada tayamum?|Wajah dan kedua tangan.
+Kapan tayamum boleh dilakukan?|Saat tidak ada air, air tidak cukup, atau sakit yang tidak boleh terkena air.
+Sebutkan rukun mandi wajib!|Niat dan meratakan air ke seluruh tubuh.
+Apa itu air musta’mal menurut mazhab Syafi’i?|Air bekas dipakai bersuci wajib; suci tetapi tidak menyucikan.
+Apa itu najis hukmiyah?|Najis yang tidak tampak wujudnya, seperti bekas air seni yang sudah kering.
+Apa yang dilakukan jika terkena najis?|Menghilangkan najis dengan air hingga bersih.
+Apa itu istijmar?|Membersihkan diri dari najis dengan batu atau benda suci lain.
+Wudhu harus dilakukan secara berurutan, disebut…|Tertib.`));
+ALL.push(...T("Akidah",`Sebutkan nama kitab suci empat nabi!|Taurat (Musa), Zabur (Daud), Injil (Isa), dan Al-Qur’an (Muhammad ﷺ).
+Ada berapa sifat wajib bagi Allah?|Dua puluh sifat.
+Ada berapa Asmaul Husna?|Sembilan puluh sembilan.
+Apa arti tauhid?|Mengesakan Allah.
+Apa arti syirik?|Menyekutukan Allah; dosa terbesar.
+Apa arti iman kepada qada dan qadar?|Percaya bahwa segala sesuatu terjadi atas ketentuan dan takdir Allah.
+Apa arti iman?|Meyakini dalam hati, mengucapkan dengan lisan, dan mengamalkan dengan perbuatan.
+Apa arti Allah Ahad?|Allah Maha Esa.
+Apa arti sifat Qidam?|Terdahulu; Allah ada tanpa permulaan.
+Apa arti sifat Baqa’?|Kekal; Allah tidak berakhir.
+Apa arti Sami’ dan Bashir?|Maha Mendengar dan Maha Melihat.
+Berapa jumlah nabi dan rasul yang wajib diketahui?|Dua puluh lima.
+Hari kiamat disebut juga…|Yaumul akhir.
+Apa itu mukjizat?|Kejadian luar biasa yang Allah berikan kepada nabi untuk membuktikan kenabiannya.
+Apa mukjizat terbesar Nabi Muhammad ﷺ?|Al-Qur’an.
+Apa arti takwa?|Menjalankan perintah Allah dan menjauhi larangan-Nya.
+Apa arti Ar-Rahman dan Ar-Rahim?|Maha Pengasih dan Maha Penyayang.
+Siapa malaikat penjaga surga?|Ridwan.
+Siapa malaikat pembagi rezeki?|Mikail.
+Siapa dua malaikat penanya di alam kubur?|Munkar dan Nakir.
+Apa tempat balasan bagi orang beriman yang taat?|Surga (Jannah).
+Apa tempat balasan bagi orang yang ingkar?|Neraka.
+Siapa nabi yang digelari Khalilullah?|Nabi Ibrahim ‘alaihissalam.
+Siapa nabi yang digelari Kalimullah?|Nabi Musa ‘alaihissalam.
+Sebutkan sifat wajib bagi rasul!|Shiddiq, amanah, tabligh, dan fathanah.
+Apa lawan sifat Qidam bagi Allah?|Huduts (baru).
+Apa sifat mustahil bagi rasul yang berlawanan dengan amanah?|Khianat.`));
+ALL.push(...T("Adab & Akhlak",`Apa ucapan salam saat bertemu sesama Muslim?|Assalamu’alaikum warahmatullahi wabarakatuh.
+Apa jawaban salam?|Wa’alaikumussalam warahmatullahi wabarakatuh.
+Apa doa sebelum makan?|Allahumma baarik lanaa fiimaa razaqtanaa wa qinaa ‘adzaaban naar.
+Tangan mana yang digunakan untuk makan dan minum?|Tangan kanan.
+Apa arti birrul walidain?|Berbakti kepada kedua orang tua.
+Apa arti ghibah?|Menggunjing, yaitu membicarakan keburukan orang lain.
+Kaki mana yang didahulukan saat masuk masjid?|Kaki kanan.
+Kaki mana yang didahulukan saat masuk kamar mandi?|Kaki kiri.
+Apa yang diucapkan setelah bersin?|Alhamdulillah; yang mendengar menjawab: Yarhamukallah.
+Sebutkan satu akhlak terpuji!|Misalnya jujur, sabar, amanah, rendah hati, atau pemaaf.
+Sebutkan satu akhlak tercela!|Misalnya sombong, dengki, bohong, atau ghibah.
+Bagaimana adab kepada guru?|Menghormati, mendengarkan dengan baik, dan tidak memotong pembicaraan.
+Bagaimana adab saat batuk atau menguap?|Menutup mulut dengan tangan.
+Bagaimana adab minum?|Duduk, memakai tangan kanan, membaca basmalah, dan tidak tergesa-gesa.
+Apa doa keluar rumah?|Bismillahi tawakkaltu ‘alallah, laa haula wa laa quwwata illaa billaah.
+Bagaimana adab berbicara?|Berkata baik atau diam; tidak berteriak dan tidak menyela.
+Apa arti amanah?|Dapat dipercaya dan menjaga titipan atau tanggung jawab.
+Apa arti sabar?|Menahan diri saat ujian, dalam ketaatan, dan dari maksiat.
+Apa arti ikhlas?|Beramal semata-mata karena Allah.
+Apa arti syukur?|Berterima kasih atas nikmat Allah dengan hati, lisan, dan perbuatan.
+Bagaimana adab kepada tetangga?|Berbuat baik, tidak mengganggu, dan saling membantu.
+Bagaimana adab berpakaian?|Menutup aurat, rapi, bersih, dan memulai dari sisi kanan.
+Bagaimana adab masuk kelas?|Mengucap salam dan masuk dengan sopan.
+Bagaimana adab saat orang lain berbicara?|Mendengarkan dengan baik dan tidak memotong.
+Bagaimana adab sebelum tidur?|Berwudhu, berdoa, dan berbaring miring ke kanan.
+Apa doa bangun tidur?|Alhamdulillahilladzii ahyaanaa ba’da maa amaatanaa wa ilaihin nusyuur.
+Apa doa masuk kamar mandi?|Allahumma innii a’uudzu bika minal khubutsi wal khabaa’its.
+Apa doa masuk masjid?|Allahummaftah lii abwaaba rahmatik.
+Apa arti jujur?|Mengatakan dan berbuat sesuai kenyataan.
+Apa arti tawadhu?|Rendah hati dan tidak sombong.
+Bagaimana adab kepada orang yang lebih tua?|Menghormati dan bertutur kata sopan.
+Bagaimana adab meminjam barang?|Menjaganya dan mengembalikan tepat waktu.
+Apa doa sesudah makan?|Alhamdulillahilladzii ath’amanaa wa saqaanaa wa ja’alanaa muslimiin.`));
+ALL.push(...T("Sejarah & Nabi",`Di kota mana Nabi Muhammad ﷺ lahir?|Makkah, pada tahun Gajah.
+Siapa ayah dan ibu Nabi Muhammad ﷺ?|Abdullah dan Aminah.
+Di mana Nabi menerima wahyu pertama?|Di Gua Hira.
+Surat apa yang pertama kali turun?|Al-’Alaq ayat 1–5.
+Siapa istri pertama Nabi Muhammad ﷺ?|Khadijah binti Khuwailid.
+Hijrah Nabi dari mana ke mana?|Dari Makkah ke Madinah.
+Hijrah Nabi menjadi awal penanggalan…|Tahun Hijriah.
+Sebutkan Khulafaur Rasyidin!|Abu Bakar, Umar bin Khattab, Utsman bin Affan, dan Ali bin Abi Thalib.
+Siapa khalifah pertama?|Abu Bakar ash-Shiddiq.
+Siapa sahabat bergelar Al-Faruq?|Umar bin Khattab.
+Siapa pemimpin pasukan bergajah?|Abrahah.
+Masjid pertama yang dibangun Nabi di Madinah?|Masjid Quba.
+Perjalanan Isra Mi’raj menghasilkan perintah…|Salat lima waktu.
+Siapa muazin pertama dalam Islam?|Bilal bin Rabah.
+Siapa sahabat bergelar Saifullah (pedang Allah)?|Khalid bin Walid.
+Sebutkan nabi Ulul Azmi!|Nuh, Ibrahim, Musa, Isa, dan Muhammad ﷺ.
+Siapa nabi pertama dan terakhir?|Pertama Adam ‘alaihissalam, terakhir Muhammad ﷺ.
+Siapa yang membangun Ka’bah bersama Nabi Ismail?|Nabi Ibrahim ‘alaihissalam.
+Siapa paman Nabi yang melindungi dakwah di Makkah?|Abu Thalib.
+Di mana Nabi dan Abu Bakar bersembunyi saat hijrah?|Di Gua Tsur.
+Perang pertama besar kaum Muslimin pada tahun 2 H?|Perang Badar.
+Siapa khalifah yang menyatukan mushaf Al-Qur’an?|Utsman bin Affan.
+Siapa penakluk Konstantinopel pada tahun 1453?|Sultan Muhammad Al-Fatih.
+Siapa kakek Nabi yang mengasuhnya setelah ibunda wafat?|Abdul Muthalib.
+Siapa ibu susu Nabi Muhammad ﷺ?|Halimah as-Sa’diyah.
+Siapa sahabat yang menemani Nabi saat hijrah?|Abu Bakar ash-Shiddiq.
+Siapa khalifah keempat?|Ali bin Abi Thalib.
+Siapa khalifah ketiga?|Utsman bin Affan.
+Pada tahun berapa Nabi Muhammad ﷺ wafat?|Tahun 11 Hijriah (632 M).
+Perang Uhud terjadi pada tahun…|Tahun 3 Hijriah.
+Peristiwa pembebasan kota Makkah disebut…|Fathu Makkah (tahun 8 Hijriah).
+Siapa nabi yang dibakar di api tetapi selamat?|Nabi Ibrahim ‘alaihissalam.
+Siapa nabi yang dapat berbicara dengan hewan dan memiliki kerajaan besar?|Nabi Sulaiman ‘alaihissalam.`));
+ALL.push(...T("Umum",`Apa bulan pertama dalam kalender Hijriah?|Muharram.
+Bulan apa umat Islam berpuasa wajib?|Ramadan.
+Kapan Idulfitri dan Iduladha?|Idulfitri 1 Syawal, Iduladha 10 Zulhijah.
+Ada berapa juz dan surat dalam Al-Qur’an?|30 juz dan 114 surat.
+Apa surat pertama dan terakhir dalam mushaf?|Al-Fatihah dan An-Nas.
+Apa surat terpanjang dalam Al-Qur’an?|Al-Baqarah (286 ayat).
+Apa surat terpendek dalam Al-Qur’an?|Al-Kautsar (3 ayat).
+Apa arti kata Islam?|Berserah diri, selamat, dan damai.
+Apa hari terbaik dalam sepekan?|Hari Jumat.
+Apa amalan inti ibadah haji?|Wukuf di Padang Arafah.
+Sebutkan tiga kota suci umat Islam!|Makkah, Madinah, dan Baitul Maqdis (Yerusalem).
+Apa yang membatalkan puasa?|Makan, minum, dan muntah dengan sengaja, serta hal lain yang membatalkan.
+Siapa orang yang mengumandangkan azan?|Muazin.
+Apa doa sebelum tidur?|Bismika Allahumma ahyaa wa bismika amuut.
+Ada berapa bulan dalam setahun Hijriah?|Dua belas bulan.
+Bulan apa umat Islam menunaikan haji dan berkurban?|Zulhijah.
+Malam yang lebih baik dari seribu bulan?|Lailatul Qadar.
+Apa itu zakat fitrah?|Zakat berupa makanan pokok yang dikeluarkan menjelang Idulfitri.
+Apa kitab hadis yang paling sahih?|Sahih al-Bukhari dan Sahih Muslim.
+Apa sumber hukum Islam pertama dan kedua?|Al-Qur’an dan hadis (sunah).
+Apa arti hijrah?|Berpindah menuju kebaikan atau dari satu tempat ke tempat lain karena Allah.
+Apa nama sumur di dekat Ka’bah?|Zamzam.
+Apa arti kata Al-Qur’an?|Bacaan.
+Apa nama ibadah ke Makkah di luar waktu haji?|Umrah.
+Hari apa saja puasa sunah mingguan?|Senin dan Kamis.
+Apa nama makan di akhir malam sebelum berpuasa?|Sahur.
+Apa nama penyembelihan hewan saat Iduladha?|Kurban.
+Sebutkan satu bulan haram!|Muharram, Rajab, Zulkaidah, atau Zulhijah.
+Apa rukun haji yang pertama?|Ihram (berniat haji).
+Apa pakaian ihram untuk laki-laki?|Dua lembar kain putih tanpa jahitan.
+Di mana jamaah haji melempar jumrah?|Di Mina.
+Ada berapa golongan penerima zakat (asnaf)?|Delapan golongan.
+Apa arti Idulfitri?|Hari raya kembali berbuka (kembali suci).
+Apa doa berbuka puasa?|Dzahabazh zhama’u wabtallatil ‘uruuq wa tsabatal ajru insyaa Allaah.`));
+{const n={},F=ALL.filter(c=>(n[c.cat]=(n[c.cat]||0)+1)<=40);ALL.length=0;ALL.push(...F)}
+/* tingkat kesulitan (urutan = urutan soal di kategori; huruf e=easy, m=medium, h=hard) */
+const LV={"Tajwid":"eemmmmmmemhhmmmehememmhhhemheeeemmmmmhhh","Fiqih Salat":"eeeeeeemmmmmmemmeeeemmhmmmhhhhmemmhmehhm","Wudhu & Bersuci":"eeeeeemmmemmhmemeemmhmhhhhmemhemmmmhhehe","Akidah":"eeeeeeeemmmeemmeeemmehhmemmemememeemmehh","Adab & Akhlak":"eeeeeeeeememmeeeeeemmhmmmmmemmeemmhmemee","Sejarah & Nabi":"eeeemeeeemmeemeemmmmmhmemhhmhhmmeeehhmee","Umum":"eeeeeeeeeeemmmememememmmhmheheeeehhmhmmm"};
+{const ci={},seen={},HK=t=>{let h=5381;for(let i=0;i<t.length;i++)h=((h<<5)+h+t.charCodeAt(i))|0;return(h>>>0).toString(36)};
+ ALL.forEach(c=>{const i=ci[c.cat]=(ci[c.cat]===undefined?0:ci[c.cat]+1);if(c.lv==null){const x=LV[c.cat],j=x?"emh".indexOf(x[i]):1;c.lv=j<0?1:j}
+  let k=HK(c.cat+"|"+c.title+"|"+c.prompt+"|"+c.answer+"|"+c.ar);while(seen[k])k+="x";seen[k]=1;c.k=k})}
+let on=new Set(CATS);try{const s=JSON.parse(localStorage.getItem("jj_cats")||"null");if(Array.isArray(s))on=new Set(s.filter(c=>CATS.includes(c)))}catch(e){}
+let offQ=new Set();try{const o=JSON.parse(localStorage.getItem("jj_offq")||"[]");if(Array.isArray(o))offQ=new Set(o)}catch(e){}
+const live=c=>on.has(c.cat)&&!offQ.has(c.k);
+/* drawer bank soal */
+const LVN=["Easy","Medium","Hard"],qHas=(x,q)=>!q||(x.title+" "+x.prompt+" "+x.answer).toLowerCase().includes(q);
+let qc="",qlv=-1;
+var bankCats=function(){$("bc").innerHTML=CATS.map(c=>{const [a,b]=PAL[c],n=ALL.filter(x=>x.cat===c).length,sl=ALL.filter(x=>x.cat===c&&!offQ.has(x.k)).length;
+ return `<div class="ct${on.has(c)?" on":""}" data-c="${c}" style="--c1:${a};--c2:${b}"><button class="cm"><span class="ck"></span><span class="cn">${c}</span><small>${sl}/${n}</small></button><button class="cd" data-d="1" aria-label="Detail ${c}">›</button></div>`}).join("");
+ $("bn").textContent=`${ALL.filter(live).length} soal aktif dari ${ALL.length}`}
+function applyCats(){store("jj_cats",JSON.stringify([...on]));store("jj_offq",JSON.stringify([...offQ]));const used=new Set(hist);qP=ALL.filter(c=>live(c)&&!used.has(c));bankCats();upd()}
+function qRender(){const q=$("qq").value.trim().toLowerCase(),all=ALL.filter(x=>x.cat===qc),st=$("ql").scrollTop;
+ $("qtabs").innerHTML=[["Semua",-1],["Easy",0],["Medium",1],["Hard",2]].map(([n,l])=>{const a=all.filter(x=>l<0||x.lv===l);return `<button class="lt l${l}${qlv===l?" on":""}" data-l="${l}">${n} <small>${a.filter(x=>!offQ.has(x.k)).length}/${a.length}</small></button>`}).join("");
+ let h="";[0,1,2].forEach(l=>{if(qlv>=0&&qlv!==l)return;const a=all.filter(x=>x.lv===l),v=a.filter(x=>qHas(x,q));if(!v.length)return;const sl=v.filter(x=>!offQ.has(x.k)).length;
+  h+=`<div class="lh l${l}"><b>${LVN[l]}</b><small>${sl}/${v.length} dipilih</small><button data-g="${l}">${sl===v.length?"Kosongkan":"Pilih semua"}</button></div>`+v.map(x=>`<div class="qr${offQ.has(x.k)?" off":""}" data-k="${x.k}"><span class="ck"></span><div>${x.ar?`<span class="arq" lang="ar" dir="rtl">${x.ar}</span>`:""}<b>${x.title}</b>${x.prompt?`<em>${x.prompt}</em>`:""}<div class="ans">${x.answer}</div></div></div>`).join("")});
+ $("ql").innerHTML=h||'<div class="none">Soal tidak ditemukan.</div>';$("ql").scrollTop=st;
+ $("qn").textContent=`${all.filter(x=>!offQ.has(x.k)).length}/${all.length} soal dipilih${on.has(qc)?"":" · kategori nonaktif"}`}
+function qSync(){applyCats();qRender()}
+const qBusy=()=>busy&&(toast("Tunggu roda berhenti dulu ya"),true);
+$("bc").onclick=e=>{const w=e.target.closest(".ct");if(!w)return;const c=w.dataset.c;if(e.target.closest(".cd")){qc=c;qlv=-1;$("qq").value="";$("qt").textContent=c;qRender();$("ql").scrollTop=0;open("mQ");return}if(qBusy())return;SFX.click();on.has(c)?on.delete(c):on.add(c);applyCats()};
+$("cAll").onclick=()=>{if(qBusy())return;SFX.click();on=new Set(CATS);applyCats()};
+$("cNone").onclick=()=>{if(qBusy())return;SFX.click();on=new Set();applyCats()};
+$("bBank").onclick=()=>{bankCats();open("mBank")};
+$("qq").oninput=qRender;$("qa").onchange=()=>$("ql").classList.toggle("sa",$("qa").checked);
+$("qtabs").onclick=e=>{const b=e.target.closest(".lt");if(!b)return;SFX.click();qlv=+b.dataset.l;qRender();$("ql").scrollTop=0};
+$("qAll").onclick=()=>{if(qBusy())return;SFX.click();ALL.forEach(x=>x.cat===qc&&offQ.delete(x.k));qSync()};
+$("qNone").onclick=()=>{if(qBusy())return;SFX.click();ALL.forEach(x=>x.cat===qc&&offQ.add(x.k));qSync()};
+$("ql").onclick=e=>{const g=e.target.closest("[data-g]"),r=e.target.closest(".qr");if(!g&&!r)return;if(qBusy())return;SFX.click();
+ if(g){const q=$("qq").value.trim().toLowerCase(),v=ALL.filter(x=>x.cat===qc&&x.lv===+g.dataset.g&&qHas(x,q)),all=v.every(x=>!offQ.has(x.k));v.forEach(x=>all?offQ.add(x.k):offQ.delete(x.k))}
+ else{const k=r.dataset.k;offQ.has(k)?offQ.delete(k):offQ.add(k)}qSync()};
+/* layar penuh */
+{const el=document.documentElement,req=el.requestFullscreen||el.webkitRequestFullscreen,isFs=()=>!!(document.fullscreenElement||document.webkitFullscreenElement),b=$("bFs");
+ if(!req)b.style.display="none";
+ const sync=()=>{b.querySelector("use").setAttribute("href",isFs()?"#i-fsx":"#i-full");b.setAttribute("aria-label",isFs()?"Keluar layar penuh":"Layar penuh")};
+ b.onclick=()=>{SFX.click();try{const p=isFs()?(document.exitFullscreen||document.webkitExitFullscreen).call(document):req.call(el);p&&p.catch&&p.catch(()=>{})}catch(e){}};
+ document.addEventListener("fullscreenchange",sync);document.addEventListener("webkitfullscreenchange",sync)}
+/* game */
+function init(){qP=ALL.filter(live);cP=CH.map(c=>({kind:"c",cat:"Tantangan",title:c[0],prompt:c[1]}));hist=[];cur=null;$("card").className="card";$("tm").className="";cancelAnimationFrame(tRaf);$("empty").style.display="";upd()}
+function upd(){const left=qP.length+cP.length;$("cnt").textContent=`Sisa ${left}/${left+hist.length}`;$("hc").textContent=hist.length;$("spin").disabled=busy||!left}
+function toast(m){const t=$("toast");t.textContent=m;t.classList.add("on");clearTimeout(toast.h);toast.h=setTimeout(()=>t.classList.remove("on"),2600)}
+function ease(x){return 1-Math.pow(1-x,4)}
+async function spin(){if(busy)return;if(!qP.length&&!cP.length){toast("Semua kartu sudah terpilih! Tekan reset untuk mengulang.");return}
+ ac();startMusic();busy=true;upd();
+ const cd=$("card");if(cd.classList.contains("show")){cd.classList.remove("show");$("tm").className="";cancelAnimationFrame(tRaf)}
+ $("empty").style.display="none";
+ const r=Math.random()*(qP.length+cP.length),isCh=r>=qP.length,pool=isCh?cP:qP,item=pool.splice(Math.floor(Math.random()*pool.length),1)[0];
+ const ks=[...Array(N).keys()].filter(i=>isC(i)===isCh),k=ks[Math.floor(Math.random()*ks.length)];
+ const tgt=-k*STEP+(Math.random()*16-8),delta=(((tgt-R)%360)+360)%360+360*(5+Math.floor(Math.random()*2)),R0=R,dur=5600;
+ SFX.whoosh();const t0=performance.now();let lastIdx=Math.floor((R0+15)/STEP);
+ await new Promise(res=>{const f=n=>{const p=Math.min(1,(n-t0)/dur);R=R0+delta*ease(p);$("whl").style.transform=`rotate(${R}deg)`;
+  const idx=Math.floor((-R+15)/STEP);if(idx!==lastIdx){lastIdx=idx;SFX.tick();const pt=$("ptr");pt.classList.remove("flap");void pt.getBoundingClientRect();pt.classList.add("flap")}
+  p<1?requestAnimationFrame(f):res()};requestAnimationFrame(f)});
+ await sleep(250);hist.push(item);busy=false;show(item);upd();
+ if(!qP.length&&!cP.length)setTimeout(()=>toast("Kartu terakhir! Tekan reset untuk main lagi."),1500)}
+function show(c){cur=c;flipped=false;const [c1,c2]=PAL[c.cat]||PAL.Adab,cd=$("card");cd.style.setProperty("--c1",c1);cd.style.setProperty("--c2",c2);
+ const front=c.kind==="q"?`<div class="tag">${c.cat}</div>${c.ar?`<div class="ar" lang="ar" dir="rtl">${c.ar}</div>`:ic("q","big")}<div class="ttl">${c.title}</div><div class="det">${c.prompt}</div><div class="hint">Ketuk kartu untuk lihat jawaban</div>`
+ :`<div class="tag">TANTANGAN</div>${ic("fire","big")}<div class="ttl">${c.title}</div><div class="det">${c.prompt}</div><div class="hint">Lakukan sebelum waktu habis!</div>`;
+ cd.innerHTML=`<div class="inner"><div class="face front">${front}</div><div class="face back"><h4>JAWABAN</h4><p style="font-size:${fz(c.answer||"")}px">${c.answer||""}</p></div></div>`;
+ cd.className="card show";c.kind==="q"?SFX.win():SFX.chal();burst(c1,c2);startTimer()}
+function burst(a,b){const fx=$("fx"),r=$("card").getBoundingClientRect(),x=r.left+r.width/2,y=r.top+r.height/2;
+ for(let i=0;i<22;i++){const s=document.createElement("i");s.className="sp";const ang=Math.random()*6.28,d=90+Math.random()*130;s.style.cssText=`left:${x}px;top:${y}px;background:${["#fff","#ffd23c",a,b][i%4]};--dx:${Math.cos(ang)*d}px;--dy:${Math.sin(ang)*d}px`;fx.appendChild(s);setTimeout(()=>s.remove(),1000)}}
+function startTimer(){cancelAnimationFrame(tRaf);const tm=$("tm");tm.className="show";tEnd=performance.now()+secs*1000;lastSec=secs+1;
+ const f=n=>{const left=Math.max(0,tEnd-n),s=Math.ceil(left/1000);$("tn").textContent=s;$("fg").style.strokeDashoffset=157*(1-left/(secs*1000));
+ $("fg").style.stroke=left<5000?(left<2500?"#ff4d4d":"#ffb02e"):"#52e07b";
+ if(s!==lastSec){lastSec=s;if(s<=5&&s>0)SFX.beep()}
+ if(left<=0){tm.className="show up";const cd=$("card");cd.classList.add("shake");setTimeout(()=>cd.classList.remove("shake"),600);SFX.buzz();toast("Waktu habis!");return}
+ tRaf=requestAnimationFrame(f)};tRaf=requestAnimationFrame(f)}
+function stopTimer(){cancelAnimationFrame(tRaf);$("tm").className="show"}
+$("card").addEventListener("click",()=>{if(!cur||cur.kind!=="q"||flipped)return;flipped=true;$("card").classList.add("flipped");stopTimer();SFX.flip()});
+/* jenjang cepat */
+const PRE={SD:[0],SMP:[0,1],SMA:[1,2],Semua:[0,1,2]};
+const preSel=n=>{const ok=new Set(PRE[n]);return ALL.every(c=>offQ.has(c.k)===!ok.has(c.lv))};
+function preBtns(){$("pr").innerHTML=Object.keys(PRE).map(n=>`<button data-p="${n}" class="${preSel(n)?"sel":""}">${n}</button>`).join("")}
+$("pr").onclick=e=>{const b=e.target.closest("[data-p]");if(!b)return;if(qBusy())return;SFX.click();const ok=new Set(PRE[b.dataset.p]);offQ=new Set(ALL.filter(c=>!ok.has(c.lv)).map(c=>c.k));applyCats()};
+const _bc=bankCats;bankCats=function(){_bc();preBtns()};
+const fz=a=>a.length>110?16:a.length>70?18:a.length>40?20:22;
+/* modals */
+const open=id=>{SFX.click();$(id).classList.add("on")},close=el=>el.classList.remove("on");
+document.querySelectorAll(".mod").forEach(m=>{m.addEventListener("click",e=>{if(e.target===m||e.target.closest("[data-x]"))close(m)})});
+$("bHist").onclick=()=>{$("hl").innerHTML=hist.length?[...hist].map((c,i)=>{const [a,b]=PAL[c.cat]||PAL.Adab;return `<div class="hi" style="--c1:${a};--c2:${b}"><span class="dot">${ic(c.kind==="q"?"q":"fire")}</span><div><small>#${i+1} · ${c.cat}</small><b>${c.title}</b></div></div>`}).reverse().join(""):'<div class="none">Belum ada kartu yang terpilih.</div>';open("mHist")};
+$("bReset").onclick=()=>{if(busy)return;open("mRes")};
+$("doReset").onclick=()=>{close($("mRes"));init();SFX.flip();toast("Permainan diulang!")};
+function setT(v){secs=Math.max(5,Math.min(120,v));store("jj_t",secs);$("tv").textContent=secs;document.querySelectorAll("[data-t]").forEach(b=>b.classList.toggle("sel",+b.dataset.t===secs))}
+$("bSet").onclick=()=>{setT(secs);open("mSet")};$("tMinus").onclick=()=>{SFX.click();setT(secs-5)};$("tPlus").onclick=()=>{SFX.click();setT(secs+5)};
+document.querySelectorAll("[data-t]").forEach(b=>b.onclick=()=>{SFX.click();setT(+b.dataset.t)});
+$("bMusic").onclick=()=>{ac();musicOn=!musicOn;store("jj_m",musicOn?1:0);if(musicOn)startMusic();applyAudio()};
+$("bSfx").onclick=()=>{ac();sfxOn=!sfxOn;store("jj_s",sfxOn?1:0);applyAudio();SFX.click()};
+$("spin").onclick=spin;
+$("go").onclick=()=>{ac();applyAudio();if(musicOn)startMusic();SFX.win();$("splash").classList.add("out")};
+document.addEventListener("visibilitychange",()=>{if(!ax)return;document.hidden?ax.suspend():ax.resume()});
+applyAudio();init();
+</script></body></html>

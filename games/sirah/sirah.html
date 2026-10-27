@@ -1,0 +1,1044 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no, viewport-fit=cover">
+  <title>Sirah Timeline 3D: Petualangan Jejak Nabi</title>
+  <meta name="description" content="Game edukasi 3D interaktif: susun peristiwa sirah Nabi Muhammad secara kronologis dan pelajari sejarah Islam dengan cara yang menyenangkan.">
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600;700&family=Amiri:wght@700&display=swap" rel="stylesheet">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+
+  <style>
+    :root {
+      --bg:#0d1b2a;--panel:#fff;--panel2:#f0f5ff;--ink:#0a1628;--mute:#4a6480;
+      --accent:#d4a017;--accent-d:#a07810;--teal:#0abfbc;--teal-d:#089490;
+      --gold:#f59e0b;--gold-d:#d97706;--bad:#ef4444;--good:#22c55e;--purple:#7c3aed;
+      --radius:24px;--s:1;
+      padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px);
+    }
+    *,*::before,*::after{box-sizing:border-box;margin:0;padding:0;user-select:none;-webkit-user-select:none;touch-action:none;}
+    html,body{width:100%;height:100%;overflow:hidden;background:var(--bg);font-family:'Fredoka',system-ui,sans-serif;}
+    #canvas3d{position:fixed;inset:0;width:100%;height:100%;z-index:0;}
+    .screen{position:fixed;inset:0;z-index:10;display:flex;align-items:center;justify-content:center;flex-direction:column;pointer-events:none;opacity:0;transition:opacity .3s;}
+    .screen.active{pointer-events:all;opacity:1;}
+    /* SPLASH */
+    #scrSplash{background:radial-gradient(ellipse at 50% 30%,#1a3a5c 0%,#0d1b2a 70%);}
+    .splash-title{font-size:calc(3rem * var(--s));font-weight:700;color:#fff;-webkit-text-stroke:3px var(--accent);text-shadow:0 4px 0 var(--accent-d),0 8px 30px rgba(212,160,23,.5);line-height:1.1;text-align:center;}
+    .splash-line2{font-size:calc(1.7rem * var(--s));color:var(--teal);-webkit-text-stroke:1px var(--teal-d);display:block;}
+    .splash-sub{color:rgba(255,255,255,.7);font-size:calc(1rem * var(--s));margin:14px 0 28px;text-align:center;}
+    .splash-bar-wrap{width:min(360px,85vw);height:10px;background:rgba(255,255,255,.15);border-radius:10px;overflow:hidden;margin-bottom:14px;}
+    .splash-bar{height:100%;background:linear-gradient(90deg,var(--teal),var(--accent));border-radius:10px;width:0%;transition:width .4s;}
+    .splash-tip{color:rgba(255,255,255,.5);font-size:.9rem;text-align:center;}
+    /* CARD */
+    .card{background:var(--panel);border-radius:6px;box-shadow:0 5px 0 rgba(0,0,0,.35),0 12px 30px rgba(0,0,0,.25);border:3px solid #fff;padding:22px;}
+    .card-dark{background:linear-gradient(160deg,#1a2f48,#0d1b2a);border-color:rgba(212,160,23,.5);color:#fff;}
+    /* BUTTONS */
+    .btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;font-family:'Fredoka',system-ui,sans-serif;font-weight:600;font-size:calc(1.05rem * var(--s));border:none;outline:none;cursor:pointer;border-radius:6px;padding:13px 26px;transition:transform .1s,box-shadow .1s;touch-action:none;-webkit-tap-highlight-color:transparent;}
+    .btn:active{transform:translateY(3px);}
+    .btn-primary{background:linear-gradient(180deg,var(--gold) 0%,var(--gold-d) 100%);color:#4a2800;border:3px solid #fff;box-shadow:0 5px 0 var(--accent-d),inset 0 2px 0 rgba(255,255,255,.4);}
+    .btn-primary:active{box-shadow:0 2px 0 var(--accent-d);}
+    .btn-teal{background:linear-gradient(180deg,var(--teal) 0%,var(--teal-d) 100%);color:#fff;border:3px solid rgba(255,255,255,.8);box-shadow:0 5px 0 #067370,inset 0 2px 0 rgba(255,255,255,.4);}
+    .btn-teal:active{box-shadow:0 2px 0 #067370;}
+    .btn-danger{background:linear-gradient(180deg,#ef4444,#b91c1c);color:#fff;border:3px solid rgba(255,255,255,.7);box-shadow:0 5px 0 #991b1b;}
+    .btn-danger:active{box-shadow:0 2px 0 #991b1b;}
+    .btn-ghost{background:rgba(255,255,255,.1);color:rgba(255,255,255,.85);border:2px solid rgba(255,255,255,.25);box-shadow:none;}
+    .btn-sm{font-size:calc(.88rem * var(--s));padding:9px 16px;border-radius:4px;}
+    .btn-icon{width:44px;height:44px;padding:0;border-radius:6px;font-size:1.2rem;}
+    .btn:disabled{opacity:.4;pointer-events:none;}
+    /* CHIPS */
+    .res-row{display:flex;gap:10px;align-items:center;}
+    .res-chip{display:flex;align-items:center;gap:6px;background:rgba(0,0,0,.35);border:2px solid rgba(255,255,255,.3);border-radius:4px;padding:5px 12px;font-weight:600;font-size:calc(.93rem * var(--s));color:#fff;font-variant-numeric:tabular-nums;box-shadow:0 3px 0 rgba(0,0,0,.2);}
+    .rc-icon{width:22px;height:22px;border-radius:4px;display:flex;align-items:center;justify-content:center;font-size:13px;}
+    .rc-coin{background:radial-gradient(circle,#fde68a,var(--gold));}
+    .rc-gem{background:radial-gradient(circle,#c4b5fd,var(--purple));}
+    /* HUD */
+    #hud{position:fixed;top:0;left:0;right:0;z-index:20;display:none;padding:10px 14px;pointer-events:none;}
+    #hud.show{display:flex;align-items:center;gap:10px;}
+    .hud-badge{background:linear-gradient(135deg,var(--accent),var(--gold-d));color:#fff;border-radius:4px;padding:6px 12px;font-size:.9rem;font-weight:700;border:2px solid rgba(255,255,255,.6);white-space:nowrap;box-shadow:0 3px 0 rgba(0,0,0,.2);}
+    .hud-center{flex:1;display:flex;flex-direction:column;align-items:center;gap:3px;}
+    .hud-score{font-size:calc(1.45rem * var(--s));font-weight:700;color:#fff;text-shadow:0 2px 8px rgba(0,0,0,.5);}
+    .hud-timer-wrap{width:155px;height:8px;background:rgba(255,255,255,.15);border-radius:4px;overflow:hidden;}
+    .hud-timer-bar{height:100%;background:linear-gradient(90deg,var(--good),var(--teal));border-radius:4px;transition:width .5s linear,background .5s;}
+    .hud-timer-bar.warn{background:linear-gradient(90deg,#fb923c,var(--bad));}
+    #btnPause{pointer-events:all;}
+    /* MENU */
+    #scrMenu{background:none;}
+    .menu-card{max-width:420px;width:92vw;}
+    .menu-title{font-size:calc(2.3rem * var(--s));font-weight:700;color:var(--accent);-webkit-text-stroke:2px var(--accent-d);text-shadow:0 3px 0 var(--accent-d);text-align:center;line-height:1.1;}
+    .menu-title .sub{font-size:calc(.95rem * var(--s));color:var(--teal);-webkit-text-stroke:0;text-shadow:none;display:block;}
+    /* LEVELS */
+    #scrLevels{background:rgba(10,20,35,.95);overflow-y:auto;padding:20px 0;flex-direction:column;justify-content:flex-start;}
+    .worlds-wrap{width:min(620px,96vw);}
+    .world-title{font-size:1.2rem;font-weight:700;color:var(--accent);margin:16px 0 8px 4px;}
+    .levels-grid{display:grid;grid-template-columns:repeat(6,1fr);gap:8px;}
+    .lvl-node{aspect-ratio:1;border-radius:6px;border:3px solid rgba(255,255,255,.5);display:flex;flex-direction:column;align-items:center;justify-content:center;font-size:.85rem;font-weight:700;color:#fff;cursor:pointer;position:relative;transition:transform .15s;background:linear-gradient(160deg,#1d3a5a,#0e2038);box-shadow:0 3px 0 rgba(0,0,0,.3);}
+    .lvl-node:hover{transform:scale(1.08);}
+    .lvl-node.done{border-color:var(--gold);background:linear-gradient(160deg,#2d4a0e,#1a3008);}
+    .lvl-node.locked{opacity:.35;pointer-events:none;}
+    .lvl-node.boss{border-color:var(--bad);box-shadow:0 0 10px rgba(239,68,68,.4);}
+    .lvl-stars{display:flex;gap:1px;margin-top:3px;font-size:9px;}
+    /* GAME */
+    #gameArea{position:fixed;inset:0;z-index:15;display:none;pointer-events:none;}
+    #gameArea.show{display:block;pointer-events:all;}
+    #cardDeck{position:fixed;left:10px;top:50%;transform:translateY(-50%);z-index:25;pointer-events:all;display:flex;flex-direction:column;gap:7px;max-height:72vh;overflow-y:auto;}
+    .event-card{width:106px;background:linear-gradient(160deg,#1e3a5f,#0e2038);border:2.5px solid rgba(212,160,23,.6);border-radius:14px;padding:8px;cursor:grab;transition:transform .15s,box-shadow .15s;text-align:center;pointer-events:all;}
+    .event-card:active{cursor:grabbing;transform:scale(1.05);box-shadow:0 8px 24px rgba(0,0,0,.4);}
+    .event-card.dragging{opacity:.35;}
+    .event-card.placed{opacity:.28;pointer-events:none;}
+    .ec-icon{font-size:1.5rem;margin-bottom:3px;display:block;}
+    .ec-name{font-size:.7rem;font-weight:600;color:#fff;line-height:1.2;}
+    .ec-hint{font-size:.62rem;color:rgba(255,255,255,.45);margin-top:2px;}
+    #actionRow{position:fixed;right:10px;top:50%;transform:translateY(-50%);z-index:25;display:flex;flex-direction:column;gap:8px;pointer-events:all;}
+    #timelineArea{position:fixed;bottom:0;left:0;right:0;z-index:25;padding:10px;pointer-events:all;background:rgba(5,15,28,.7);backdrop-filter:blur(6px);border-top:1px solid rgba(212,160,23,.25);}
+    .tl-instruction{text-align:center;color:rgba(255,255,255,.75);font-size:.9rem;margin-bottom:7px;}
+    .tl-slots{display:flex;gap:7px;justify-content:center;flex-wrap:wrap;}
+    .tl-slot{min-width:86px;min-height:68px;border:2.5px dashed rgba(255,255,255,.3);border-radius:14px;background:rgba(13,27,42,.7);display:flex;align-items:center;justify-content:center;font-size:.72rem;color:rgba(255,255,255,.45);text-align:center;cursor:pointer;transition:border-color .2s,background .2s;padding:6px;flex-direction:column;gap:2px;position:relative;}
+    .tl-slot.filled{border-color:var(--teal);border-style:solid;background:rgba(10,191,188,.15);color:#fff;font-weight:600;cursor:grab;}
+    .tl-slot.correct{border-color:var(--good);background:rgba(34,197,94,.15);}
+    .tl-slot.wrong{border-color:var(--bad);background:rgba(239,68,68,.15);}
+    .tl-slot.drop-target{border-color:var(--gold);background:rgba(212,160,23,.2);}
+    .slot-num{position:absolute;top:3px;left:6px;font-size:.6rem;color:rgba(255,255,255,.4);}
+    /* MODALS */
+    .modal-wrap{position:fixed;inset:0;z-index:50;display:none;align-items:center;justify-content:center;}
+    .modal-wrap.open{display:flex;}
+    .modal-backdrop{position:absolute;inset:0;background:rgba(5,15,28,.8);backdrop-filter:blur(6px);}
+    .modal-box{position:relative;z-index:1;animation:popIn .32s cubic-bezier(.34,1.56,.64,1);}
+    @keyframes popIn{from{transform:scale(.7) translateY(30px);opacity:0;}to{transform:none;opacity:1;}}
+    .modal-close{position:absolute;top:-12px;right:-12px;width:32px;height:32px;border-radius:50%;background:var(--bad);border:2px solid #fff;cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:1rem;color:#fff;font-weight:700;z-index:2;}
+    .modal-title{font-size:1.45rem;font-weight:700;text-align:center;margin-bottom:14px;}
+    /* RESULT */
+    .result-title{font-size:calc(2rem * var(--s));font-weight:700;text-align:center;}
+    .result-win{color:var(--gold);-webkit-text-stroke:2px var(--accent-d);text-shadow:0 3px 0 var(--accent-d);}
+    .result-lose{color:var(--bad);-webkit-text-stroke:2px #7f1d1d;}
+    .stars-row{display:flex;justify-content:center;gap:12px;margin:14px 0 8px;}
+    .star-big{font-size:2.3rem;transform:scale(0);transition:transform .3s cubic-bezier(.34,1.56,.64,1);}
+    .star-big.lit{transform:scale(1);}
+    .reward-row{display:flex;justify-content:center;gap:18px;margin:12px 0;}
+    .reward-item{display:flex;flex-direction:column;align-items:center;gap:3px;font-size:.88rem;font-weight:600;color:var(--ink);}
+    .reward-val{font-size:1.3rem;font-weight:700;color:var(--accent-d);}
+    /* SHOP */
+    .shop-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-top:10px;}
+    .shop-item{border:2.5px solid rgba(0,0,0,.12);border-radius:16px;padding:10px 6px;text-align:center;cursor:pointer;transition:transform .15s,border-color .15s;background:var(--panel2);}
+    .shop-item:hover{transform:scale(1.04);border-color:var(--accent);}
+    .shop-item.owned{border-color:var(--good);background:#f0fdf4;}
+    .shop-item.equipped{border-color:var(--gold);background:#fffbeb;}
+    .shop-icon{font-size:1.9rem;margin-bottom:5px;}
+    .shop-name{font-size:.8rem;font-weight:700;color:var(--ink);}
+    .shop-price{font-size:.78rem;color:var(--accent-d);font-weight:600;margin-top:3px;}
+    /* DAILY */
+    .daily-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:5px;margin:12px 0;}
+    .daily-cell{border-radius:10px;padding:9px 3px;text-align:center;font-size:.72rem;font-weight:600;border:2px solid rgba(0,0,0,.12);background:var(--panel2);color:var(--ink);}
+    .daily-cell.past{background:#d1fae5;border-color:var(--good);}
+    .daily-cell.today{background:linear-gradient(160deg,var(--gold),var(--accent-d));color:#fff;border-color:var(--accent-d);}
+    .daily-cell.future{opacity:.4;}
+    /* MISSIONS */
+    .mission-list{display:flex;flex-direction:column;gap:10px;margin-top:12px;}
+    .mission-item{background:var(--panel2);border-radius:14px;padding:12px;border:2px solid transparent;}
+    .mission-item.done{border-color:var(--good);}
+    .mission-bar-wrap{height:7px;background:rgba(0,0,0,.1);border-radius:8px;overflow:hidden;margin-top:6px;}
+    .mission-bar{height:100%;background:linear-gradient(90deg,var(--teal),var(--good));border-radius:8px;transition:width .5s;}
+    /* ACHIEVEMENTS */
+    .achiev-list{display:flex;flex-direction:column;gap:9px;margin-top:12px;}
+    .achiev-item{display:flex;align-items:center;gap:12px;background:var(--panel2);border-radius:14px;padding:11px;border:2px solid transparent;}
+    .achiev-item.unlocked{border-color:var(--gold);background:#fffbeb;}
+    /* SETTINGS */
+    .setting-row{display:flex;align-items:center;justify-content:space-between;padding:12px 0;border-bottom:1px solid rgba(0,0,0,.08);}
+    .toggle{width:46px;height:24px;border-radius:12px;border:none;cursor:pointer;position:relative;transition:background .2s;}
+    .toggle.on{background:var(--good);}.toggle.off{background:#ccc;}
+    .toggle::after{content:'';position:absolute;top:2px;width:20px;height:20px;border-radius:50%;background:#fff;transition:left .2s;}
+    .toggle.on::after{left:24px;}.toggle.off::after{left:2px;}
+    /* BRIEFING */
+    .brief-events{display:flex;flex-direction:column;gap:7px;margin:10px 0;max-height:200px;overflow-y:auto;}
+    .brief-event{display:flex;align-items:flex-start;gap:10px;background:var(--panel2);border-radius:12px;padding:9px;border:1.5px solid rgba(0,0,0,.1);}
+    .criteria-row{display:flex;gap:7px;margin-top:8px;flex-wrap:wrap;}
+    .crit-chip{font-size:.76rem;background:var(--panel2);border:1.5px solid rgba(0,0,0,.1);border-radius:8px;padding:4px 9px;color:var(--mute);}
+    /* COUNTDOWN */
+    #countdown{position:fixed;inset:0;z-index:40;display:none;align-items:center;justify-content:center;pointer-events:none;}
+    #countdown.show{display:flex;}
+    #countNum{font-size:8rem;font-weight:700;color:#fff;-webkit-text-stroke:4px var(--accent);text-shadow:0 8px 0 var(--accent-d),0 16px 40px rgba(0,0,0,.6);animation:countPop .8s cubic-bezier(.34,1.56,.64,1);}
+    @keyframes countPop{from{transform:scale(2.5);opacity:0;}to{transform:scale(1);opacity:1;}}
+    /* TOAST */
+    #toastWrap{position:fixed;top:70px;left:50%;transform:translateX(-50%);z-index:60;display:flex;flex-direction:column;gap:8px;align-items:center;pointer-events:none;}
+    .toast{background:rgba(20,45,75,.95);color:#fff;font-size:.92rem;font-weight:600;padding:9px 18px;border-radius:20px;border:1.5px solid rgba(212,160,23,.5);box-shadow:0 4px 20px rgba(0,0,0,.4);animation:toastIn .3s ease;white-space:nowrap;}
+    @keyframes toastIn{from{transform:translateY(-16px);opacity:0;}to{transform:none;opacity:1;}}
+    .float-text{position:fixed;font-size:1.3rem;font-weight:700;color:var(--gold);pointer-events:none;z-index:55;animation:floatUp 1.2s ease forwards;}
+    @keyframes floatUp{from{transform:translateY(0);opacity:1;}to{transform:translateY(-80px);opacity:0;}}
+    #factBox{position:fixed;top:70px;right:12px;z-index:25;max-width:200px;background:rgba(13,27,42,.92);border:1.5px solid rgba(212,160,23,.5);border-radius:14px;padding:11px;color:#fff;font-size:.8rem;display:none;}
+    #factBox h4{font-size:.85rem;color:var(--accent);margin-bottom:4px;}
+    #confettiCanvas{position:fixed;inset:0;z-index:45;pointer-events:none;display:none;}
+    ::-webkit-scrollbar{width:4px;}::-webkit-scrollbar-track{background:transparent;}::-webkit-scrollbar-thumb{background:rgba(255,255,255,.2);border-radius:4px;}
+    @media(max-width:480px){:root{--s:.83;}.levels-grid{grid-template-columns:repeat(5,1fr);}.shop-grid{grid-template-columns:repeat(2,1fr);}.event-card{width:86px;}.tl-slot{min-width:70px;min-height:58px;}}
+    @media(max-width:360px){:root{--s:.75;}.levels-grid{grid-template-columns:repeat(4,1fr);}#cardDeck{left:4px;}.event-card{width:76px;}}
+  </style>
+</head>
+<body>
+<canvas id="canvas3d"></canvas>
+<canvas id="confettiCanvas"></canvas>
+
+<!-- HUD -->
+<div id="hud">
+  <div class="hud-badge" id="hudLevel">D1 · L1</div>
+  <div class="hud-center">
+    <div class="hud-score" id="hudScore">0</div>
+    <div class="hud-timer-wrap"><div class="hud-timer-bar" id="hudTimerBar"></div></div>
+  </div>
+  <div class="res-row">
+    <div class="res-chip"><div class="rc-icon rc-coin">🌙</div><span id="hudCoins">0</span></div>
+    <button class="btn btn-ghost btn-sm btn-icon" id="btnPause">⏸</button>
+  </div>
+</div>
+
+<div id="toastWrap"></div>
+<div id="factBox"><h4>📜 Fakta Sirah</h4><p id="factText"></p></div>
+<div id="countdown"><div id="countNum">3</div></div>
+
+<!-- GAME AREA -->
+<div id="gameArea">
+  <div id="cardDeck"></div>
+  <div id="actionRow">
+    <button class="btn btn-primary" id="btnCheck" style="writing-mode:vertical-rl;text-orientation:mixed;padding:14px 11px;font-size:.85rem;">✅ Cek</button>
+    <button class="btn btn-ghost btn-sm" id="btnHint" style="writing-mode:vertical-rl;text-orientation:mixed;padding:10px 9px;font-size:.8rem;">💡 Petunjuk</button>
+    <button class="btn btn-ghost btn-sm" id="btnReset" style="writing-mode:vertical-rl;text-orientation:mixed;padding:10px 9px;font-size:.8rem;">🔄 Ulang</button>
+  </div>
+  <div id="timelineArea">
+    <div class="tl-instruction" id="tlInstruction">Seret kartu ke slot yang tepat!</div>
+    <div class="tl-slots" id="tlSlots"></div>
+  </div>
+</div>
+
+<!-- SCREENS -->
+<div class="screen active" id="scrSplash">
+  <div class="splash-title">SIRAH<span class="splash-line2">TIMELINE 3D</span></div>
+  <div class="splash-sub">Petualangan Jejak Nabi Muhammad ﷺ</div>
+  <div class="splash-bar-wrap"><div class="splash-bar" id="splashBar"></div></div>
+  <div class="splash-tip" id="splashTip">Memuat dunia 3D…</div>
+</div>
+
+<div class="screen" id="scrMenu">
+  <div class="card card-dark menu-card">
+    <div class="menu-title">SIRAH TIMELINE 3D<span class="sub">Petualangan Jejak Nabi ﷺ</span></div>
+    <div class="res-row" style="justify-content:center;margin:12px 0;">
+      <div class="res-chip"><div class="rc-icon rc-coin">🌙</div><span id="menuCoins">0</span></div>
+      <div class="res-chip"><div class="rc-icon rc-gem">💎</div><span id="menuGems">0</span></div>
+      <div class="res-chip">⭐<span id="menuXP">0</span></div>
+    </div>
+    <div style="display:flex;flex-direction:column;gap:9px;margin-top:14px;">
+      <button class="btn btn-primary" id="btnPlay">▶ Lanjut Main</button>
+      <button class="btn btn-teal" id="btnLevels">🗺️ Pilih Level</button>
+      <div style="display:flex;gap:8px;"><button class="btn btn-ghost" style="flex:1;" id="btnShop">🏪 Toko</button><button class="btn btn-ghost" style="flex:1;" id="btnDaily">🎁 Harian</button></div>
+      <div style="display:flex;gap:8px;"><button class="btn btn-ghost" style="flex:1;" id="btnMission">📋 Misi</button><button class="btn btn-ghost" style="flex:1;" id="btnAchiev">🏆 Prestasi</button></div>
+      <button class="btn btn-ghost" id="btnSettings">⚙️ Pengaturan</button>
+    </div>
+    <div id="dailyNotif" style="display:none;text-align:center;color:var(--good);font-size:.83rem;margin-top:8px;">🎁 Hadiah harian tersedia!</div>
+  </div>
+</div>
+
+<div class="screen" id="scrLevels">
+  <div class="worlds-wrap">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;">
+      <div style="color:#fff;font-size:1.25rem;font-weight:700;">🗺️ Pilih Level</div>
+      <button class="btn btn-ghost btn-sm" id="btnLevelsBack">← Kembali</button>
+    </div>
+    <div id="worldsContainer"></div>
+  </div>
+</div>
+
+<!-- MODALS -->
+<!-- BRIEFING -->
+<div class="modal-wrap" id="modalBriefing">
+  <div class="modal-backdrop" id="briefBackdrop"></div>
+  <div class="modal-box card" style="max-width:440px;width:92vw;">
+    <div class="modal-close" id="briefClose">✕</div>
+    <div class="modal-title" id="briefTitle">Level 1</div>
+    <div style="color:var(--mute);font-size:.88rem;margin-bottom:8px;" id="briefWorldName"></div>
+    <div style="font-size:.88rem;color:var(--ink);margin-bottom:7px;">Susun peristiwa ini secara kronologis:</div>
+    <div class="brief-events" id="briefEvents"></div>
+    <div class="criteria-row" id="briefCriteria"></div>
+    <div style="margin-top:14px;display:flex;gap:9px;">
+      <button class="btn btn-ghost btn-sm" style="flex:1;" id="briefCancel">✕ Batal</button>
+      <button class="btn btn-primary" style="flex:1;" id="briefStart">▶ Mulai</button>
+    </div>
+  </div>
+</div>
+
+<!-- RESULT -->
+<div class="modal-wrap" id="modalResult">
+  <div class="modal-backdrop"></div>
+  <div class="modal-box card" style="max-width:400px;width:92vw;">
+    <div class="result-title result-win" id="resultTitle">🎉 Bagus!</div>
+    <div class="stars-row"><div class="star-big" id="s1">⭐</div><div class="star-big" id="s2">⭐</div><div class="star-big" id="s3">⭐</div></div>
+    <div class="reward-row">
+      <div class="reward-item"><div class="reward-val" id="resScore">0</div><div>Skor</div></div>
+      <div class="reward-item"><div class="reward-val" id="resCoins">+0</div><div>🌙 Koin</div></div>
+      <div class="reward-item"><div class="reward-val" id="resXP">+0</div><div>XP</div></div>
+    </div>
+    <div id="factResult" style="background:var(--panel2);border-radius:12px;padding:11px;font-size:.83rem;color:var(--ink);margin-bottom:13px;display:none;"></div>
+    <div style="display:flex;flex-direction:column;gap:9px;">
+      <button class="btn btn-primary" id="btnNext" style="display:none;">Lanjut ▶</button>
+      <div style="display:flex;gap:9px;"><button class="btn btn-ghost" style="flex:1;" id="btnRetry">🔄 Ulangi</button><button class="btn btn-ghost" style="flex:1;" id="btnMenuResult">🏠 Menu</button></div>
+    </div>
+  </div>
+</div>
+
+<!-- SHOP -->
+<div class="modal-wrap" id="modalShop">
+  <div class="modal-backdrop" id="shopBackdrop"></div>
+  <div class="modal-box card" style="max-width:470px;width:94vw;max-height:85vh;overflow-y:auto;">
+    <div class="modal-close" id="shopClose">✕</div>
+    <div class="modal-title">🏪 Toko Artefak Sirah</div>
+    <div style="display:flex;gap:6px;margin-bottom:8px;"><button class="btn btn-teal btn-sm" id="tabSkin">🗂️ Tema Kartu</button><button class="btn btn-ghost btn-sm" id="tabBooster">⚡ Booster</button></div>
+    <div class="shop-grid" id="shopGrid"></div>
+    <div style="margin-top:10px;display:flex;justify-content:center;gap:12px;">
+      <div class="res-chip"><div class="rc-icon rc-coin">🌙</div><span id="shopCoins">0</span></div>
+      <div class="res-chip"><div class="rc-icon rc-gem">💎</div><span id="shopGems">0</span></div>
+    </div>
+  </div>
+</div>
+
+<!-- DAILY -->
+<div class="modal-wrap" id="modalDaily">
+  <div class="modal-backdrop" id="dailyBackdrop"></div>
+  <div class="modal-box card" style="max-width:400px;width:92vw;">
+    <div class="modal-close" id="dailyClose">✕</div>
+    <div class="modal-title">🎁 Hadiah Harian</div>
+    <div class="daily-grid" id="dailyGrid"></div>
+    <div id="dailyClaimWrap" style="text-align:center;margin-top:6px;"></div>
+  </div>
+</div>
+
+<!-- MISSIONS -->
+<div class="modal-wrap" id="modalMission">
+  <div class="modal-backdrop" id="missionBackdrop"></div>
+  <div class="modal-box card" style="max-width:420px;width:92vw;">
+    <div class="modal-close" id="missionClose">✕</div>
+    <div class="modal-title">📋 Misi</div>
+    <div class="mission-list" id="missionList"></div>
+  </div>
+</div>
+
+<!-- ACHIEVEMENTS -->
+<div class="modal-wrap" id="modalAchiev">
+  <div class="modal-backdrop" id="achievBackdrop"></div>
+  <div class="modal-box card" style="max-width:470px;width:94vw;max-height:82vh;overflow-y:auto;">
+    <div class="modal-close" id="achievClose">✕</div>
+    <div class="modal-title">🏆 Prestasi</div>
+    <div class="achiev-list" id="achievList"></div>
+  </div>
+</div>
+
+<!-- SETTINGS -->
+<div class="modal-wrap" id="modalSettings">
+  <div class="modal-backdrop" id="settingsBackdrop"></div>
+  <div class="modal-box card" style="max-width:390px;width:92vw;">
+    <div class="modal-close" id="settingsClose">✕</div>
+    <div class="modal-title">⚙️ Pengaturan</div>
+    <div id="settingRows"></div>
+    <div style="margin-top:14px;display:flex;gap:9px;">
+      <button class="btn btn-ghost btn-sm" style="flex:1;" id="btnExport">📤 Ekspor</button>
+      <button class="btn btn-ghost btn-sm" style="flex:1;" id="btnImport">📥 Impor</button>
+    </div>
+    <button class="btn btn-danger btn-sm" style="width:100%;margin-top:8px;" id="btnReset2">⚠️ Reset Data</button>
+  </div>
+</div>
+
+<!-- PAUSE -->
+<div class="modal-wrap" id="modalPause">
+  <div class="modal-backdrop"></div>
+  <div class="modal-box card" style="max-width:310px;width:88vw;text-align:center;">
+    <div class="modal-title">⏸ Dijeda</div>
+    <div style="display:flex;flex-direction:column;gap:9px;margin-top:12px;">
+      <button class="btn btn-primary" id="btnResume">▶ Lanjutkan</button>
+      <button class="btn btn-ghost" id="btnPauseRetry">🔄 Ulangi Level</button>
+      <button class="btn btn-ghost" id="btnPauseMenu">🏠 Menu Utama</button>
+    </div>
+  </div>
+</div>
+
+<script>
+/*==== CONFIG ====*/
+const CFG={
+  TOTAL_LEVELS:30,WORLDS:5,LEVELS_PER_WORLD:6,
+  EVENTS_PER_LEVEL:[3,3,4,4,5,6],
+  BASE_TIME:[90,85,80,75,70,60],
+  SCORE_CORRECT:120,SCORE_WRONG:-30,SCORE_SPEED:80,
+  STAR2:0.75,STAR3:0.92,
+  COINS_PER_STAR:[20,35,55],XP_PER_STAR:[30,55,90],
+  HINT_PENALTY:30,BOSS_BONUS:100,
+  DAILY_REWARDS:[50,80,100,150,200,300,500],
+};
+
+/*==== UTIL ====*/
+function mulberry32(a){return function(){a|=0;a=a+0x6D2B79F5|0;let t=Math.imul(a^a>>>15,1|a);t=t+Math.imul(t^t>>>7,61|t)^t;return((t^t>>>14)>>>0)/4294967296;};}
+function rng(s){return mulberry32(s+0x12345);}
+function pickN(arr,n,r){let a=[...arr],o=[];while(o.length<n&&a.length){let i=Math.floor(r()*a.length);o.push(a.splice(i,1)[0]);}return o;}
+
+/*==== SIRAH DATA ====*/
+const SIRAH=[
+  {id:'am_fil',year:-570,icon:'🐘',name:'Tahun Gajah',desc:'Pasukan Abrahah menyerang Kabah dengan gajah, dihancurkan burung Ababil.',world:0,hint:'Tahun kelahiran Nabi, ada pasukan gajah'},
+  {id:'maulid',year:-569,icon:'🌟',name:'Kelahiran Nabi',desc:'Nabi Muhammad SAW lahir di Makkah pada 12 Rabi\'ul Awwal.',world:0,hint:'Momen paling agung dalam sejarah'},
+  {id:'halimah',year:-568,icon:'🤱',name:'Diasuh Halimah',desc:'Nabi diasuh ibu susu Halimah As-Sa\'diyyah di pedesaan Bani Sa\'d.',world:0,hint:'Ibu susu di pedesaan'},
+  {id:'ibu_wafat',year:-563,icon:'💔',name:'Wafatnya Ibunda',desc:'Aminah ibunda Nabi wafat di Abwa saat perjalanan pulang dari Madinah.',world:0,hint:'Ibu Nabi wafat saat Nabi masih kecil'},
+  {id:'kakek_wafat',year:-561,icon:'👴',name:'Kakek Wafat',desc:'Abdul Muthalib kakek Nabi wafat, Nabi kemudian diasuh paman Abu Thalib.',world:0,hint:'Kakek Nabi wafat, diasuh paman'},
+  {id:'dagang_syam',year:-581,icon:'🐪',name:'Dagang ke Syam',desc:'Nabi SAW pertama kali berdagang ke Syam bersama pamannya Abu Thalib.',world:0,hint:'Perjalanan dagang pertama ke utara'},
+
+  {id:'khadijah',year:-595,icon:'💍',name:'Menikah Khadijah',desc:'Nabi SAW menikah dengan Siti Khadijah RA, wanita mulia pedagang Makkah.',world:1,hint:'Istri pertama Nabi, pengusaha sukses'},
+  {id:'renovasi',year:-605,icon:'🕋',name:'Renovasi Kabah',desc:'Nabi SAW mendamaikan perselisihan peletakan Hajar Aswad.',world:1,hint:'Nabi menyelesaikan perselisihan batu hitam'},
+  {id:'wahyu1',year:610,icon:'📖',name:'Wahyu Pertama',desc:'Malaikat Jibril menurunkan wahyu pertama QS. Al-Alaq di Gua Hira.',world:1,hint:'Iqra - perintah membaca di gua'},
+  {id:'dakwah_rahasia',year:611,icon:'🤫',name:'Dakwah Rahasia',desc:'Nabi SAW berdakwah secara sembunyi-sembunyi selama 3 tahun.',world:1,hint:'Dakwah diam-diam kepada keluarga dekat'},
+  {id:'dakwah_terbuka',year:613,icon:'📣',name:'Dakwah Terbuka',desc:'Nabi SAW berdakwah secara terbuka di Bukit Shafa.',world:1,hint:'Naik bukit, menyeru kaum Quraisy'},
+  {id:'isra_miraj',year:621,icon:'🌙',name:'Isra Miraj',desc:'Nabi SAW melakukan perjalanan malam dari Makkah ke Masjidil Aqsa, lalu naik ke sidratul muntaha.',world:1,hint:'Perjalanan malam dan naik ke langit, shalat diwajibkan'},
+
+  {id:'tahun_duka',year:619,icon:'😢',name:'Tahun Kesedihan',desc:'Khadijah dan Abu Thalib wafat dalam satu tahun.',world:2,hint:'Dua orang tercinta Nabi wafat dalam setahun'},
+  {id:'thaif',year:620,icon:'🪨',name:'Dakwah ke Thaif',desc:'Nabi SAW berdakwah ke Thaif, disambut lemparan batu.',world:2,hint:'Kota yang menolak dakwah dengan kekerasan'},
+  {id:'baiah1',year:621,icon:'🤝',name:'Baiat Aqabah I',desc:'12 orang Madinah berbai\'at kepada Nabi SAW di Aqabah.',world:2,hint:'Janji setia pertama orang Madinah'},
+  {id:'baiah2',year:622,icon:'✊',name:'Baiat Aqabah II',desc:'73 orang Anshar berbai\'at dan siap melindungi Nabi di Madinah.',world:2,hint:'Janji setia besar sebelum hijrah'},
+  {id:'hijrah',year:622,icon:'🐫',name:'Hijrah ke Madinah',desc:'Nabi SAW berhijrah dari Makkah ke Madinah bersama Abu Bakar RA.',world:2,hint:'Perjalanan bersejarah ke kota Yatsrib'},
+  {id:'masjid_nabawi',year:622,icon:'🕌',name:'Masjid Nabawi',desc:'Nabi SAW membangun Masjid Nabawi sebagai pusat komunitas Islam.',world:2,hint:'Masjid pertama yang dibangun Nabi di Madinah'},
+
+  {id:'piagam',year:622,icon:'📜',name:'Piagam Madinah',desc:'Nabi SAW membuat perjanjian persaudaraan antar suku di Madinah.',world:3,hint:'Konstitusi pertama dunia'},
+  {id:'badar',year:624,icon:'⚔️',name:'Perang Badar',desc:'Kemenangan besar kaum Muslim melawan 1000 pasukan Quraisy.',world:3,hint:'Perang pertama, 313 Muslim vs 1000 Quraisy'},
+  {id:'uhud',year:625,icon:'🏔️',name:'Perang Uhud',desc:'Pertempuran di Bukit Uhud, kaum Muslim menderita karena melanggar perintah.',world:3,hint:'Perang di kaki gunung, ada pelajaran taat'},
+  {id:'ahzab',year:627,icon:'🏰',name:'Perang Khandaq',desc:'Kaum Muslim menggali parit pertahanan untuk melindungi Madinah dari 10.000 pasukan koalisi.',world:3,hint:'Perang parit, strategi Salman Al-Farisi'},
+  {id:'hudaibiyyah',year:628,icon:'🕊️',name:'Perjanjian Hudaibiyyah',desc:'Perjanjian damai antara Muslim dan Quraisy selama 10 tahun.',world:3,hint:'Perjanjian damai yang tampak merugikan tapi menguntungkan'},
+  {id:'khaibar',year:628,icon:'🗡️',name:'Perang Khaibar',desc:'Kaum Muslim menaklukkan benteng Khaibar.',world:3,hint:'Penaklukan benteng di utara Madinah'},
+
+  {id:'fath',year:630,icon:'🏳️',name:'Fathu Makkah',desc:'Makkah ditaklukkan tanpa pertumpahan darah oleh 10.000 pasukan Muslim.',world:4,hint:'Kemenangan besar, Makkah jatuh tanpa perang besar'},
+  {id:'haji_wada',year:632,icon:'🕋',name:'Haji Wada',desc:'Haji terakhir Nabi SAW, menyampaikan khutbah agung di Arafah.',world:4,hint:'Haji perpisahan Nabi'},
+  {id:'nabi_wafat',year:632,icon:'🌹',name:'Wafatnya Nabi',desc:'Nabi Muhammad SAW wafat pada 12 Rabi\'ul Awwal, hari Senin.',world:4,hint:'Hari paling sedih dalam sejarah Islam'},
+  {id:'abubakar',year:632,icon:'👑',name:'Abu Bakar Khalifah',desc:'Abu Bakar RA dipilih sebagai khalifah pertama umat Islam.',world:4,hint:'Sahabat setia menjadi pemimpin pertama'},
+  {id:'umar',year:634,icon:'⚖️',name:'Umar Khalifah',desc:'Umar bin Khattab RA menjadi khalifah kedua yang memperluas Islam.',world:4,hint:'Khalifah kedua, tegas dan adil'},
+  {id:'mushaf',year:650,icon:'📚',name:'Mushaf Al-Quran',desc:'Utsman bin Affan mengumpulkan Al-Quran dalam satu mushaf standar.',world:4,hint:'Al-Quran dibukukan dalam satu kitab resmi'},
+];
+
+const WORLD_NAMES=['🌟 Dunia 1: Kelahiran & Masa Muda','📖 Dunia 2: Masa Kenabian','🐪 Dunia 3: Ujian & Hijrah','⚔️ Dunia 4: Perang & Perjanjian','🕋 Dunia 5: Kemenangan Islam'];
+
+const FACTS=[
+  'Nabi Muhammad SAW lahir pada Tahun Gajah ketika Abrahah menyerang Kabah.',
+  'Perang Badar terjadi pada 17 Ramadhan 2 H, perang pertama dalam Islam.',
+  'Gua Hira terletak di Jabal Nur, sekitar 4 km dari Masjidil Haram.',
+  'Khadijah adalah orang pertama yang masuk Islam.',
+  'Piagam Madinah dianggap sebagai konstitusi tertulis pertama di dunia.',
+  'Hijrah Nabi menjadi awal kalender Hijriah yang digunakan umat Islam.',
+  'Perjanjian Hudaibiyyah membuka jalan untuk Fathu Makkah 2 tahun kemudian.',
+  'Khutbah Wada berisi prinsip kesetaraan manusia dan hak-hak asasi.',
+  'Nabi SAW adalah anak yatim piatu, ayahnya wafat sebelum lahir.',
+  'Dalam Isra Miraj, shalat 5 waktu diwajibkan bagi umat Islam.',
+  'Abu Bakar dinamai As-Shiddiq karena membenarkan Isra Miraj.',
+  'Madinah sebelumnya bernama Yatsrib, diubah namanya oleh Nabi SAW.',
+  'Parit dalam Perang Khandaq digali atas saran Salman Al-Farisi.',
+  'Mushaf Al-Quran yang dikumpulkan Utsman masih digunakan hingga hari ini.',
+];
+
+const SHOP_SKINS=[
+  {id:'klasik',name:'Gulungan Klasik',icon:'📜',price:0,cur:'coin',desc:'Tema kartu gulungan papyrus'},
+  {id:'emas',name:'Kartu Emas',icon:'✨',price:200,cur:'coin',desc:'Kartu berlapis emas berkilau'},
+  {id:'mutiara',name:'Mutiara Madinah',icon:'🕌',price:500,cur:'coin',desc:'Tema masjid dan mutiara'},
+  {id:'bintang',name:'Langit Bintang',icon:'🌌',price:800,cur:'coin',desc:'Kartu dengan latar langit malam'},
+  {id:'zamrud',name:'Zamrud Surga',icon:'💚',price:3,cur:'gem',desc:'Kartu hijau zamrud eksklusif'},
+  {id:'safir',name:'Safir Quran',icon:'💙',price:5,cur:'gem',desc:'Kartu biru safir mewah'},
+];
+
+const SHOP_BOOSTERS=[
+  {id:'waktu',name:'+30 Detik',icon:'⏱️',price:80,cur:'coin',desc:'Tambah 30 detik waktu'},
+  {id:'hint_free',name:'Petunjuk Gratis',icon:'💡',price:150,cur:'coin',desc:'Satu petunjuk tanpa penalti'},
+  {id:'auto',name:'Auto 1 Kartu',icon:'🔮',price:5,cur:'gem',desc:'Urutkan otomatis 1 kartu'},
+];
+
+const ACHIEVEMENTS=[
+  {id:'first',name:'Kemenangan Pertama',desc:'Selesaikan level pertama',icon:'🌟',gem:1,cond:s=>s.lc>=1},
+  {id:'w1',name:'Selesai Dunia 1',desc:'Clear semua level dunia 1',icon:'🏆',gem:2,cond:s=>s.wc>=1},
+  {id:'w2',name:'Selesai Dunia 2',desc:'Clear semua level dunia 2',icon:'🏆',gem:2,cond:s=>s.wc>=2},
+  {id:'w3',name:'Selesai Dunia 3',desc:'Clear semua level dunia 3',icon:'🏆',gem:3,cond:s=>s.wc>=3},
+  {id:'all',name:'Penakluk Sirah',desc:'Clear semua 30 level',icon:'👑',gem:10,cond:s=>s.lc>=30},
+  {id:'speed',name:'Kilat',desc:'Selesaikan 3 level dengan sisa waktu >50%',icon:'⚡',gem:2,cond:s=>s.sc>=3},
+  {id:'perf',name:'Sempurna',desc:'Raih 3 bintang di 5 level',icon:'💯',gem:3,cond:s=>s.pl>=5},
+  {id:'str3',name:'Semangat',desc:'Main 3 hari berturut-turut',icon:'🔥',gem:2,cond:s=>s.ds>=3},
+  {id:'str7',name:'Istiqamah',desc:'Main 7 hari berturut-turut',icon:'🏅',gem:5,cond:s=>s.ds>=7},
+  {id:'shop',name:'Pembeli Pertama',desc:'Beli item pertama di toko',icon:'🛍️',gem:1,cond:s=>s.ib>=1},
+  {id:'coin100',name:'Kolektor Koin',desc:'Kumpulkan 100 koin total',icon:'🌙',gem:1,cond:s=>s.ce>=100},
+  {id:'coin1k',name:'Bendahara',desc:'Kumpulkan 1000 koin total',icon:'💰',gem:3,cond:s=>s.ce>=1000},
+  {id:'nohint',name:'Tanpa Petunjuk',desc:'Selesaikan level tanpa petunjuk',icon:'🧠',gem:1,cond:s=>s.nh>=1},
+  {id:'boss',name:'Penakluk Bos',desc:'Kalahkan semua 5 bos',icon:'🐉',gem:5,cond:s=>s.bc>=5},
+  {id:'half',name:'Setengah Jalan',desc:'Selesaikan 15 level',icon:'🎯',gem:2,cond:s=>s.lc>=15},
+];
+
+/*==== SAVE ====*/
+const SK='g_sirah_v1';
+let S=defSave();
+function defSave(){return{v:1,coins:150,gems:0,xp:0,lp:{},os:['klasik'],es:'klasik',ob:{},au:[],ac:[],ds:0,ld:'',dd:0,mp:{},mcd:'',st:{lc:0,wc:0,sc:0,pl:0,nh:0,bc:0,ce:0,ib:0},cfg:{music:true,sfx:true,shake:true}};}
+function loadS(){try{const r=localStorage.getItem(SK);if(r){const p=JSON.parse(atob(r));S=Object.assign(defSave(),p);}}catch(e){}}
+function saveS(){try{localStorage.setItem(SK,btoa(JSON.stringify(S)));}catch(e){}}
+loadS();
+
+/*==== AUDIO ====*/
+let AC=null;
+function getAC(){if(!AC){try{AC=new(window.AudioContext||window.webkitAudioContext)();}catch(e){}}return AC;}
+function beep(f,d,t='sine',v=.16,dl=0){
+  if(!S.cfg.sfx)return;const ac=getAC();if(!ac)return;
+  try{const o=ac.createOscillator(),g=ac.createGain();o.type=t;o.frequency.value=f;g.gain.setValueAtTime(v,ac.currentTime+dl);g.gain.exponentialRampToValueAtTime(.001,ac.currentTime+dl+d);o.connect(g);g.connect(ac.destination);o.start(ac.currentTime+dl);o.stop(ac.currentTime+dl+d);}catch(e){}
+}
+function sndClick(){beep(520,.06,'square',.11);}
+function sndCorrect(){beep(660,.12,'sine',.18);beep(880,.12,'sine',.13,.12);}
+function sndWrong(){beep(220,.2,'sawtooth',.14);}
+function sndWin(){[0,.1,.2,.3].forEach((d,i)=>beep([523,659,784,1047][i],.15,'sine',.2,d));}
+function sndStar(){beep(880+200*Math.random(),.22,'sine',.18);}
+function sndCoin(){beep(1320,.08,'sine',.12);}
+function sndDrop(){beep(440,.06,'triangle',.14);}
+function sndHov(){beep(660,.04,'sine',.06);}
+function startBGM(){
+  if(!S.cfg.music)return;const ac=getAC();if(!ac)return;
+  const loop=()=>{try{const ns=[261,329,392,523,392,329];ns.forEach((f,i)=>{const o=ac.createOscillator(),g=ac.createGain();o.type='sine';o.frequency.value=f;g.gain.setValueAtTime(.04,ac.currentTime+i*.6);g.gain.exponentialRampToValueAtTime(.001,ac.currentTime+i*.6+.55);o.connect(g);g.connect(ac.destination);o.start(ac.currentTime+i*.6);o.stop(ac.currentTime+i*.6+.6);});}catch(e){}};
+  loop();setInterval(loop,4000);
+}
+
+/*==== THREE.JS 3D ====*/
+let scene,camera,renderer,clock3d=0;
+function initThree(){
+  scene=new THREE.Scene();scene.background=new THREE.Color(0x0d1b2a);scene.fog=new THREE.Fog(0x0d1b2a,20,60);
+  const W=window.innerWidth,H=window.innerHeight;
+  camera=new THREE.PerspectiveCamera(55,W/H,.1,200);camera.position.set(0,6,12);camera.lookAt(0,0,0);
+  renderer=new THREE.WebGLRenderer({canvas:document.getElementById('canvas3d'),antialias:true});
+  renderer.setPixelRatio(Math.min(window.devicePixelRatio,2));renderer.setSize(W,H);
+  renderer.shadowMap.enabled=true;renderer.shadowMap.type=THREE.PCFSoftShadowMap;
+  renderer.outputEncoding=THREE.sRGBEncoding;renderer.toneMapping=THREE.ACESFilmicToneMapping;renderer.toneMappingExposure=1.12;
+  scene.add(new THREE.HemisphereLight(0xa8ccff,0x1c2c42,.55));
+  const sun=new THREE.DirectionalLight(0xdfe8ff,.95);sun.position.set(8,15,5);sun.castShadow=true;sun.shadow.mapSize.set(2048,2048);sun.shadow.bias=-0.0004;const sc2=sun.shadow.camera;sc2.left=sc2.bottom=-16;sc2.right=sc2.top=16;sc2.far=60;scene.add(sun);
+  const fill=new THREE.DirectionalLight(0x8fb8ff,.28);fill.position.set(-5,5,-5);scene.add(fill);
+  buildMenuScene(0);
+  window.addEventListener('resize',()=>{renderer.setSize(window.innerWidth,window.innerHeight);camera.aspect=window.innerWidth/window.innerHeight;camera.updateProjectionMatrix();});
+}
+
+function clearScene(){while(scene.children.length>3)scene.remove(scene.children[scene.children.length-1]);}
+
+function blockTex(base, seed, dots = 8, opt = {}) {
+  const c = document.createElement('canvas'); c.width = c.height = 64; const x = c.getContext('2d');
+  let s = typeof seed === 'number' ? seed : [...String(seed)].reduce((a,ch) => (a*31 + ch.charCodeAt(0))>>>0, 12345);
+  const r = () => (s = (s * 1664525 + 1013904223) >>> 0) / 4294967296;
+  x.fillStyle = base; x.fillRect(0, 0, 64, 64);
+  for (let i = 0; i < dots * 3; i++) {
+    const px = r() * 64, py = r() * 64, pr = 3 + r() * 7, lite = r() < 0.5;
+    const g = x.createRadialGradient(px, py, 0, px, py, pr);
+    g.addColorStop(0, lite ? 'rgba(255,255,255,.09)' : 'rgba(0,0,20,.10)'); g.addColorStop(1, 'rgba(0,0,0,0)');
+    x.fillStyle = g; x.fillRect(px - pr, py - pr, pr * 2, pr * 2);
+  }
+  let g = x.createLinearGradient(0, 0, 0, 64);
+  g.addColorStop(0, 'rgba(255,255,255,.14)'); g.addColorStop(.42, 'rgba(255,255,255,0)');
+  g.addColorStop(.72, 'rgba(0,0,0,0)'); g.addColorStop(1, 'rgba(0,0,10,.20)');
+  x.fillStyle = g; x.fillRect(0, 0, 64, 64);
+  const t = new THREE.CanvasTexture(c); t.encoding = THREE.sRGBEncoding; t.anisotropy = 4; return t;
+}
+
+let camAngle=0;
+function buildMenuScene(wi){
+  clearScene();
+  const wColors=[0x0b2b21,0x0b1f36,0x2b1016,0x2b2009,0x170b33];
+  scene.background=new THREE.Color(wColors[wi]||0x082018);
+  scene.fog=new THREE.Fog(wColors[wi]||0x082018,18,55);
+  // Ground Block
+  const gm=new THREE.Mesh(new THREE.BoxGeometry(40,1,40),new THREE.MeshLambertMaterial({map:blockTex('#0a1a0a','gnd_m',6)}));
+  gm.position.y=-0.5;gm.receiveShadow=true;scene.add(gm);
+  // Kabah Block
+  const km=new THREE.Mesh(new THREE.BoxGeometry(2,2.8,2),new THREE.MeshLambertMaterial({map:blockTex('#1a1a20','kabah_b',8)}));
+  km.position.set(0,1.4,0);km.castShadow=true;scene.add(km);
+  const bm=new THREE.Mesh(new THREE.BoxGeometry(2.06,.36,2.06),new THREE.MeshLambertMaterial({map:blockTex('#d4a017','kabah_g',8)}));
+  bm.position.set(0,2.2,0);scene.add(bm);
+  // Floating cards (glowing toy plates)
+  const cc=[0xffc928,0x35d0c5,0xa78bfa,0x62d33c,0xff7a6b];
+  for(let i=0;i<8;i++){
+    const a=(i/8)*Math.PI*2,r=3.5+Math.sin(i*1.3);
+    const cm=new THREE.Mesh(new THREE.BoxGeometry(.8,.06,.6),new THREE.MeshLambertMaterial({color:cc[i%5],emissive:cc[i%5],emissiveIntensity:.3}));
+    cm.position.set(Math.cos(a)*r,1.5+Math.sin(i)*.8,Math.sin(a)*r);
+    cm.userData={fb:cm.position.y,fp:i*.8,isF:true};scene.add(cm);
+  }
+  // Stars bg
+  const sg=new THREE.BufferGeometry(),sv=[];
+  for(let i=0;i<200;i++)sv.push((Math.random()-.5)*80,Math.random()*40-5,(Math.random()-.5)*80);
+  sg.setAttribute('position',new THREE.Float32BufferAttribute(sv,3));
+  scene.add(new THREE.Points(sg,new THREE.PointsMaterial({color:0xffffff,size:.12})));
+  // Rounded marble pillars with glowing lantern caps
+  const pilMat=new THREE.MeshLambertMaterial({map:blockTex('#d8c9a8','pil_m',6)});
+  const capMat=new THREE.MeshLambertMaterial({color:0xffc928,emissive:0xd9920c,emissiveIntensity:.45});
+  for(let i=0;i<6;i++){
+    const a=(i/6)*Math.PI*2;
+    const pm=new THREE.Mesh(new THREE.CylinderGeometry(.17,.22,3.5,10),pilMat);
+    pm.position.set(Math.cos(a)*5,1.75,Math.sin(a)*5);pm.castShadow=true;scene.add(pm);
+    const cap=new THREE.Mesh(new THREE.SphereGeometry(.24,10,8),capMat);
+    cap.position.set(Math.cos(a)*5,3.62,Math.sin(a)*5);scene.add(cap);
+  }
+}
+
+function buildGameScene(wi,evts){
+  clearScene();
+  const wc=[0x0b2416,0x0b1626,0x26100e,0x261c09,0x120b2b][wi]||0x0b2416;
+  scene.background=new THREE.Color(wc);scene.fog=new THREE.Fog(wc,16,48);
+  const gc=[0x123a14,0x10263c,0x3c1412,0x3a2c10,0x161238][wi]||0x123a14;
+  const colHex='#'+new THREE.Color(gc).getHexString();
+  const gm=new THREE.Mesh(new THREE.BoxGeometry(35,1,35),new THREE.MeshLambertMaterial({map:blockTex(colHex,'gnd_g',6)}));
+  gm.position.y=-0.5;gm.receiveShadow=true;scene.add(gm);
+  // Timeline path
+  const pm=new THREE.MeshLambertMaterial({map:blockTex('#d4a017','path_g',8),emissive:0x3a2a00});
+  for(let i=0;i<evts.length+1;i++){
+    const x=(i-evts.length/2)*2.4;
+    const dot=new THREE.Mesh(new THREE.BoxGeometry(.26,.05,.26),pm);dot.position.set(x,.025,0);scene.add(dot);
+    if(i<evts.length){const lm=new THREE.Mesh(new THREE.BoxGeometry(2.2,.04,.08),pm);lm.position.set(x+1.2,.02,0);scene.add(lm);}
+  }
+  // Event markers (rounded posts with glowing finials)
+  const evPost=new THREE.MeshLambertMaterial({map:blockTex('#d8c9a8','ev_p_m',6)});
+  const evCap=new THREE.MeshLambertMaterial({color:0xffc928,emissive:0xd9920c,emissiveIntensity:.45});
+  evts.forEach((_,i)=>{
+    const x=(i-evts.length/2)*2.4;
+    const pillar=new THREE.Mesh(new THREE.CylinderGeometry(.09,.12,1.2,8),evPost);
+    pillar.position.set(x,.6,0);scene.add(pillar);
+    const finial=new THREE.Mesh(new THREE.SphereGeometry(.13,10,8),evCap);
+    finial.position.set(x,1.28,0);scene.add(finial);
+    const plat=new THREE.Mesh(new THREE.BoxGeometry(.7,.1,.7),new THREE.MeshLambertMaterial({map:blockTex('#26456e','plat_'+i,6)}));
+    plat.position.set(x,1.2,0);plat.userData={fb:1.2,fp:i*.6,isF:true};scene.add(plat);
+  });
+  // Rounded minarets with golden domes
+  const minBody=new THREE.MeshLambertMaterial({map:blockTex('#e8d9b0','min_body',6)});
+  const minGold=new THREE.MeshLambertMaterial({map:blockTex('#ffc928','min_gold',8)});
+  [-5.5,5.5].forEach(x=>{
+    const b=new THREE.Mesh(new THREE.CylinderGeometry(.3,.38,3,10),minBody);
+    b.position.set(x,1.5,2.5);b.castShadow=true;scene.add(b);
+    const t1=new THREE.Mesh(new THREE.CylinderGeometry(.38,.38,.18,10),minGold);t1.position.set(x,3.1,2.5);
+    const t2=new THREE.Mesh(new THREE.SphereGeometry(.26,12,9,0,Math.PI*2,0,Math.PI/2),minGold);t2.position.set(x,3.2,2.5);
+    const t3=new THREE.Mesh(new THREE.SphereGeometry(.09,8,6),minGold);t3.position.set(x,3.6,2.5);
+    scene.add(t1,t2,t3);
+  });
+  // Stars
+  const sg=new THREE.BufferGeometry(),sv=[];for(let i=0;i<150;i++)sv.push((Math.random()-.5)*60,Math.random()*30,(Math.random()-.5)*60);
+  sg.setAttribute('position',new THREE.Float32BufferAttribute(sv,3));scene.add(new THREE.Points(sg,new THREE.PointsMaterial({color:0xffffff,size:.1})));
+}
+
+function renderThree(dt){
+  clock3d+=dt;camAngle+=dt*.15;
+  camera.position.x=Math.sin(camAngle)*12;camera.position.z=Math.cos(camAngle)*12;camera.position.y=6+Math.sin(clock3d*.3)*.3;
+  camera.lookAt(0,1.5,0);
+  scene.traverse(o=>{if(o.userData.isF){o.position.y=o.userData.fb+Math.sin(clock3d*1.2+o.userData.fp)*.16;o.rotation.y=clock3d*.5+o.userData.fp;}});
+  renderer.render(scene,camera);
+}
+
+/*==== STATE ====*/
+const STATE={screen:'splash',lvl:1,world:0,paused:false,evts:[],order:[],slots:[],score:0,maxScore:0,timeLeft:0,totalTime:0,stars:0,hints:0,checked:false,startT:0,running:false,selCard:null};
+
+/*==== MISSIONS ====*/
+const MISSIONS_POOL=[
+  {id:'m1',name:'Selesaikan 2 Level',desc:'Mainkan dan selesaikan 2 level',req:2,type:'clears',reward:{coin:80}},
+  {id:'m2',name:'Raih 3 Bintang',desc:'Raih 3 bintang di 1 level',req:1,type:'star3',reward:{coin:100}},
+  {id:'m3',name:'Kumpulkan 200 Koin',desc:'Dapatkan 200 koin dari gameplay',req:200,type:'coins',reward:{gem:1}},
+  {id:'m4',name:'Tanpa Petunjuk',desc:'Selesaikan 1 level tanpa petunjuk',req:1,type:'nohint',reward:{coin:120}},
+  {id:'m5',name:'Selesaikan 3 Level',desc:'Selesaikan 3 level apapun',req:3,type:'clears',reward:{coin:150}},
+  {id:'m6',name:'Cepat Kilat',desc:'Selesaikan level dengan >50% waktu sisa',req:1,type:'speed',reward:{coin:100}},
+];
+const WK_MISS={id:'mw',name:'Master Sirah',desc:'Selesaikan 10 level minggu ini',req:10,type:'clears',reward:{gem:3}};
+let mState={daily:[],weekly:null};
+function initMissions(){
+  const today=new Date().toDateString();
+  if(S.mcd!==today){mState.daily=[0,1,2].map(i=>({...MISSIONS_POOL[Math.floor(Math.random()*MISSIONS_POOL.length)],progress:0,claimed:false}));}
+  else{mState.daily=S.mp.daily||mState.daily;}
+  mState.weekly={...WK_MISS,progress:S.mp.mw||0,claimed:false};
+}
+initMissions();
+function updMissions(type,v=1){
+  mState.daily.forEach(m=>{if(m.type===type&&!m.claimed)m.progress=Math.min(m.req,m.progress+v);});
+  if(mState.weekly?.type===type&&!mState.weekly.claimed)mState.weekly.progress=Math.min(mState.weekly.req,mState.weekly.progress+v);
+  S.mp={daily:mState.daily,mw:mState.weekly?.progress||0};saveS();
+}
+
+/*==== MODAL STACK ====*/
+const mStack=[];
+function openM(id){const el=document.getElementById(id);if(!el)return;el.classList.add('open');mStack.push(id);if(STATE.running)STATE.paused=true;}
+function closeM(id){const el=document.getElementById(id);if(!el)return;el.classList.remove('open');const i=mStack.indexOf(id);if(i>-1)mStack.splice(i,1);}
+function closeTop(){if(mStack.length)closeM(mStack[mStack.length-1]);}
+document.addEventListener('keydown',e=>{if(e.key==='Escape')closeTop();});
+
+/*==== TOAST ====*/
+const tQ=[];
+function toast(msg,dur=2200){
+  if(tQ.length>=3)return;
+  const el=document.createElement('div');el.className='toast';el.textContent=msg;
+  document.getElementById('toastWrap').appendChild(el);tQ.push(el);
+  setTimeout(()=>{el.style.opacity='0';el.style.transition='opacity .3s';setTimeout(()=>{el.remove();tQ.splice(tQ.indexOf(el),1);},300);},dur);
+}
+
+/*==== CONFETTI ====*/
+const cc=document.getElementById('confettiCanvas');
+function startConfetti(){
+  cc.style.display='block';cc.width=window.innerWidth;cc.height=window.innerHeight;
+  const ctx=cc.getContext('2d');
+  const cols=['#f59e0b','#d4a017','#0abfbc','#22c55e','#7c3aed','#fff'];
+  const parts=Array.from({length:70},()=>({x:Math.random()*cc.width,y:-10,vx:(Math.random()-.5)*3,vy:2+Math.random()*3,color:cols[Math.floor(Math.random()*cols.length)],r:4+Math.random()*5,rot:Math.random()*360,vr:(Math.random()-.5)*10}));
+  let f=0;const anim=()=>{ctx.clearRect(0,0,cc.width,cc.height);parts.forEach(p=>{p.x+=p.vx;p.y+=p.vy;p.rot+=p.vr;p.vy+=.05;ctx.save();ctx.translate(p.x,p.y);ctx.rotate(p.rot*Math.PI/180);ctx.fillStyle=p.color;ctx.fillRect(-p.r/2,-p.r/2,p.r,p.r);ctx.restore();});f++;if(f<110)requestAnimationFrame(anim);else{ctx.clearRect(0,0,cc.width,cc.height);cc.style.display='none';}};anim();
+}
+
+/*==== SCREEN ====*/
+function showScr(id){document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));if(id){const s=document.getElementById(id);if(s)s.classList.add('active');}}
+
+/*==== SPLASH ====*/
+function runSplash(){
+  const bar=document.getElementById('splashBar'),tip=document.getElementById('splashTip');
+  const tips=['Memuat dunia 3D...','Menyusun peristiwa sirah...','Menyiapkan mesin waktu...','Sebentar lagi!'];
+  let p=0;const iv=setInterval(()=>{
+    p+=Math.random()*18+8;bar.style.width=Math.min(p,100)+'%';tip.textContent=tips[Math.min(Math.floor(p/25),3)];
+    if(p>=100){clearInterval(iv);setTimeout(()=>{showScr('scrMenu');initMenu();startBGM();},400);}
+  },120);
+}
+
+/*==== MENU ====*/
+function initMenu(){
+  buildMenuScene(STATE.world);
+  document.getElementById('menuCoins').textContent=S.coins;
+  document.getElementById('menuGems').textContent=S.gems;
+  document.getElementById('menuXP').textContent=S.xp;
+  const today=new Date().toDateString();
+  document.getElementById('dailyNotif').style.display=(S.ld!==today)?'block':'none';
+  checkAchievs();
+}
+
+/*==== LEVELS ====*/
+function buildLevels(){
+  const c=document.getElementById('worldsContainer');c.innerHTML='';
+  for(let w=0;w<CFG.WORLDS;w++){
+    const wd=document.createElement('div');wd.innerHTML=`<div class="world-title">${WORLD_NAMES[w]}</div>`;
+    const gr=document.createElement('div');gr.className='levels-grid';
+    for(let l=0;l<CFG.LEVELS_PER_WORLD;l++){
+      const ln=w*CFG.LEVELS_PER_WORLD+l+1;
+      const prog=S.lp[ln]||{stars:0,score:0};
+      const unlk=ln===1||(S.lp[ln-1]&&S.lp[ln-1].stars>0);
+      const isBoss=l===5;
+      const nd=document.createElement('div');
+      nd.className=`lvl-node${prog.stars>0?' done':''}${!unlk?' locked':''}${isBoss?' boss':''}`;
+      nd.innerHTML=`<span style="font-size:.95rem;">${isBoss?'👑':ln}</span><div class="lvl-stars">${'⭐'.repeat(prog.stars)}${'☆'.repeat(3-prog.stars)}</div>`;
+      if(unlk)nd.addEventListener('click',e=>{e.stopPropagation();sndClick();openBriefing(ln);});
+      gr.appendChild(nd);
+    }
+    wd.appendChild(gr);c.appendChild(wd);
+  }
+}
+
+/*==== BRIEFING ====*/
+function getLevelEvts(lvl){
+  const r=rng(lvl*7+13);const wi=Math.floor((lvl-1)/CFG.LEVELS_PER_WORLD);const pos=(lvl-1)%CFG.LEVELS_PER_WORLD;
+  const cnt=CFG.EVENTS_PER_LEVEL[pos]||4;
+  let pool=SIRAH.filter(e=>e.world===wi);
+  if(pos===5){const pv=SIRAH.filter(e=>e.world===wi-1);pool=[...pool,...pv.slice(0,2)];}
+  if(pool.length<cnt)pool=[...SIRAH];
+  return pickN(pool,cnt,r);
+}
+
+function openBriefing(lvl){
+  STATE.lvl=lvl;STATE.world=Math.floor((lvl-1)/CFG.LEVELS_PER_WORLD);
+  const evts=getLevelEvts(lvl);const sorted=[...evts].sort((a,b)=>a.year-b.year);
+  STATE.evts=evts;STATE.order=sorted.map(e=>e.id);
+  document.getElementById('briefTitle').textContent=`Level ${lvl}`;
+  document.getElementById('briefWorldName').textContent=WORLD_NAMES[STATE.world];
+  const ec=document.getElementById('briefEvents');ec.innerHTML='';
+  sorted.forEach(ev=>{const d=document.createElement('div');d.className='brief-event';d.innerHTML=`<span style="font-size:1.3rem;">${ev.icon}</span><div><div style="font-size:.88rem;font-weight:700;color:var(--ink);">${ev.name}</div><div style="font-size:.75rem;color:var(--accent-d);font-weight:600;">${ev.year<0?Math.abs(ev.year)+' SM':ev.year+' M'}</div><div style="font-size:.73rem;color:var(--mute);">${ev.desc}</div></div>`;ec.appendChild(d);});
+  const pos=(lvl-1)%CFG.LEVELS_PER_WORLD;const tt=CFG.BASE_TIME[pos]||80;const ms=evts.length*CFG.SCORE_CORRECT;
+  document.getElementById('briefCriteria').innerHTML=`<div class="crit-chip">⭐ Selesaikan</div><div class="crit-chip">⭐⭐ Skor ≥${Math.round(ms*CFG.STAR2)}</div><div class="crit-chip">⭐⭐⭐ Skor ≥${Math.round(ms*CFG.STAR3)}</div><div class="crit-chip">⏱ ${tt}d</div>`;
+  openM('modalBriefing');
+}
+
+/*==== GAME START ====*/
+function startLevel(){
+  closeM('modalBriefing');showScr('');
+  const pos=(STATE.lvl-1)%CFG.LEVELS_PER_WORLD;
+  STATE.totalTime=CFG.BASE_TIME[pos]||80;STATE.timeLeft=STATE.totalTime;
+  STATE.score=0;STATE.maxScore=STATE.evts.length*CFG.SCORE_CORRECT;
+  STATE.hints=0;STATE.checked=false;STATE.running=true;STATE.paused=false;
+  STATE.slots=new Array(STATE.evts.length).fill(null);
+  buildGameScene(STATE.world,STATE.evts);
+  buildGameUI();
+  document.getElementById('gameArea').classList.add('show');
+  document.getElementById('hud').classList.add('show');
+  document.getElementById('hudLevel').textContent=`D${STATE.world+1} · L${STATE.lvl}`;
+  updateHUD();showFact();startCountdown(()=>{STATE.startT=performance.now();});
+}
+
+/*==== GAME UI ====*/
+function buildGameUI(){
+  const r=rng(STATE.lvl*3+7);const shuffled=[...STATE.evts].sort(()=>r()-.5);STATE.evts=shuffled;
+  const dk=document.getElementById('cardDeck');dk.innerHTML='';
+  shuffled.forEach(ev=>{
+    const c=document.createElement('div');c.className='event-card';c.dataset.id=ev.id;c.draggable=true;
+    c.innerHTML=`<span class="ec-icon">${ev.icon}</span><div class="ec-name">${ev.name}</div><div class="ec-hint">${ev.hint}</div>`;
+    c.addEventListener('dragstart',e=>onDS(e,'deck',ev.id));
+    c.addEventListener('touchstart',e=>onTS(e,'deck',ev.id),{passive:false});
+    dk.appendChild(c);
+  });
+  const sl=document.getElementById('tlSlots');sl.innerHTML='';
+  for(let i=0;i<STATE.evts.length;i++){
+    const s=document.createElement('div');s.className='tl-slot';s.dataset.idx=i;
+    s.innerHTML=`<span class="slot-num">${i+1}</span><span style="font-size:.7rem;color:rgba(255,255,255,.3);">Slot ${i+1}</span>`;
+    s.addEventListener('dragover',e=>{e.preventDefault();s.classList.add('drop-target');});
+    s.addEventListener('dragleave',()=>s.classList.remove('drop-target'));
+    s.addEventListener('drop',e=>onDrop(e,i));
+    s.addEventListener('click',()=>onSlotClick(i));
+    sl.appendChild(s);
+  }
+  document.getElementById('tlInstruction').textContent=`Seret ${STATE.evts.length} kartu ke slot sesuai urutan waktu!`;
+  document.getElementById('btnCheck').disabled=true;
+}
+
+/*==== DRAG & DROP ====*/
+let dId=null,dFrom=null,dFIdx=null,touchClone=null;
+function onDS(e,from,id){sndDrop();dId=id;dFrom=from;if(from==='slot')dFIdx=parseInt(e.currentTarget.closest('.tl-slot').dataset.idx);e.dataTransfer.setData('text/plain',id);e.currentTarget.classList.add('dragging');}
+function onDrop(e,si){e.preventDefault();document.querySelectorAll('.tl-slot').forEach(s=>s.classList.remove('drop-target'));if(!dId)return;sndClick();placeCard(dId,dFrom,dFIdx,si);dId=null;dFrom=null;dFIdx=null;document.querySelectorAll('.dragging').forEach(el=>el.classList.remove('dragging'));}
+function onTS(e,from,id){
+  e.preventDefault();const t=e.touches[0];dId=id;dFrom=from;
+  if(from==='slot')dFIdx=parseInt(e.currentTarget.closest('.tl-slot').dataset.idx);
+  touchClone=e.currentTarget.cloneNode(true);
+  touchClone.style.cssText=`position:fixed;z-index:999;pointer-events:none;opacity:.85;width:${e.currentTarget.offsetWidth}px;top:${t.clientY-36}px;left:${t.clientX-50}px;`;
+  document.body.appendChild(touchClone);e.currentTarget.classList.add('dragging');
+  document.addEventListener('touchmove',onTM,{passive:false});document.addEventListener('touchend',onTE);
+}
+function onTM(e){e.preventDefault();if(!touchClone)return;const t=e.touches[0];touchClone.style.top=t.clientY-36+'px';touchClone.style.left=t.clientX-50+'px';document.querySelectorAll('.tl-slot').forEach(s=>s.classList.remove('drop-target'));const el=document.elementFromPoint(t.clientX,t.clientY);const slot=el?.closest('.tl-slot');if(slot)slot.classList.add('drop-target');}
+function onTE(e){document.removeEventListener('touchmove',onTM);document.removeEventListener('touchend',onTE);if(touchClone){touchClone.remove();touchClone=null;}document.querySelectorAll('.dragging').forEach(el=>el.classList.remove('dragging'));document.querySelectorAll('.drop-target').forEach(el=>el.classList.remove('drop-target'));if(!dId)return;const t=e.changedTouches[0];const el=document.elementFromPoint(t.clientX,t.clientY);const slot=el?.closest?.('.tl-slot');if(slot){sndClick();placeCard(dId,dFrom,dFIdx,parseInt(slot.dataset.idx));}dId=null;dFrom=null;dFIdx=null;}
+
+function onSlotClick(si){
+  if(STATE.selCard){placeCard(STATE.selCard.id,STATE.selCard.from,STATE.selCard.fi,si);clearSel();return;}
+  const cur=STATE.slots[si];
+  if(cur){STATE.selCard={id:cur,from:'slot',fi:si};document.querySelectorAll('.tl-slot')[si].style.outline='3px solid var(--gold)';toast('Klik slot lain untuk pindahkan!');}
+}
+function clearSel(){STATE.selCard=null;document.querySelectorAll('.tl-slot').forEach(s=>s.style.outline='');}
+
+function placeCard(id,from,fi,ti){
+  if(from==='deck'){const c=document.querySelector(`.event-card[data-id="${id}"]`);if(c)c.classList.add('placed');}
+  else if(from==='slot'&&fi!=null){const disp=STATE.slots[fi];if(disp&&disp!==id){const c=document.querySelector(`.event-card[data-id="${disp}"]`);if(c)c.classList.remove('placed');}STATE.slots[fi]=null;}
+  const disp=STATE.slots[ti];
+  if(disp&&disp!==id){if(from==='slot'&&fi!=null){STATE.slots[fi]=disp;renderSlot(fi,disp);}else{const c=document.querySelector(`.event-card[data-id="${disp}"]`);if(c)c.classList.remove('placed');}}
+  STATE.slots[ti]=id;renderSlot(ti,id);clearSel();sndDrop();updCheckBtn();
+}
+
+function renderSlot(idx,id){
+  const ev=SIRAH.find(e=>e.id===id);const slot=document.querySelectorAll('.tl-slot')[idx];if(!slot)return;
+  if(id&&ev){slot.className='tl-slot filled';slot.dataset.id=id;slot.draggable=true;slot.innerHTML=`<span class="slot-num">${idx+1}</span><span style="font-size:1.3rem;">${ev.icon}</span><span style="font-size:.68rem;font-weight:600;color:#fff;line-height:1.2;">${ev.name}</span>`;slot.addEventListener('dragstart',e=>onDS(e,'slot',id));slot.addEventListener('touchstart',e=>onTS(e,'slot',id),{passive:false});}
+  else{slot.className='tl-slot';slot.draggable=false;slot.innerHTML=`<span class="slot-num">${idx+1}</span><span style="font-size:.7rem;color:rgba(255,255,255,.3);">Slot ${idx+1}</span>`;}
+}
+function updCheckBtn(){document.getElementById('btnCheck').disabled=STATE.slots.filter(s=>s!==null).length<STATE.evts.length;}
+
+/*==== HINT ====*/
+function useHint(){
+  STATE.hints++;STATE.score=Math.max(0,STATE.score-CFG.HINT_PENALTY);updateHUD();
+  for(let i=0;i<STATE.slots.length;i++){
+    if(STATE.slots[i]!==STATE.order[i]){
+      const exp=STATE.order[i];const ei=STATE.slots.indexOf(exp);
+      if(ei>-1){const tmp=STATE.slots[i];STATE.slots[i]=exp;STATE.slots[ei]=tmp;renderSlot(i,exp);if(tmp)renderSlot(ei,tmp);}
+      else{const cur=STATE.slots[i];STATE.slots[i]=exp;renderSlot(i,exp);const c=document.querySelector(`.event-card[data-id="${exp}"]`);if(c)c.classList.add('placed');if(cur){const oc=document.querySelector(`.event-card[data-id="${cur}"]`);if(oc)oc.classList.remove('placed');}}
+      toast(`💡 ${SIRAH.find(e=>e.id===exp)?.name} ada di posisi ${i+1}`);sndClick();updCheckBtn();return;
+    }
+  }
+  toast('Semua sudah benar! Klik Cek.');
+}
+
+/*==== RESET ====*/
+function resetSlots(){
+  STATE.slots=new Array(STATE.evts.length).fill(null);
+  document.querySelectorAll('.tl-slot').forEach((s,i)=>{s.className='tl-slot';s.draggable=false;s.innerHTML=`<span class="slot-num">${i+1}</span><span style="font-size:.7rem;color:rgba(255,255,255,.3);">Slot ${i+1}</span>`;});
+  document.querySelectorAll('.event-card').forEach(c=>c.classList.remove('placed'));
+  updCheckBtn();sndClick();
+}
+
+/*==== CHECK ====*/
+function checkOrder(){
+  if(STATE.checked)return;STATE.checked=true;sndClick();
+  let cor=0;
+  document.querySelectorAll('.tl-slot').forEach((sl,i)=>{
+    const ok=STATE.slots[i]===STATE.order[i];
+    if(ok){cor++;STATE.score+=CFG.SCORE_CORRECT;sndCorrect();}else{STATE.score=Math.max(0,STATE.score+CFG.SCORE_WRONG);sndWrong();}
+    sl.classList.remove('filled');sl.classList.add(ok?'correct':'wrong');
+  });
+  const tr=STATE.timeLeft/STATE.totalTime;if(tr>.5){STATE.score+=CFG.SCORE_SPEED;toast('⚡ Bonus Cepat! +'+CFG.SCORE_SPEED);}
+  updateHUD();const allOk=cor===STATE.evts.length;
+  setTimeout(()=>{if(allOk){sndWin();startConfetti();}showResult(allOk,cor);},700);
+}
+
+/*==== TIMER LOOP ====*/
+let lastT=0;
+function gameLoop(ts){
+  const dt=Math.min((ts-lastT)/1000,.05);lastT=ts;
+  if(STATE.running&&!STATE.paused&&!STATE.checked){
+    STATE.timeLeft=Math.max(0,STATE.timeLeft-dt);updateHUD();
+    if(STATE.timeLeft<=0){STATE.running=false;timeUp();}
+  }
+  renderThree(STATE.running?dt:.016);
+  requestAnimationFrame(gameLoop);
+}
+function updateHUD(){
+  document.getElementById('hudScore').textContent=STATE.score;
+  document.getElementById('hudCoins').textContent=S.coins;
+  const r=STATE.timeLeft/STATE.totalTime;const bar=document.getElementById('hudTimerBar');
+  bar.style.width=(r*100)+'%';bar.className='hud-timer-bar'+(r<.3?' warn':'');
+}
+function timeUp(){toast('⏰ Waktu Habis!');sndWrong();if(!STATE.checked){const placed=STATE.slots.filter(Boolean);const rem=STATE.evts.filter(e=>!placed.includes(e.id)).map(e=>e.id);let ri=0;STATE.slots=STATE.slots.map(s=>s||(rem[ri++]||null));checkOrder();}}
+
+/*==== RESULT ====*/
+function calcStars(sc,mx){const r=sc/mx;return r>=CFG.STAR3?3:r>=CFG.STAR2?2:1;}
+function showResult(win,cor){
+  STATE.running=false;document.getElementById('gameArea').classList.remove('show');document.getElementById('hud').classList.remove('show');document.getElementById('factBox').style.display='none';
+  const stars=win?calcStars(STATE.score,STATE.maxScore):1;
+  const ec=CFG.COINS_PER_STAR[stars-1];const ex=CFG.XP_PER_STAR[stars-1];
+  const pos=(STATE.lvl-1)%CFG.LEVELS_PER_WORLD;const isBoss=pos===5;const bonus=isBoss&&win?CFG.BOSS_BONUS:0;
+  // Save
+  const pv=S.lp[STATE.lvl]||{stars:0,score:0};if(!S.lp[STATE.lvl]||stars>pv.stars)S.lp[STATE.lvl]={stars,score:STATE.score};
+  S.coins+=ec+bonus;S.gems+=(stars===3&&!pv.stars?1:0);S.xp+=ex;
+  S.st.lc++;S.st.ce+=ec+bonus;if(STATE.timeLeft/STATE.totalTime>.5)S.st.sc++;if(stars===3)S.st.pl++;if(STATE.hints===0&&win)S.st.nh++;if(isBoss&&win)S.st.bc++;
+  const wLvls=Array.from({length:CFG.LEVELS_PER_WORLD},(_,i)=>STATE.world*CFG.LEVELS_PER_WORLD+i+1);
+  if(wLvls.every(l=>S.lp[l]?.stars>0))S.st.wc=Math.max(S.st.wc,STATE.world+1);
+  updMissions('clears');if(stars===3)updMissions('star3');updMissions('coins',ec+bonus);if(STATE.hints===0&&win)updMissions('nohint');if(STATE.timeLeft/STATE.totalTime>.5)updMissions('speed');
+  saveS();checkAchievs();
+  // UI
+  document.getElementById('resultTitle').textContent=win?`🎉 Bagus! ${cor}/${STATE.evts.length} Benar!`:`😔 Coba Lagi!`;
+  document.getElementById('resultTitle').className='result-title '+(win?'result-win':'result-lose');
+  ['s1','s2','s3'].forEach((id,i)=>{const el=document.getElementById(id);el.classList.remove('lit');if(i<stars)setTimeout(()=>{el.classList.add('lit');sndStar();},400+i*300);});
+  document.getElementById('resScore').textContent=STATE.score;document.getElementById('resCoins').textContent='+'+(ec+bonus);document.getElementById('resXP').textContent='+'+ex;
+  const fEl=document.getElementById('factResult');fEl.style.display='block';fEl.textContent='📜 '+FACTS[Math.floor(Math.random()*FACTS.length)];
+  const bnxt=document.getElementById('btnNext');const nxt=STATE.lvl+1;
+  bnxt.style.display=(win&&nxt<=CFG.TOTAL_LEVELS)?'block':'none';bnxt.onclick=()=>{closeM('modalResult');openBriefing(nxt);};
+  if(isBoss&&win)toast(`🏆 Bos Dunia ${STATE.world+1} Dikalahkan! +${bonus}🌙`);
+  openM('modalResult');buildMenuScene(STATE.world);
+}
+
+/*==== COUNTDOWN ====*/
+function startCountdown(cb){
+  const el=document.getElementById('countdown'),num=document.getElementById('countNum');el.classList.add('show');let n=3;
+  const iv=setInterval(()=>{num.textContent=n>0?n:'MULAI!';num.style.animation='none';setTimeout(()=>num.style.animation='countPop .8s cubic-bezier(.34,1.56,.64,1)',10);beep([523,659,784,1047][3-n]||1047,.14,'sine',.22);if(n===0){clearInterval(iv);setTimeout(()=>{el.classList.remove('show');cb?.();lastT=performance.now();},550);}n--;},800);
+}
+
+/*==== PAUSE ====*/
+function pauseGame(){STATE.paused=true;}
+function resumeGame(){STATE.paused=false;lastT=performance.now();closeM('modalPause');}
+
+/*==== FACT BOX ====*/
+function showFact(){const b=document.getElementById('factBox');document.getElementById('factText').textContent=FACTS[Math.floor(Math.random()*FACTS.length)];b.style.display='block';setTimeout(()=>b.style.display='none',7000);}
+
+/*==== SHOP ====*/
+let shopTab='skin';
+function buildShopUI(){
+  const g=document.getElementById('shopGrid');g.innerHTML='';
+  document.getElementById('shopCoins').textContent=S.coins;document.getElementById('shopGems').textContent=S.gems;
+  const items=shopTab==='skin'?SHOP_SKINS:SHOP_BOOSTERS;
+  items.forEach(item=>{
+    const owned=S.os.includes(item.id)||(S.ob[item.id]>0);const eqp=S.es===item.id;
+    const d=document.createElement('div');d.className=`shop-item${eqp?' equipped':owned?' owned':''}`;
+    const pr=item.cur==='coin'?`🌙${item.price}`:`💎${item.price}`;
+    d.innerHTML=`<div class="shop-icon">${item.icon}</div><div class="shop-name">${item.name}</div><div class="shop-price">${owned?(eqp?'✅ Dipakai':'✔ Dimiliki'):pr}</div>`;
+    d.addEventListener('click',()=>{sndClick();buyItem(item);});g.appendChild(d);
+  });
+}
+function buyItem(item){
+  if(shopTab==='skin'){
+    if(S.os.includes(item.id)){S.es=item.id;toast(`✅ "${item.name}" dipakai!`);}
+    else{const ca=item.cur==='coin'?S.coins>=item.price:S.gems>=item.price;if(!ca){toast('Tidak cukup '+(item.cur==='coin'?'koin':'gem')+'!');return;}if(item.cur==='coin')S.coins-=item.price;else S.gems-=item.price;S.os.push(item.id);S.es=item.id;S.st.ib++;sndCoin();toast(`✅ "${item.name}" dibeli!`);}
+  }else{const ca=item.cur==='coin'?S.coins>=item.price:S.gems>=item.price;if(!ca){toast('Tidak cukup '+(item.cur==='coin'?'koin':'gem')+'!');return;}if(item.cur==='coin')S.coins-=item.price;else S.gems-=item.price;S.ob[item.id]=(S.ob[item.id]||0)+1;S.st.ib++;sndCoin();toast(`✅ "${item.name}" dibeli!`);}
+  saveS();buildShopUI();
+}
+
+/*==== DAILY ====*/
+function buildDailyUI(){
+  const g=document.getElementById('dailyGrid');g.innerHTML='';
+  const today=new Date().toDateString();const can=S.ld!==today;
+  for(let i=0;i<7;i++){const c=document.createElement('div');const p=i<S.dd,td=i===S.dd&&can,ft=!p&&!td;c.className=`daily-cell${p?' past':td?' today':' future'}`;const icons=['🌙','⭐','🌙','💎','⭐','🌙','🎁'];c.innerHTML=`<div style="font-size:1.2rem;">${icons[i]}</div><div>Hari ${i+1}</div><div style="font-size:.78rem;font-weight:700;">${CFG.DAILY_REWARDS[i]>50?'💎1':'🌙'+CFG.DAILY_REWARDS[i]}</div>`;g.appendChild(c);}
+  const cw=document.getElementById('dailyClaimWrap');
+  if(can){const b=document.createElement('button');b.className='btn btn-primary';b.textContent=`🎁 Klaim Hari ${S.dd+1}: 🌙${CFG.DAILY_REWARDS[S.dd]}`;b.addEventListener('click',()=>{sndCoin();sndWin();S.coins+=CFG.DAILY_REWARDS[S.dd];S.ds++;S.ld=today;S.dd=(S.dd+1)%7;saveS();toast(`🎁 +${CFG.DAILY_REWARDS[(S.dd-1+7)%7]} koin!`);document.getElementById('dailyNotif').style.display='none';buildDailyUI();});cw.innerHTML='';cw.appendChild(b);}
+  else cw.innerHTML='<div style="color:var(--mute);font-size:.88rem;">Kembali besok untuk hadiah berikutnya!</div>';
+}
+
+/*==== MISSIONS ====*/
+function buildMissionUI(){
+  const l=document.getElementById('missionList');l.innerHTML='';
+  [...mState.daily,mState.weekly].filter(Boolean).forEach(m=>{
+    const d=document.createElement('div');d.className=`mission-item${m.claimed?' done':''}`;
+    const p=Math.min(m.progress,m.req);const rw=m.reward.gem?`💎${m.reward.gem}`:`🌙${m.reward.coin}`;
+    d.innerHTML=`<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:5px;"><span style="font-size:.92rem;font-weight:700;color:var(--ink);">${m.name}</span><span style="font-size:.82rem;color:var(--accent-d);font-weight:600;">${rw}</span></div><div class="mission-bar-wrap"><div class="mission-bar" style="width:${(p/m.req)*100}%"></div></div><div style="font-size:.76rem;color:var(--mute);margin-top:4px;">${m.desc} (${p}/${m.req})</div>`;
+    if(p>=m.req&&!m.claimed){const b=document.createElement('button');b.className='btn btn-teal btn-sm';b.style.marginTop='8px';b.textContent='Klaim!';b.addEventListener('click',()=>{sndCoin();if(m.reward.gem)S.gems+=m.reward.gem;else S.coins+=m.reward.coin;m.claimed=true;saveS();toast('🎁 Misi selesai!');buildMissionUI();});d.appendChild(b);}
+    l.appendChild(d);
+  });
+}
+
+/*==== ACHIEVEMENTS ====*/
+function buildAchievUI(){
+  const l=document.getElementById('achievList');l.innerHTML='';
+  ACHIEVEMENTS.forEach(a=>{
+    const un=S.au.includes(a.id);const cl=S.ac.includes(a.id);
+    const d=document.createElement('div');d.className=`achiev-item${un?' unlocked':''}`;if(!un)d.style.opacity='.45';
+    d.innerHTML=`<div style="font-size:1.7rem;">${un?a.icon:'🔒'}</div><div style="flex:1;"><div style="font-size:.9rem;font-weight:700;color:var(--ink);">${a.name}</div><div style="font-size:.78rem;color:var(--mute);">${a.desc}</div></div><div style="font-size:.82rem;color:var(--purple);font-weight:600;">💎${a.gem}</div>`;
+    if(un&&!cl){const b=document.createElement('button');b.className='btn btn-teal btn-sm';b.textContent='Klaim';b.addEventListener('click',()=>{sndWin();S.gems+=a.gem;S.ac.push(a.id);saveS();toast(`🏆 ${a.name}: +💎${a.gem}`);buildAchievUI();});d.appendChild(b);}
+    l.appendChild(d);
+  });
+}
+function checkAchievs(){ACHIEVEMENTS.forEach(a=>{if(!S.au.includes(a.id)&&a.cond(S.st)){S.au.push(a.id);toast(`🏆 Prestasi Baru: ${a.name}!`,3000);}});saveS();}
+
+/*==== SETTINGS ====*/
+function buildSettingsUI(){
+  const rows=document.getElementById('settingRows');rows.innerHTML='';
+  [{key:'music',label:'🎵 Musik Latar'},{key:'sfx',label:'🔊 Efek Suara'},{key:'shake',label:'📳 Getaran'}].forEach(s=>{
+    const row=document.createElement('div');row.className='setting-row';
+    const tgl=document.createElement('button');tgl.className='toggle '+(S.cfg[s.key]?'on':'off');
+    tgl.addEventListener('click',()=>{sndClick();S.cfg[s.key]=!S.cfg[s.key];tgl.className='toggle '+(S.cfg[s.key]?'on':'off');saveS();});
+    row.innerHTML=`<span style="font-size:.92rem;font-weight:600;color:var(--ink);">${s.label}</span>`;row.appendChild(tgl);rows.appendChild(row);
+  });
+}
+
+/*==== BUTTON WIRING ====*/
+function wire(){
+  document.getElementById('btnPlay').addEventListener('click',()=>{sndClick();const nl=Object.keys(S.lp).length+1;openBriefing(Math.min(nl,CFG.TOTAL_LEVELS));});
+  document.getElementById('btnLevels').addEventListener('click',()=>{sndClick();buildLevels();showScr('scrLevels');});
+  document.getElementById('btnShop').addEventListener('click',()=>{sndClick();buildShopUI();openM('modalShop');});
+  document.getElementById('btnDaily').addEventListener('click',()=>{sndClick();buildDailyUI();openM('modalDaily');});
+  document.getElementById('btnMission').addEventListener('click',()=>{sndClick();buildMissionUI();openM('modalMission');});
+  document.getElementById('btnAchiev').addEventListener('click',()=>{sndClick();buildAchievUI();openM('modalAchiev');});
+  document.getElementById('btnSettings').addEventListener('click',()=>{sndClick();buildSettingsUI();openM('modalSettings');});
+  document.getElementById('btnLevelsBack').addEventListener('click',()=>{sndClick();showScr('scrMenu');initMenu();});
+  document.getElementById('briefStart').addEventListener('click',()=>{sndClick();startLevel();});
+  document.getElementById('briefCancel').addEventListener('click',()=>{sndClick();closeM('modalBriefing');});
+  document.getElementById('briefBackdrop').addEventListener('click',()=>closeM('modalBriefing'));
+  document.getElementById('briefClose').addEventListener('click',()=>{sndClick();closeM('modalBriefing');});
+  document.getElementById('btnPause').addEventListener('click',()=>{sndClick();openM('modalPause');});
+  document.getElementById('btnResume').addEventListener('click',()=>{sndClick();resumeGame();});
+  document.getElementById('btnPauseRetry').addEventListener('click',()=>{sndClick();closeM('modalPause');startLevel();});
+  document.getElementById('btnPauseMenu').addEventListener('click',()=>{sndClick();closeM('modalPause');exitMenu();});
+  document.getElementById('btnCheck').addEventListener('click',()=>{sndClick();checkOrder();});
+  document.getElementById('btnHint').addEventListener('click',()=>{sndClick();useHint();});
+  document.getElementById('btnReset').addEventListener('click',()=>resetSlots());
+  document.getElementById('btnRetry').addEventListener('click',()=>{sndClick();closeM('modalResult');startLevel();});
+  document.getElementById('btnMenuResult').addEventListener('click',()=>{sndClick();closeM('modalResult');exitMenu();});
+  document.getElementById('shopClose').addEventListener('click',()=>{sndClick();closeM('modalShop');});
+  document.getElementById('shopBackdrop').addEventListener('click',()=>closeM('modalShop'));
+  document.getElementById('tabSkin').addEventListener('click',()=>{shopTab='skin';document.getElementById('tabSkin').className='btn btn-teal btn-sm';document.getElementById('tabBooster').className='btn btn-ghost btn-sm';buildShopUI();});
+  document.getElementById('tabBooster').addEventListener('click',()=>{shopTab='booster';document.getElementById('tabBooster').className='btn btn-teal btn-sm';document.getElementById('tabSkin').className='btn btn-ghost btn-sm';buildShopUI();});
+  document.getElementById('dailyClose').addEventListener('click',()=>{sndClick();closeM('modalDaily');});
+  document.getElementById('dailyBackdrop').addEventListener('click',()=>closeM('modalDaily'));
+  document.getElementById('missionClose').addEventListener('click',()=>{sndClick();closeM('modalMission');});
+  document.getElementById('missionBackdrop').addEventListener('click',()=>closeM('modalMission'));
+  document.getElementById('achievClose').addEventListener('click',()=>{sndClick();closeM('modalAchiev');});
+  document.getElementById('achievBackdrop').addEventListener('click',()=>closeM('modalAchiev'));
+  document.getElementById('settingsClose').addEventListener('click',()=>{sndClick();closeM('modalSettings');});
+  document.getElementById('settingsBackdrop').addEventListener('click',()=>closeM('modalSettings'));
+  document.getElementById('btnExport').addEventListener('click',()=>{const d=localStorage.getItem(SK)||'';navigator.clipboard?.writeText(d).then(()=>toast('📤 Data tersalin!')).catch(()=>toast('Copy manual!'));});
+  document.getElementById('btnImport').addEventListener('click',()=>{const code=prompt('Tempel kode simpanan:');if(!code)return;try{const p=JSON.parse(atob(code));S=Object.assign(defSave(),p);saveS();initMenu();toast('✅ Data diimpor!');}catch(e){toast('❌ Kode tidak valid!');}});
+  document.getElementById('btnReset2').addEventListener('click',()=>{if(confirm('Reset semua data?')){if(confirm('Yakin?')){localStorage.removeItem(SK);S=defSave();saveS();initMenu();toast('🔄 Data direset!');}}});
+  document.addEventListener('keydown',e=>{if(e.key==='Escape'&&STATE.running&&!STATE.paused)openM('modalPause');});
+  document.querySelectorAll('.btn').forEach(b=>b.addEventListener('mouseenter',()=>sndHov()));
+}
+
+function exitMenu(){
+  STATE.running=false;document.getElementById('gameArea').classList.remove('show');document.getElementById('hud').classList.remove('show');document.getElementById('factBox').style.display='none';
+  buildMenuScene(STATE.world);showScr('scrMenu');initMenu();
+}
+
+/*==== BOOT ====*/
+window.addEventListener('load',()=>{
+  initThree();wire();requestAnimationFrame(ts=>{lastT=ts;requestAnimationFrame(gameLoop);});
+  showScr('scrSplash');runSplash();
+});
+document.addEventListener('visibilitychange',()=>{if(document.hidden&&STATE.running&&!STATE.paused)openM('modalPause');});
+document.addEventListener('contextmenu',e=>e.preventDefault());
+const SDK=window.CrazyGames?.SDK;SDK?.game?.gameplayStart?.();
+window.addEventListener('beforeunload',()=>{SDK?.game?.gameplayStop?.();saveS();});
+</script>
+</body>
+</html>

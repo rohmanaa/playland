@@ -1,0 +1,128 @@
+from pathlib import Path
+
+games = [
+("Doa Sesuai Situasi","Pilih doa berdasarkan kejadian harian.","Mengaitkan doa dengan konteks.","Situasi muncul → pilih doa → lihat arti.","Pilihan benar memberi progres; salah mendapat penjelasan dan mencoba lagi.","Kartu pilihan 2D","https://equran.id/doa"),
+("Tebak Doa dari Gambar","Tebak doa dari ilustrasi makan, tidur, atau bepergian.","Mengingat konteks doa.","Gambar → pilih judul doa → dengar bacaan.","Distraktor berasal dari kategori yang mirip.","Kuis gambar 2D","https://equran.id/doa"),
+("Pasangkan Doa dan Aktivitas","Cocokkan kartu doa dengan aktivitas yang benar.","Menguatkan asosiasi doa.","Buka kartu → pasangkan dua kartu.","Pasangan benar terkunci; semua pasangan selesai mengakhiri ronde.","Memory match 2D","https://www.educaplay.com/"),
+("Doa Sebelum Makan","Lakukan interaksi makan dan pilih doa yang sesuai.","Membiasakan doa dalam konteks.","Dekati meja → tekan interaksi → lihat doa → lanjut makan.","Pemicu meja makan hanya muncul di lokasi relevan.","Interaksi dunia + kartu UI","https://equran.id/doa"),
+("Doa Sesudah Makan","Selesaikan aktivitas makan lalu temukan doa sesudah makan.","Mengenali doa setelah aktivitas.","Selesaikan makan → prompt → buka kartu doa.","Aktivitas selesai memicu konten terkait.","Interaksi dunia + kartu UI","https://equran.id/doa"),
+("Doa Bangun Tidur","Bangun di kamar dan buka kartu doa.","Mengingat doa bangun tidur.","Karakter bangun → prompt doa → dengar atau baca.","Tombol ulang audio dan lihat arti tersedia.","Interaksi dunia + kartu UI","https://equran.id/doa"),
+("Doa Sebelum Tidur","Siapkan karakter tidur dan pilih materi doa.","Mengingat doa sebelum tidur.","Masuk kamar → interaksi kasur → kartu doa.","Progres tercatat tanpa memaksa kuis.","Interaksi dunia + kartu UI","https://equran.id/doa"),
+("Doa Keluar Rumah","Buka pintu rumah dan pelajari doa yang relevan.","Menghubungkan doa dengan bepergian.","Dekati pintu → interaksi → kartu doa → keluar.","Event pintu rumah memicu satu materi.","Interaksi dunia + kartu UI","https://equran.id/doa"),
+("Doa Naik Kendaraan","Dekati sepeda, mobil, atau halte untuk belajar doa perjalanan.","Mengenal doa bepergian.","Pilih kendaraan → kartu doa → lanjut perjalanan.","Konten dipicu saat mulai perjalanan.","Interaksi dunia + kartu UI","https://equran.id/doa"),
+("Doa Ketika Hujan","Saat cuaca hujan, pemain dapat membuka doa terkait.","Mengenali doa dalam situasi alam.","Awan berubah → hujan turun → ikon konteks → kartu doa.","Cuaca hanya konteks edukasi, bukan akibat doa.","Event cuaca + kartu UI","https://equran.id/doa"),
+("Doa Setelah Hujan","Setelah hujan berhenti, tampilkan materi terkait.","Mengenali doa setelah kejadian alam.","Hujan reda → ikon opsional → kartu doa.","Event hujan reda hanya muncul sekali per siklus.","Event cuaca + kartu UI","https://equran.id/doa"),
+("Doa Menjenguk Orang Sakit","Kunjungi NPC di rumah atau klinik.","Mengenal doa dan empati.","NPC sakit → sapa → pilih doa → pesan empati.","Tidak ada poin untuk mengejek atau mengganggu NPC.","Role-play ringan","https://equran.id/doa"),
+("Doa Masuk Masjid","Masuk melalui pintu masjid dan pelajari doa serta adab.","Mengenal adab masjid.","Dekati pintu → kartu doa → masuk.","Trigger pintu memicu konten sekali tiap kunjungan.","Interaksi dunia","https://equran.id/doa"),
+("Doa Keluar Masjid","Selesaikan kunjungan lalu pelajari doa keluar masjid.","Mengenali pasangan doa masuk/keluar.","Keluar dari masjid → kartu doa → lanjut eksplorasi.","Konten ditautkan ke status kunjungan.","Interaksi dunia","https://equran.id/doa"),
+("Doa Sebelum Belajar","Interaksi dengan meja belajar atau guru.","Membiasakan doa sebelum belajar.","Duduk → buka buku → lihat doa → mulai mini-game.","Doa muncul sebelum sesi belajar.","Interaksi dunia + UI","https://equran.id/doa"),
+("Tebak Ayat Pendek","Pilih surah atau kelanjutan berdasarkan potongan ayat terverifikasi.","Mengingat ayat pendek.","Potongan tampil → pilih jawaban → umpan balik.","Soal hanya dari paket yang telah ditinjau.","Kuis 2D","https://quran.com/"),
+("Sambung Ayat","Pilih kelanjutan ayat dari beberapa pilihan.","Melatih urutan hafalan.","Ayat awal → opsi lanjutan → hasil dan audio.","Gunakan ayat yang disiapkan dan diverifikasi; tanpa generasi otomatis.","Kuis pilihan ganda","https://quran.com/"),
+("Susun Urutan Ayat","Susun kartu ayat pendek ke urutan yang benar.","Mengenal urutan bacaan yang dipelajari.","Kartu acak → susun → periksa.","Hanya materi terverifikasi, tanpa potongan ambigu.","Puzzle susun kartu","https://wordwall.net/"),
+("Tebak Nama Surah","Cocokkan nama surah dengan materi pengenalan sederhana.","Mengenal nama surah.","Petunjuk singkat → pilih surah → feedback.","Pilihan dibatasi pada materi yang telah dipelajari.","Kuis 2D","https://quran.com/"),
+("Tebak Arti Ayat","Pilih arti yang sesuai untuk materi terpilih dan telah ditinjau.","Mengenal makna dasar ayat.","Teks terpilih → opsi arti → penjelasan ringkas.","Terjemahan memakai sumber tepercaya dan penelaah.","Kuis 2D","https://quran.com/"),
+("Petualang Tajwid","Cari papan belajar tajwid di sekolah atau masjid.","Mengenal konsep tajwid dasar.","Temukan papan → dengar contoh → jawab tantangan.","Materi dan contoh bacaan ditinjau guru Al-Qur'an.","Eksplorasi + kuis","https://wordwall.net/"),
+("Cari Hukum Tajwid","Tandai bagian bacaan yang sesuai dengan hukum yang ditanyakan.","Mengenali pola tajwid.","Soal audio/teks → pilih bagian → feedback.","Mode awal menggunakan contoh yang sudah diverifikasi.","Tandai teks 2D","https://wordwall.net/"),
+("Pasangan Nun Sukun","Cocokkan contoh terverifikasi dengan kategori materi nun sukun/tanwin.","Membedakan kategori tajwid dasar.","Kategori muncul → pilih contoh → cek.","Daftar contoh disetujui guru sebelum masuk game.","Matching 2D","https://wordwall.net/"),
+("Labirin Hijaiyah","Lewati labirin kecil dengan memilih huruf yang diminta.","Mengenali bentuk huruf.","Target huruf muncul → cari pintu berhuruf sama → selesai.","Pintu benar terbuka; salah memberi petunjuk.","Labirin 2D ringan","https://www.educaplay.com/"),
+("Tangkap Huruf","Pilih huruf target di antara beberapa huruf yang bergerak perlahan.","Mengenali bentuk huruf.","Target tampil → sentuh huruf benar → lanjut ronde.","Kecepatan rendah; tidak menghukum kesalahan.","Arcade 2D","https://www.educaplay.com/"),
+("Pasangan Huruf Bertitik","Pasangkan huruf yang memiliki bentuk mirip dengan namanya.","Membedakan posisi/jumlah titik.","Lihat bentuk → pilih nama → feedback.","Huruf mirip baru muncul setelah dikenalkan.","Matching 2D","https://www.educaplay.com/"),
+("Puzzle Hijaiyah","Susun potongan bentuk menjadi huruf sederhana.","Menguatkan pengenalan bentuk huruf.","Pilih potongan → susun → lihat bentuk final.","Gunakan bentuk font/glyph tervalidasi, bukan pecahan yang merusak bentuk.","Puzzle 2D","https://www.educaplay.com/"),
+("Susun Kata Arab","Susun huruf yang telah dikenal menjadi kata sederhana.","Mengenal urutan huruf Arab.","Huruf acak → susun → dengar/baca hasil.","Mulai dari kata pendek yang telah ditinjau.","Word scramble 2D","https://www.educaplay.com/"),
+("Memori Huruf dan Nama","Buka kartu dan cocokkan glyph dengan nama huruf.","Mengingat nama dan bentuk.","Balik kartu → cari pasangan → selesaikan papan.","Jumlah kartu meningkat bertahap.","Memory 2D","https://www.educaplay.com/"),
+("Rukun Iman: Susun Enam","Susun enam kartu rukun iman.","Mengingat rukun iman.","Kartu acak → susun → ringkasan.","Jawaban salah boleh diperbaiki tanpa penalti berat.","Drag-and-drop 2D","https://wordwall.net/"),
+("Rukun Iman: Tebak Petunjuk","Pilih rukun iman dari petunjuk sederhana yang sesuai usia.","Memahami istilah dasar.","Petunjuk → pilihan → penjelasan.","Konten akidah ditinjau pendidik.","Kuis 2D","https://wordwall.net/"),
+("Rukun Islam: Susun Lima","Susun lima kartu rukun Islam.","Mengingat rukun Islam.","Kartu acak → susun → feedback.","Tidak memakai timer wajib.","Drag-and-drop 2D","https://wordwall.net/"),
+("Pasangkan Rukun dan Makna","Cocokkan istilah dengan penjelasan ringkas.","Memahami makna istilah dasar.","Istilah dan makna → pasangkan → cek.","Penjelasan disesuaikan umur pemain.","Matching 2D","https://wordwall.net/"),
+("Kuis Wudhu","Susun langkah wudhu sesuai materi yang telah ditinjau.","Mengenal urutan dasar wudhu.","Kartu langkah → susun → ulasan.","Rincian praktik ditinjau guru sesuai rujukan yang dipilih.","Urutan kartu 2D","https://wordwall.net/"),
+("Urutkan Gerakan Shalat","Susun kartu gerakan dalam urutan pembelajaran.","Mengenal urutan gerakan shalat.","Kartu acak → susun → penjelasan.","Bukan pengganti bimbingan guru; visual ditinjau.","Urutan kartu 2D","https://wordwall.net/"),
+("Adab di Masjid","Pilih tindakan yang tepat pada skenario singkat.","Mengenal adab masjid.","Skenario → pilih tindakan → feedback positif.","Setiap pilihan memberi alasan, bukan sekadar benar/salah.","Skenario pilihan","https://wordwall.net/"),
+("Adab Makan","Pilih tindakan yang baik sebelum, saat, dan setelah makan.","Mengenal adab harian.","Situasi meja makan → pilihan → ringkasan.","Skenario singkat dan positif.","Skenario pilihan","https://wordwall.net/"),
+("Adab Berteman","Bantu NPC memilih respons yang baik saat terjadi masalah kecil.","Melatih empati dan sopan santun.","Dialog → pilih respons → konsekuensi ringan.","Tidak memakai label memalukan pada pilihan salah.","Cerita interaktif","https://www.educaplay.com/"),
+("Kata Baik atau Tidak","Pilih kalimat yang santun pada beberapa situasi.","Mengenali komunikasi baik.","Situasi → pilih kalimat → alasan singkat.","Fokus pada perbaikan dan empati.","Kuis dialog","https://wordwall.net/"),
+("Misi Menolong Tetangga","Antarkan barang atau bantu NPC dengan tugas sederhana.","Mendorong kepedulian sosial.","Terima misi → cari NPC → bantu → selesai.","Objektif sederhana tanpa sistem inventaris rumit.","Misi eksplorasi","https://www.superbearadventure.com/"),
+("Jaga Kebersihan Taman","Ambil beberapa sampah visual dan masukkan ke tempat yang benar.","Mengenal kebersihan dan tanggung jawab.","Lihat sampah → ambil → pilih tempat sampah → selesai.","Jumlah objek sedikit; tidak ada simulasi fisika berat.","Mini-game dunia","https://www.superbearadventure.com/"),
+("Cari Arah ke Masjid","Ikuti petunjuk jalan menuju masjid di peta kecil.","Melatih navigasi dan mengenal lokasi ibadah.","Terima petunjuk → ikuti rambu → sampai tujuan.","Peta terbatas, tanpa GPS atau pathfinding kompleks.","Eksplorasi ringan","https://www.superbearadventure.com/"),
+("Antar Buku ke Perpustakaan","Bawa satu buku ke lokasi yang ditandai.","Mendorong eksplorasi dan tanggung jawab.","Ambil buku → ikuti penanda → serahkan.","Satu item misi dengan status sederhana.","Misi eksplorasi","https://www.superbearadventure.com/"),
+("Cari Tiga Petunjuk","Temukan tiga papan pengetahuan di taman atau sekolah.","Belajar melalui eksplorasi.","Terima misi → cari papan → baca fakta → selesai.","Setiap papan membuka satu kartu informasi.","Koleksi eksplorasi","https://www.superbearadventure.com/"),
+("Cuaca dan Doa","Kenali ikon cuaca lalu pilih materi doa yang relevan.","Menghubungkan kejadian alam dan pembelajaran.","Cuaca berubah → pemain membuka kartu → pilih lanjut/ulangi.","Cuaca bukan akibat dari jawaban atau doa pemain.","Event dunia + kuis","https://equran.id/doa"),
+("Pilih Pakaian dan Adab","Pilih pakaian sesuai konteks aktivitas dengan penjelasan yang santun.","Mengenal adab berpakaian sesuai materi yang ditinjau.","Pilih aktivitas → pilih opsi → penjelasan.","Hindari body-shaming; materi ditinjau pendidik.","Kustomisasi ringan","https://wordwall.net/"),
+("Kalender Hijriah Mini","Cocokkan nama bulan Hijriah dengan urutan atau informasi dasar.","Mengenal kalender Hijriah.","Pilih bulan → susun urutan → hasil.","Tidak memerlukan perhitungan kalender real-time di MVP.","Kuis urutan 2D","https://www.educaplay.com/"),
+("Tebak Istilah Islam","Cocokkan istilah dasar dengan definisi singkat.","Memahami kosakata dasar Islam.","Istilah tampil → pilih arti → feedback.","Kosakata disesuaikan tingkat usia.","Kuis 2D","https://wordwall.net/"),
+("Puzzle Masjid","Susun bagian gambar masjid menjadi satu gambar.","Mengenal bentuk arsitektur masjid dan fokus visual.","Pilih kepingan → susun → gambar selesai.","Puzzle statis, tidak perlu fisika.","Jigsaw 2D","https://www.educaplay.com/"),
+("Mewarnai Geometri Islam","Warnai pola geometri sederhana dengan palet yang tersedia.","Mengembangkan kreativitas dan pengenalan pola.","Pilih bidang → warna → simpan hasil lokal.","Canvas 2D ringan; tanpa akun wajib.","Kreatif 2D","https://www.educaplay.com/"),
+("Buku Doa Koleksi","Kumpulkan kartu doa yang ditemukan di dunia.","Mendorong pengulangan dan ingatan.","Temukan doa → masuk buku → buka untuk mengulang.","Koleksi unik terpisah dari status penguasaan.","Album/koleksi UI","https://equran.id/doa"),
+("Misi Harian Ringan","Pilih satu dari beberapa kegiatan edukatif singkat.","Mendorong kebiasaan belajar tanpa tekanan.","Pilih misi → lakukan aktivitas → dapat lencana kecil.","Batasi misi aktif dan hindari streak yang menghukum.","Daftar misi 2D","https://wordwall.net/"),
+]
+
+intro = """# Islam App — Dunia Petualangan Islam + 50 Ide Mini-Game Ringan
+
+## Arah produk
+Target utama anak-anak dan remaja. Konsepnya bukan 50 aplikasi terpisah dan bukan open world besar. Buat **satu peta petualangan kecil** yang berisi rumah, jalan, taman, warung, sekolah, halte, dan masjid. Aktivitas dunia memicu pembelajaran kontekstual: **Action → Doa → Pahami → Lanjut**. Di lokasi tertentu, pemain juga membuka mini-game pendek.
+
+- Gaya: kartun 3D low-poly/voxel sederhana, third-person, warna cerah.
+- Teknologi: HTML/CSS/JavaScript; Three.js hanya untuk dunia 3D. Mini-game umumnya UI 2D.
+- Durasi mini-game: sekitar 30 detik–3 menit.
+- Simpan progres lokal untuk MVP.
+- Hindari peta raksasa, multiplayer real-time, pertarungan, crafting rumit, sistem ekonomi kompleks, dan efek grafis berat.
+- Doa/ayat/tajwid harus diverifikasi dengan sumber dan penelaah yang kompeten. Referensi bukan pengganti verifikasi isi.
+
+## Referensi konten dan gaya
+- Kumpulan doa harian: https://equran.id/doa
+- Al-Qur'an untuk referensi surah/ayat: https://quran.com/
+- Referensi eksplorasi 3D: https://www.superbearadventure.com/
+- Referensi puzzle/kuis interaktif: https://wordwall.net/
+- Referensi aktivitas edukasi: https://www.educaplay.com/
+
+Referensi dipakai untuk memahami mekanik, bukan menyalin aset, kode, karakter, atau UI.
+
+## Action → Doa: contoh dunia
+- Bangun tidur → doa bangun tidur.
+- Hendak makan / selesai makan → doa sesuai konteks.
+- Keluar rumah / naik kendaraan → doa bepergian.
+- Masuk atau keluar masjid → doa dan adab terkait.
+- Hujan turun atau reda → kartu doa terkait cuaca.
+- Menjenguk teman sakit → doa menjenguk orang sakit dan misi empati.
+- Hendak belajar → materi doa sebelum belajar yang sudah diverifikasi.
+- Mau tidur → doa sebelum tidur.
+
+Doa muncul sebagai pilihan kontekstual, tidak memaksa pemain menjawab kuis setiap kali. Cuaca hanya menjadi konteks pembelajaran—game tidak boleh menggambarkan doa sebagai sihir yang menyebabkan cuaca berubah.
+
+## Peta awal yang disarankan
+1. Rumah pemain
+2. Satu ruas jalan dan halte
+3. Taman kota
+4. Warung/kantin
+5. Sekolah/perpustakaan
+6. Masjid
+
+Mulai dari peta kecil; klinik, area tetangga, dan lokasi lain dapat ditambahkan setelah prototipe terbukti menyenangkan.
+
+## 50 ide game
+Setiap ide memiliki nama, deskripsi, tujuan, flow, logika, bentuk, dan tautan referensi.
+"""
+parts = [intro]
+for i, (name, desc, goal, flow, logic, form, link) in enumerate(games, 1):
+    parts.append(f"""### {i}. {name}
+- **Deskripsi:** {desc}
+- **Tujuan:** {goal}
+- **Flow:** {flow}
+- **Logika:** {logic}
+- **Bentuk:** {form}
+- **Referensi:** {link}
+""")
+
+closing = """## Cara menggabungkan 50 ide tanpa membuat 50 game besar
+Banyak ide di atas sebenarnya memakai beberapa template yang sama:
+- **Template kartu pilihan:** tebak doa, tebak ayat, tebak istilah, rukun iman/Islam.
+- **Template matching:** pasangan doa, huruf dan nama, istilah dan makna.
+- **Template urutan:** sambung ayat, urutan wudhu/shalat, susun kata.
+- **Template interaksi dunia:** aktivitas harian, hujan, pintu rumah/masjid, NPC.
+- **Template eksplorasi:** labirin, cari papan, antar buku, cari arah.
+- **Template kreatif:** puzzle gambar dan mewarnai.
+
+Dengan begitu, pengembang membuat beberapa sistem dasar yang dapat dikonfigurasi dengan data, bukan menulis ulang semua logika. Mulai dari satu area dunia, 3–5 konteks doa, Buku Doa, dan satu mini-game. Tambahkan materi hanya setelah teks dan audio ditinjau.
+"""
+path = Path("/mnt/data/Islam_App_50_Ide_Game_Ringan.md")
+path.write_text(intro + "\n" + "\n".join(parts) + "\n" + closing, encoding="utf-8")
+print(f"Berhasil dibuat: {path.name}\nJumlah ide game: {len(games)}\nUkuran: {path.stat().st_size:,} byte")

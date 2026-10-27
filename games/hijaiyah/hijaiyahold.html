@@ -1,0 +1,1664 @@
+<!doctype html>
+<html lang="id">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no, viewport-fit=cover">
+  <title>Hijaiyah Sky Run 3D — Petualangan Huruf Al-Qur'an</title>
+  
+  <!-- Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600;700&family=Nunito:wght@700;800;900&family=Amiri:wght@700&display=swap" rel="stylesheet">
+  
+  <!-- Three.js CDN -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+
+  <style>
+    :root {
+      --primary: #1080ec;
+      --accent: #f59e0b;
+      --green: #10b981;
+      --red: #ef4444;
+      --ink: #0f2338;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; user-select: none; -webkit-user-select: none; }
+    html, body {
+      width: 100%; height: 100%;
+      overflow: hidden;
+      background: #0f1c2e;
+      font-family: 'Nunito', -apple-system, sans-serif;
+    }
+    #gameCanvas {
+      width: 100%; height: 100%;
+      display: block;
+    }
+
+    /* Red Flash Overlay for Wall Crash */
+    #wallCrashFlash {
+      position: absolute;
+      inset: 0;
+      background: radial-gradient(circle, rgba(239, 68, 68, 0.8) 0%, rgba(153, 27, 27, 0.95) 100%);
+      pointer-events: none;
+      opacity: 0;
+      transition: opacity 0.12s ease-out;
+      z-index: 40;
+    }
+
+    /* Game HUD Overlay */
+    #hud {
+      position: absolute;
+      inset: 0;
+      pointer-events: none;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      padding: 16px;
+      z-index: 10;
+    }
+
+    /* Top HUD */
+    .hud-top {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      flex-wrap: wrap;
+    }
+
+    .mission-card {
+      background: rgba(255, 255, 255, 0.96);
+      backdrop-filter: blur(14px);
+      border: 3px solid #ffffff;
+      border-radius: 22px;
+      padding: 8px 22px;
+      box-shadow: 0 10px 28px rgba(10, 30, 60, 0.28);
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      pointer-events: auto;
+      animation: float-mission 3s ease-in-out infinite;
+    }
+    @keyframes float-mission {
+      0%, 100% { transform: translateY(0); }
+      50% { transform: translateY(-4px); }
+    }
+
+    .mission-target {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+    }
+    .target-arabic {
+      font-family: 'Amiri', serif;
+      font-size: 44px;
+      font-weight: 700;
+      color: #0d63bd;
+      line-height: 1;
+      text-shadow: 0 2px 8px rgba(13, 99, 189, 0.3);
+      min-width: 48px;
+      text-align: center;
+    }
+    .target-details {
+      display: flex;
+      flex-direction: column;
+    }
+    .mission-badge {
+      background: linear-gradient(135deg, #1080ec, #0659ae);
+      color: white;
+      font-size: 10px;
+      font-weight: 800;
+      text-transform: uppercase;
+      letter-spacing: 0.8px;
+      padding: 2px 8px;
+      border-radius: 999px;
+      display: inline-block;
+      margin-bottom: 2px;
+      width: fit-content;
+    }
+    .target-name {
+      font-family: 'Fredoka', cursive, sans-serif;
+      font-size: 20px;
+      font-weight: 700;
+      color: var(--ink);
+      line-height: 1.1;
+    }
+    .target-hint {
+      font-size: 11px;
+      font-weight: 800;
+      color: #64748b;
+    }
+
+    .stats-group {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      pointer-events: auto;
+    }
+    .stat-pill {
+      background: rgba(255, 255, 255, 0.95);
+      backdrop-filter: blur(10px);
+      border: 2px solid #ffffff;
+      border-radius: 999px;
+      padding: 8px 18px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-weight: 800;
+      font-size: 15px;
+      color: var(--ink);
+      box-shadow: 0 8px 20px rgba(0, 0, 0, 0.16);
+    }
+    .stat-pill.stars { color: #d97706; }
+    .stat-pill.streak { color: #059669; }
+
+    .btn-hud-icon {
+      background: #ffffff;
+      border: 2px solid #ffffff;
+      border-radius: 50%;
+      width: 46px; height: 46px;
+      font-size: 20px;
+      display: flex; align-items: center; justify-content: center;
+      cursor: pointer;
+      box-shadow: 0 6px 18px rgba(0, 0, 0, 0.16);
+      transition: transform 0.18s;
+      pointer-events: auto;
+    }
+    .btn-hud-icon:hover { transform: scale(1.08); }
+
+    /* Floating Toast Notification */
+    #celebrationToast {
+      position: absolute;
+      top: 18%;
+      left: 50%;
+      transform: translate(-50%, -20px) scale(0.8);
+      background: linear-gradient(135deg, #10b981, #047857);
+      color: white;
+      border: 3px solid #ffffff;
+      border-radius: 28px;
+      padding: 12px 32px;
+      font-family: 'Fredoka', cursive;
+      font-size: 24px;
+      font-weight: 700;
+      box-shadow: 0 16px 40px rgba(4, 120, 87, 0.45);
+      opacity: 0;
+      pointer-events: none;
+      transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+      text-align: center;
+      z-index: 25;
+      white-space: nowrap;
+    }
+    #celebrationToast.show {
+      opacity: 1;
+      transform: translate(-50%, 0) scale(1);
+    }
+
+    /* Warning banner when crashing into walls */
+    #crashWarningToast {
+      position: absolute;
+      top: 26%;
+      left: 50%;
+      transform: translate(-50%, -20px) scale(0.85);
+      background: linear-gradient(135deg, #ef4444, #b91c1c);
+      color: white;
+      border: 3px solid #ffffff;
+      border-radius: 22px;
+      padding: 12px 28px;
+      font-family: 'Fredoka', cursive;
+      font-size: 22px;
+      font-weight: 700;
+      box-shadow: 0 16px 40px rgba(185, 28, 28, 0.5);
+      opacity: 0;
+      pointer-events: none;
+      transition: all 0.25s ease;
+      z-index: 45;
+      white-space: nowrap;
+    }
+    #crashWarningToast.show {
+      opacity: 1;
+      transform: translate(-50%, 0) scale(1);
+    }
+
+    /* Bottom Touch Controls for Mobile / Tablets */
+    .touch-controls {
+      display: none;
+      pointer-events: auto;
+      gap: 16px;
+      justify-content: space-between;
+      width: 100%;
+      max-width: 480px;
+      margin: 0 auto;
+    }
+    .touch-btn {
+      flex: 1;
+      height: 64px;
+      background: rgba(255, 255, 255, 0.92);
+      backdrop-filter: blur(8px);
+      border: 3px solid #ffffff;
+      border-radius: 22px;
+      font-family: 'Fredoka', cursive;
+      font-size: 20px;
+      font-weight: 700;
+      color: var(--ink);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 0 10px 24px rgba(0, 0, 0, 0.2);
+      cursor: pointer;
+      touch-action: manipulation;
+      transition: transform 0.1s;
+    }
+    .touch-btn:active {
+      transform: scale(0.92);
+      background: #e2f0fd;
+    }
+    .touch-btn.jump-btn {
+      background: linear-gradient(180deg, #ffdc42, #ffab10);
+      color: #5c3500;
+      border-color: #ffffff;
+    }
+
+    @media (max-width: 768px) {
+      .touch-controls { display: flex; }
+      .mission-card { padding: 6px 14px; gap: 8px; }
+      .target-arabic { font-size: 32px; }
+      .target-name { font-size: 16px; }
+      .stat-pill { padding: 6px 12px; font-size: 13px; }
+    }
+
+    /* Overlay Screens (Start & Game Over) */
+    .screen-overlay {
+      position: absolute;
+      inset: 0;
+      background: rgba(10, 25, 45, 0.88);
+      backdrop-filter: blur(12px);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 16px;
+      z-index: 50;
+      transition: opacity 0.3s;
+    }
+    .screen-overlay.hidden {
+      display: none;
+    }
+
+    .modal-box {
+      background: #ffffff;
+      border: 4px solid #ffffff;
+      border-radius: 36px;
+      max-width: 460px;
+      width: 100%;
+      padding: 34px 28px;
+      text-align: center;
+      box-shadow: 0 25px 60px rgba(0, 0, 0, 0.45);
+      animation: pop-up 0.35s cubic-bezier(0.34, 1.56, 0.64, 1);
+    }
+    @keyframes pop-up {
+      0% { transform: scale(0.85); opacity: 0; }
+      100% { transform: scale(1); opacity: 1; }
+    }
+
+    .modal-icon {
+      font-size: 58px;
+      margin-bottom: 4px;
+      display: inline-block;
+      animation: bounce-icon 2s infinite;
+    }
+    @keyframes bounce-icon {
+      0%, 100% { transform: translateY(0); }
+      50% { transform: translateY(-8px); }
+    }
+
+    .modal-title {
+      font-family: 'Fredoka', cursive, sans-serif;
+      font-size: 30px;
+      font-weight: 700;
+      color: var(--ink);
+      line-height: 1.15;
+    }
+    .modal-arabic {
+      font-family: 'Amiri', serif;
+      font-size: 34px;
+      color: #d97706;
+      margin: 6px 0;
+    }
+    .modal-desc {
+      font-size: 14px;
+      color: #475569;
+      line-height: 1.55;
+      font-weight: 700;
+      margin: 10px 0 22px;
+    }
+
+    .btn-main-action {
+      background: linear-gradient(180deg, #2563eb, #1d4ed8);
+      color: white;
+      border: none;
+      font-family: 'Fredoka', cursive;
+      font-size: 21px;
+      font-weight: 700;
+      padding: 15px 36px;
+      border-radius: 999px;
+      cursor: pointer;
+      box-shadow: 0 8px 0 #1e3a8a, 0 16px 30px rgba(29, 78, 216, 0.45);
+      width: 100%;
+      transition: all 0.15s ease;
+      letter-spacing: 0.3px;
+    }
+    .btn-main-action:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 10px 0 #1e3a8a, 0 20px 34px rgba(29, 78, 216, 0.55);
+    }
+    .btn-main-action:active {
+      transform: translateY(4px);
+      box-shadow: 0 3px 0 #1e3a8a, 0 8px 16px rgba(29, 78, 216, 0.3);
+    }
+
+    .rules-card {
+      background: #f8fafc;
+      border: 1px solid #e2e8f0;
+      border-radius: 20px;
+      padding: 14px 18px;
+      margin-bottom: 22px;
+      text-align: left;
+      font-size: 13px;
+      color: #334155;
+      line-height: 1.5;
+    }
+    .rules-card strong { color: #0f172a; }
+    .rules-item { display: flex; align-items: center; gap: 8px; margin-bottom: 6px; }
+    .rules-item:last-child { margin-bottom: 0; }
+
+    .controls-hint {
+      margin-top: 16px;
+      font-size: 12px;
+      font-weight: 800;
+      color: #94a3b8;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 12px;
+    }
+    .hint-kbd {
+      background: #f1f5f9;
+      border: 1px solid #cbd5e1;
+      padding: 3px 8px;
+      border-radius: 6px;
+      color: var(--primary);
+    }
+  </style>
+</head>
+<body>
+
+  <!-- 3D Canvas -->
+  <canvas id="gameCanvas"></canvas>
+
+  <!-- Red Flash on Wall Crash -->
+  <div id="wallCrashFlash"></div>
+
+  <!-- Heads Up Display (HUD) -->
+  <div id="hud">
+    <!-- Top Stats -->
+    <div class="hud-top">
+      <div class="mission-card">
+        <div class="mission-target">
+          <span class="target-arabic" id="targetArabic">ب</span>
+          <div class="target-details">
+            <span class="mission-badge">Misi Huruf</span>
+            <span class="target-name" id="targetName">Cari Huruf Ba</span>
+            <span class="target-hint" id="targetHint">Ucapkan "Baa"</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="stats-group">
+        <div class="stat-pill stars">
+          <span>⭐</span> <span id="scoreText">0</span>
+        </div>
+        <div class="stat-pill streak">
+          <span>🔥</span> <span id="streakText">x1</span>
+        </div>
+        <button class="btn-hud-icon" id="btnAudioSay" title="Dengarkan Suara Huruf">🔊</button>
+      </div>
+    </div>
+
+    <!-- Celebration Popup -->
+    <div id="celebrationToast">
+      ✨ Masya Allah! Benar: <span id="toastLetter">ب</span> (+100)
+    </div>
+
+    <!-- Crash Warning Popup -->
+    <div id="crashWarningToast">
+      💥 Menabrak Tembok! Gagal!
+    </div>
+
+    <!-- Mobile Touch Controls -->
+    <div class="touch-controls">
+      <button class="touch-btn" id="btnTouchLeft">◀ Kiri</button>
+      <button class="touch-btn jump-btn" id="btnTouchJump">▲ Lompat</button>
+      <button class="touch-btn" id="btnTouchRight">Kanan ▶</button>
+    </div>
+  </div>
+
+  <!-- Start Screen Modal -->
+  <div class="screen-overlay" id="startScreen">
+    <div class="modal-box">
+      <div class="modal-icon">🕌✨</div>
+      <div class="modal-arabic">بِسْمِ اللَّهِ الرَّحْمَٰنِ الرَّحِيمِ</div>
+      <h1 class="modal-title">Hijaiyah Sky Run 3D</h1>
+      <p class="modal-desc">
+        Ayo bantu Ahmad berlari di atas Jembatan Langit Al-Qur'an! Ambil koin huruf hijaiyah yang diminta dan hindari menabrak pilar tembok batu.
+      </p>
+
+      <div class="rules-card">
+        <div class="rules-item"><span>💎</span><span><strong>Ambil Huruf Target:</strong> Koin hijau emas (+100 poin & bonus kombo!)</span></div>
+        <div class="rules-item"><span>🧱</span><span><strong>Awas Pilar Tembok:</strong> Menabrak tembok = langsung gagal!</span></div>
+        <div class="rules-item"><span>⚡</span><span><strong>Rintangan Palang:</strong> Tekan Lompat untuk melompati rintangan!</span></div>
+      </div>
+
+      <button class="btn-main-action" id="btnStartGame">
+        ▶ Bismillah, Mulai Main
+      </button>
+
+      <div class="controls-hint">
+        <span>Gunakan <span class="hint-kbd">A / D</span> atau <span class="hint-kbd">Panah</span> untuk geser, <span class="hint-kbd">Spasi / W</span> untuk lompat!</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Game Over Screen Modal (NO "Kembali ke Portal" button!) -->
+  <div class="screen-overlay hidden" id="gameOverScreen">
+    <div class="modal-box">
+      <div class="modal-icon" id="gameOverIcon">⭐🤲</div>
+      <div class="modal-arabic" id="gameOverArabic">الْحَمْدُ لِلَّهِ</div>
+      <h2 class="modal-title" id="gameOverTitle">Alhamdulillah, Hebat!</h2>
+      <p class="modal-desc" id="gameOverDesc">
+        Kamu berhasil mengumpulkan huruf hijaiyah hari ini. Teruslah bersemangat belajar membaca Al-Qur'an!
+      </p>
+
+      <div style="background: #f1f5f9; border-radius: 20px; padding: 16px; margin-bottom: 24px; border: 1px solid #e2e8f0;">
+        <div style="font-size: 13px; font-weight: 800; color: #475569; text-transform: uppercase;">Skor Bintang Kebaikan</div>
+        <div style="font-size: 38px; font-weight: 900; color: #d97706; margin: 4px 0;" id="finalScore">0</div>
+        <div style="font-size: 13px; font-weight: 700; color: #1e293b;" id="finalStats">Huruf Dipelajari: 0 • Kombo Maks: 1x</div>
+      </div>
+
+      <button class="btn-main-action" id="btnRestartGame">
+        🔄 Main Lagi
+      </button>
+    </div>
+  </div>
+
+  <script>
+    // =========================================================================
+    // 28 HIJAIYAH ALPHABET DATABASE
+    // =========================================================================
+    const HIJAIYAH_LIST = [
+      { char: 'ا', name: 'Alif', sound: 'Alif', color: '#dc2626' },
+      { char: 'ب', name: 'Ba', sound: 'Baa', color: '#16a34a' },
+      { char: 'ت', name: 'Ta', sound: 'Taa', color: '#2563eb' },
+      { char: 'ث', name: 'Tsa', sound: 'Tsaa', color: '#d97706' },
+      { char: 'ج', name: 'Jim', sound: 'Jiim', color: '#7c3aed' },
+      { char: 'ح', name: 'Ha', sound: 'Haa', color: '#0d9488' },
+      { char: 'خ', name: 'Kha', sound: 'Khoo', color: '#ea580c' },
+      { char: 'د', name: 'Dal', sound: 'Daal', color: '#475569' },
+      { char: 'ذ', name: 'Dzal', sound: 'Dzaal', color: '#f59e0b' },
+      { char: 'ر', name: 'Ra', sound: 'Roo', color: '#059669' },
+      { char: 'ز', name: 'Zai', sound: 'Zaay', color: '#9333ea' },
+      { char: 'س', name: 'Sin', sound: 'Siin', color: '#0284c7' },
+      { char: 'ش', name: 'Syin', sound: 'Syiin', color: '#db2777' },
+      { char: 'ص', name: 'Shad', sound: 'Shood', color: '#10b981' },
+      { char: 'ض', name: 'Dhad', sound: 'Dhood', color: '#eab308' },
+      { char: 'ط', name: 'Tha', sound: 'Thoo', color: '#0ea5e9' },
+      { char: 'ظ', name: 'Zha', sound: 'Zhoo', color: '#e11d48' },
+      { char: 'ع', name: '\'Ain', sound: '‘Ain', color: '#14b8a6' },
+      { char: 'غ', name: 'Ghain', sound: 'Ghoin', color: '#f97316' },
+      { char: 'ف', name: 'Fa', sound: 'Faa', color: '#22c55e' },
+      { char: 'ق', name: 'Qaf', sound: 'Qoof', color: '#6366f1' },
+      { char: 'ك', name: 'Kaf', sound: 'Kaaf', color: '#8b5cf6' },
+      { char: 'ل', name: 'Lam', sound: 'Laam', color: '#64748b' },
+      { char: 'م', name: 'Mim', sound: 'Miim', color: '#10b981' },
+      { char: 'ن', name: 'Nun', sound: 'Nuun', color: '#f43f5e' },
+      { char: 'و', name: 'Wawu', sound: 'Waawu', color: '#4f46e5' },
+      { char: 'ه', name: 'Ha', sound: 'Haa besar', color: '#f59e0b' },
+      { char: 'ي', name: 'Ya', sound: 'Yaa', color: '#ec4899' }
+    ];
+
+    // =========================================================================
+    // PROCEDURAL AUDIO SYNTHESIZER
+    // =========================================================================
+    let audioCtx = null;
+    let isSoundOn = true;
+
+    function initAudio() {
+      if (!audioCtx) {
+        audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+      }
+      if (audioCtx.state === 'suspended') {
+        audioCtx.resume();
+      }
+    }
+
+    function playTone(freq, type = 'sine', duration = 0.15, vol = 0.22) {
+      if (!isSoundOn || !audioCtx) return;
+      try {
+        const osc = audioCtx.createOscillator();
+        const gain = audioCtx.createGain();
+        osc.type = type;
+        osc.frequency.setValueAtTime(freq, audioCtx.currentTime);
+        gain.gain.setValueAtTime(vol, audioCtx.currentTime);
+        gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + duration);
+        osc.connect(gain);
+        gain.connect(audioCtx.destination);
+        osc.start();
+        osc.stop(audioCtx.currentTime + duration);
+      } catch (e) {}
+    }
+
+    function soundSuccess() {
+      playTone(523.25, 'triangle', 0.12, 0.28);
+      setTimeout(() => playTone(659.25, 'triangle', 0.12, 0.28), 90);
+      setTimeout(() => playTone(783.99, 'triangle', 0.15, 0.32), 180);
+      setTimeout(() => playTone(1046.50, 'sine', 0.28, 0.35), 270);
+    }
+
+    function soundCoin() {
+      playTone(880, 'sine', 0.08, 0.18);
+    }
+
+    function soundJump() {
+      if (!isSoundOn || !audioCtx) return;
+      try {
+        const osc = audioCtx.createOscillator();
+        const gain = audioCtx.createGain();
+        osc.type = 'sine';
+        osc.frequency.setValueAtTime(280, audioCtx.currentTime);
+        osc.frequency.exponentialRampToValueAtTime(620, audioCtx.currentTime + 0.16);
+        gain.gain.setValueAtTime(0.22, audioCtx.currentTime);
+        gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.16);
+        osc.connect(gain);
+        gain.connect(audioCtx.destination);
+        osc.start();
+        osc.stop(audioCtx.currentTime + 0.16);
+      } catch(e) {}
+    }
+
+    function soundLaneShift() {
+      playTone(400, 'sine', 0.06, 0.15);
+    }
+
+    function soundCrash() {
+      if (!isSoundOn || !audioCtx) return;
+      try {
+        const osc = audioCtx.createOscillator();
+        const gain = audioCtx.createGain();
+        osc.type = 'sawtooth';
+        osc.frequency.setValueAtTime(160, audioCtx.currentTime);
+        osc.frequency.exponentialRampToValueAtTime(25, audioCtx.currentTime + 0.45);
+        gain.gain.setValueAtTime(0.5, audioCtx.currentTime);
+        gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.45);
+        osc.connect(gain);
+        gain.connect(audioCtx.destination);
+        osc.start();
+        osc.stop(audioCtx.currentTime + 0.45);
+      } catch(e) {}
+    }
+
+    function speakLetter(text) {
+      if (!('speechSynthesis' in window)) return;
+      try {
+        window.speechSynthesis.cancel();
+        const u = new SpeechSynthesisUtterance(text);
+        u.lang = 'id-ID';
+        u.rate = 0.9;
+        u.pitch = 1.1;
+        window.speechSynthesis.speak(u);
+      } catch (e) {}
+    }
+
+    // =========================================================================
+    // 3D SCENE SETUP & CONSTANTS
+    // =========================================================================
+    const canvas = document.getElementById('gameCanvas');
+    let scene, camera, renderer;
+    let playerGroup, playerInner, leftLegMesh, rightLegMesh, leftArmMesh, rightArmMesh;
+
+    // 3 Safe Running Lanes
+    const LANE_DISTANCE = 2.6;
+    const lanes = [-LANE_DISTANCE, 0, LANE_DISTANCE]; // -2.6, 0, 2.6
+    let currentLane = 1;
+    let targetX = 0;
+
+    const TRACK_WIDTH = 8.6;
+    const groundY = 0.65;
+    let isJumping = false;
+    let jumpVelocity = 0;
+    const gravity = -32;
+
+    let gameRunning = false;
+    let score = 0;
+    let streak = 1;
+    let maxStreak = 1;
+    let lettersCollectedCount = 0;
+    let currentMissionIndex = 1; // Mulai 'Ba'
+    let targetLetter = HIJAIYAH_LIST[1];
+    let runSpeed = 22;
+    let wallCrashActive = false;
+
+    const SEGMENT_LENGTH = 50;
+    const NUM_SEGMENTS = 5;
+    let trackSegments = [];
+    let collectibleItems = [];
+    let obstacles = [];
+    let particleSystems = [];
+    let backgroundClouds = [];
+    let distantIslands = [];
+
+    // =========================================================================
+    // PROCEDURAL TEXTURES (VIBRANT & BALANCED CONTRAST)
+    // =========================================================================
+    const textureCache = {};
+
+    function createSkyTexture() {
+      const c = document.createElement('canvas');
+      c.width = 512; c.height = 512;
+      const ctx = c.getContext('2d');
+      const grad = ctx.createLinearGradient(0, 0, 0, 512);
+      grad.addColorStop(0.0, '#1e40af'); // Deep royal blue
+      grad.addColorStop(0.45, '#3b82f6'); // Azure blue
+      grad.addColorStop(0.8, '#93c5fd'); // Soft horizon
+      grad.addColorStop(1.0, '#fed7aa'); // Warm golden sunset haze
+      ctx.fillStyle = grad;
+      ctx.fillRect(0, 0, 512, 512);
+      return new THREE.CanvasTexture(c);
+    }
+
+    // Rich Islamic Turquoise & Navy Mosaic Track
+    function createMosaicTrackTexture() {
+      const c = document.createElement('canvas');
+      c.width = 512; c.height = 512;
+      const ctx = c.getContext('2d');
+
+      // Base royal navy cobblestone
+      ctx.fillStyle = '#0f2942';
+      ctx.fillRect(0, 0, 512, 512);
+
+      // Tile paving blocks
+      ctx.strokeStyle = '#1a3e61';
+      ctx.lineWidth = 4;
+      for (let y = 0; y < 512; y += 64) {
+        for (let x = 0; x < 512; x += 64) {
+          ctx.strokeRect(x + 2, y + 2, 60, 60);
+        }
+      }
+
+      // Three running lane guides (Glowing golden lines)
+      ctx.fillStyle = 'rgba(245, 158, 11, 0.45)';
+      ctx.fillRect(166, 0, 10, 512);
+      ctx.fillRect(336, 0, 10, 512);
+
+      // Golden geometric star insets along center
+      ctx.fillStyle = '#f59e0b';
+      for (let y = 32; y < 512; y += 128) {
+        ctx.beginPath();
+        ctx.arc(256, y, 10, 0, Math.PI * 2);
+        ctx.fill();
+      }
+
+      // Outer gold edge curbs
+      ctx.fillStyle = '#f59e0b';
+      ctx.fillRect(0, 0, 18, 512);
+      ctx.fillRect(494, 0, 18, 512);
+
+      const tex = new THREE.CanvasTexture(c);
+      tex.wrapS = THREE.RepeatWrapping;
+      tex.wrapT = THREE.RepeatWrapping;
+      tex.repeat.set(1, 4);
+      return tex;
+    }
+
+    // Ultra-Clear Arabic Medallion Disc Texture
+    function getMedallionTexture(char, bgColor, isTarget) {
+      const key = `${char}_${bgColor}_${isTarget}`;
+      if (textureCache[key]) return textureCache[key];
+
+      const c = document.createElement('canvas');
+      c.width = 512; c.height = 512;
+      const ctx = c.getContext('2d');
+
+      // Outer Gold Bevel
+      ctx.fillStyle = isTarget ? '#fbbf24' : '#cbd5e1';
+      ctx.beginPath();
+      ctx.arc(256, 256, 250, 0, Math.PI * 2);
+      ctx.fill();
+
+      // Colored Inner Circle
+      ctx.fillStyle = isTarget ? '#059669' : bgColor;
+      ctx.beginPath();
+      ctx.arc(256, 256, 224, 0, Math.PI * 2);
+      ctx.fill();
+
+      // Crisp White Calligraphy Center Badge
+      ctx.fillStyle = '#ffffff';
+      ctx.beginPath();
+      ctx.arc(256, 256, 175, 0, Math.PI * 2);
+      ctx.fill();
+
+      // Arabic Calligraphy Character
+      ctx.fillStyle = isTarget ? '#065f46' : '#0f172a';
+      ctx.font = 'bold 260px "Amiri", serif';
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+      ctx.fillText(char, 256, 276);
+
+      const tex = new THREE.CanvasTexture(c);
+      textureCache[key] = tex;
+      return tex;
+    }
+
+    // Carved Stone Arabesque Pattern for Walls
+    function createStoneWallTexture() {
+      const c = document.createElement('canvas');
+      c.width = 256; c.height = 256;
+      const ctx = c.getContext('2d');
+      ctx.fillStyle = '#e2e8f0';
+      ctx.fillRect(0, 0, 256, 256);
+
+      ctx.strokeStyle = '#94a3b8';
+      ctx.lineWidth = 5;
+      ctx.strokeRect(6, 6, 244, 118);
+      ctx.strokeRect(6, 130, 244, 118);
+
+      // Arabesque floral arch engraving
+      ctx.strokeStyle = '#64748b';
+      ctx.lineWidth = 6;
+      ctx.beginPath();
+      ctx.arc(128, 65, 34, 0, Math.PI, true);
+      ctx.stroke();
+      ctx.beginPath();
+      ctx.arc(128, 189, 34, 0, Math.PI, true);
+      ctx.stroke();
+
+      return new THREE.CanvasTexture(c);
+    }
+
+    // =========================================================================
+    // INITIALIZE THREE.JS SCENE
+    // =========================================================================
+    function initThree() {
+      scene = new THREE.Scene();
+
+      // Sky Dome
+      const skyGeo = new THREE.SphereGeometry(240, 32, 16);
+      const skyMat = new THREE.MeshBasicMaterial({
+        map: createSkyTexture(),
+        side: THREE.BackSide
+      });
+      scene.add(new THREE.Mesh(skyGeo, skyMat));
+
+      scene.fog = new THREE.FogExp2(0x93c5fd, 0.008);
+
+      // Elevated Camera Angle with panoramic field of view
+      camera = new THREE.PerspectiveCamera(54, window.innerWidth / window.innerHeight, 0.1, 350);
+      camera.position.set(0, 5.0, 7.8);
+      camera.lookAt(0, 1.4, -6);
+
+      // Renderer
+      renderer = new THREE.WebGLRenderer({ canvas, antialias: true, powerPreference: 'high-performance' });
+      renderer.setSize(window.innerWidth, window.innerHeight);
+      renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+      renderer.shadowMap.enabled = true;
+      renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+
+      // Lights - Soft balanced studio lighting
+      const ambientLight = new THREE.AmbientLight(0xfff7ed, 0.75);
+      scene.add(ambientLight);
+
+      const sunLight = new THREE.DirectionalLight(0xfffae8, 1.1);
+      sunLight.position.set(20, 35, 25);
+      sunLight.castShadow = true;
+      sunLight.shadow.mapSize.width = 1024;
+      sunLight.shadow.mapSize.height = 1024;
+      sunLight.shadow.camera.near = 5;
+      sunLight.shadow.camera.far = 80;
+      sunLight.shadow.camera.left = -16;
+      sunLight.shadow.camera.right = 16;
+      sunLight.shadow.camera.top = 16;
+      sunLight.shadow.camera.bottom = -16;
+      scene.add(sunLight);
+
+      const hemiLight = new THREE.HemisphereLight(0x60a5fa, 0x1e293b, 0.55);
+      scene.add(hemiLight);
+
+      createFloatingIslands();
+      createBackgroundClouds();
+      createPlayer();
+      createInitialTrack();
+
+      window.addEventListener('resize', onWindowResize);
+    }
+
+    // =========================================================================
+    // AHMAD 3D CHARACTER (RICH BACK VIEW & SATCHEL BAG)
+    // =========================================================================
+    function createPlayer() {
+      playerGroup = new THREE.Group();
+      playerInner = new THREE.Group();
+
+      // White Peci / Songkok with Gold Trim
+      const peciGeo = new THREE.BoxGeometry(0.68, 0.28, 0.58);
+      const peciMat = new THREE.MeshStandardMaterial({ color: 0xffffff, roughness: 0.25 });
+      const peci = new THREE.Mesh(peciGeo, peciMat);
+      peci.position.y = 2.05;
+      peci.castShadow = true;
+
+      const peciTrimGeo = new THREE.BoxGeometry(0.70, 0.05, 0.60);
+      const peciTrimMat = new THREE.MeshStandardMaterial({ color: 0xf59e0b, metalness: 0.8, roughness: 0.2 });
+      const peciTrim = new THREE.Mesh(peciTrimGeo, peciTrimMat);
+      peciTrim.position.y = 1.94;
+      playerInner.add(peci, peciTrim);
+
+      // Neat black hair
+      const hairGeo = new THREE.BoxGeometry(0.66, 0.16, 0.57);
+      const hairMat = new THREE.MeshStandardMaterial({ color: 0x1e293b, roughness: 0.9 });
+      const hair = new THREE.Mesh(hairGeo, hairMat);
+      hair.position.set(0, 1.88, 0.02);
+      playerInner.add(hair);
+
+      // Head & Neck
+      const headGeo = new THREE.BoxGeometry(0.64, 0.64, 0.54);
+      const skinMat = new THREE.MeshStandardMaterial({ color: 0xfbd38d, roughness: 0.6 });
+      const head = new THREE.Mesh(headGeo, skinMat);
+      head.position.y = 1.62;
+      head.castShadow = true;
+      playerInner.add(head);
+
+      // Green Islamic Vest over White Jubbah
+      const vestGeo = new THREE.BoxGeometry(0.78, 0.88, 0.48);
+      const vestMat = new THREE.MeshStandardMaterial({ color: 0x059669, roughness: 0.4 });
+      const vest = new THREE.Mesh(vestGeo, vestMat);
+      vest.position.y = 0.88;
+      vest.castShadow = true;
+
+      const shirtGeo = new THREE.BoxGeometry(0.80, 0.22, 0.50);
+      const shirtMat = new THREE.MeshStandardMaterial({ color: 0xffffff, roughness: 0.5 });
+      const shirt = new THREE.Mesh(shirtGeo, shirtMat);
+      shirt.position.y = 1.25;
+      playerInner.add(vest, shirt);
+
+      // Leather Satchel Bag on Back
+      const bagGeo = new THREE.BoxGeometry(0.52, 0.45, 0.18);
+      const bagMat = new THREE.MeshStandardMaterial({ color: 0x92400e, roughness: 0.4 });
+      const bag = new THREE.Mesh(bagGeo, bagMat);
+      bag.position.set(0.12, 0.82, 0.32);
+      bag.castShadow = true;
+
+      // Bag Strap diagonally across chest
+      const strapGeo = new THREE.BoxGeometry(0.10, 0.95, 0.52);
+      const strap = new THREE.Mesh(strapGeo, bagMat);
+      strap.position.set(0.04, 0.88, 0);
+      strap.rotation.z = 0.35;
+      playerInner.add(bag, strap);
+
+      // Arms
+      const armGeo = new THREE.BoxGeometry(0.20, 0.65, 0.22);
+      const armMat = new THREE.MeshStandardMaterial({ color: 0x047857 });
+
+      leftArmMesh = new THREE.Mesh(armGeo, armMat);
+      leftArmMesh.position.set(-0.48, 0.88, 0);
+      leftArmMesh.castShadow = true;
+
+      rightArmMesh = new THREE.Mesh(armGeo, armMat);
+      rightArmMesh.position.set(0.48, 0.88, 0);
+      rightArmMesh.castShadow = true;
+      playerInner.add(leftArmMesh, rightArmMesh);
+
+      // Legs
+      const legGeo = new THREE.BoxGeometry(0.28, 0.56, 0.32);
+      const pantsMat = new THREE.MeshStandardMaterial({ color: 0x1e293b, roughness: 0.7 });
+
+      leftLegMesh = new THREE.Mesh(legGeo, pantsMat);
+      leftLegMesh.position.set(-0.20, 0.28, 0);
+      leftLegMesh.castShadow = true;
+
+      rightLegMesh = new THREE.Mesh(legGeo, pantsMat);
+      rightLegMesh.position.set(0.20, 0.28, 0);
+      rightLegMesh.castShadow = true;
+      playerInner.add(leftLegMesh, rightLegMesh);
+
+      // Shoes
+      const shoeGeo = new THREE.BoxGeometry(0.30, 0.12, 0.38);
+      const shoeMat = new THREE.MeshStandardMaterial({ color: 0xd97706 });
+      const leftShoe = new THREE.Mesh(shoeGeo, shoeMat);
+      leftShoe.position.set(0, -0.24, -0.04);
+      leftLegMesh.add(leftShoe);
+
+      const rightShoe = new THREE.Mesh(shoeGeo, shoeMat);
+      rightShoe.position.set(0, -0.24, -0.04);
+      rightLegMesh.add(rightShoe);
+
+      // Soft Golden Aura Ring under Ahmad
+      const ringGeo = new THREE.RingGeometry(0.65, 0.85, 32);
+      const ringMat = new THREE.MeshBasicMaterial({ color: 0xf59e0b, side: THREE.DoubleSide, transparent: true, opacity: 0.75 });
+      const aura = new THREE.Mesh(ringGeo, ringMat);
+      aura.rotation.x = Math.PI / 2;
+      aura.position.y = 0.05;
+      playerInner.add(aura);
+
+      playerGroup.add(playerInner);
+      playerGroup.position.set(0, groundY, 0);
+      scene.add(playerGroup);
+    }
+
+    // =========================================================================
+    // BACKGROUND ISLAMIC ISLANDS & CLOUDS
+    // =========================================================================
+    function createFloatingIslands() {
+      for (let i = 0; i < 8; i++) {
+        const island = new THREE.Group();
+
+        // Rocky base
+        const rockGeo = new THREE.ConeGeometry(6 + Math.random() * 3, 9, 7);
+        const rockMat = new THREE.MeshStandardMaterial({ color: 0x334155, roughness: 0.9, flatShading: true });
+        const rock = new THREE.Mesh(rockGeo, rockMat);
+        rock.rotation.x = Math.PI;
+        island.add(rock);
+
+        // Lush grass terrace
+        const grassGeo = new THREE.CylinderGeometry(6.2, 6.2, 1.2, 7);
+        const grassMat = new THREE.MeshStandardMaterial({ color: 0x10b981, roughness: 0.6 });
+        const grass = new THREE.Mesh(grassGeo, grassMat);
+        grass.position.y = 0.6;
+        island.add(grass);
+
+        // Mosque with golden dome
+        const mosque = createMiniMosque();
+        mosque.position.y = 1.2;
+        island.add(mosque);
+
+        const side = i % 2 === 0 ? 1 : -1;
+        island.position.set(
+          (26 + Math.random() * 24) * side,
+          1 + (Math.random() - 0.5) * 14,
+          -30 - i * 40
+        );
+        scene.add(island);
+        distantIslands.push(island);
+      }
+    }
+
+    function createMiniMosque() {
+      const g = new THREE.Group();
+      const whiteMat = new THREE.MeshStandardMaterial({ color: 0xffffff, roughness: 0.3 });
+      const goldMat = new THREE.MeshStandardMaterial({ color: 0xf59e0b, metalness: 0.85, roughness: 0.2 });
+
+      // Prayer Hall
+      const hall = new THREE.Mesh(new THREE.BoxGeometry(4.2, 3.2, 4.2), whiteMat);
+      hall.position.y = 1.6;
+      g.add(hall);
+
+      // Golden Dome
+      const dome = new THREE.Mesh(new THREE.SphereGeometry(2.5, 20, 14, 0, Math.PI * 2, 0, Math.PI / 2), goldMat);
+      dome.position.y = 3.2;
+      g.add(dome);
+
+      // Minaret
+      const minaret = new THREE.Mesh(new THREE.CylinderGeometry(0.4, 0.5, 7.5, 10), whiteMat);
+      minaret.position.set(2.2, 3.75, 2.2);
+      const minDome = new THREE.Mesh(new THREE.ConeGeometry(0.55, 1.4, 10), goldMat);
+      minDome.position.set(2.2, 8.2, 2.2);
+      g.add(minaret, minDome);
+
+      return g;
+    }
+
+    function createBackgroundClouds() {
+      for (let i = 0; i < 22; i++) {
+        const cloud = new THREE.Group();
+        const puffMat = new THREE.MeshStandardMaterial({ color: 0xffffff, roughness: 0.9, transparent: true, opacity: 0.88 });
+        const numPuffs = 4 + Math.floor(Math.random() * 3);
+
+        for (let p = 0; p < numPuffs; p++) {
+          const r = 2.4 + Math.random() * 2.6;
+          const puff = new THREE.Mesh(new THREE.SphereGeometry(r, 10, 8), puffMat);
+          puff.position.set((p - numPuffs / 2) * 2.2, (Math.random() - 0.5) * 1.5, (Math.random() - 0.5) * 2);
+          cloud.add(puff);
+        }
+
+        cloud.position.set((Math.random() - 0.5) * 140, -5 + Math.random() * 24, -Math.random() * 200);
+        scene.add(cloud);
+        backgroundClouds.push(cloud);
+      }
+    }
+
+    // =========================================================================
+    // JEMBATAN LANGIT TRACK & GRAND ARCHES
+    // =========================================================================
+    const mosaicTrackTex = createMosaicTrackTexture();
+    const stoneWallTex = createStoneWallTexture();
+
+    function createTrackSegment(zPos) {
+      const segGroup = new THREE.Group();
+
+      // Mosaic Track Floor
+      const floorGeo = new THREE.BoxGeometry(TRACK_WIDTH, 1.4, SEGMENT_LENGTH);
+      const floorMat = new THREE.MeshStandardMaterial({ map: mosaicTrackTex, roughness: 0.38, metalness: 0.1 });
+      const floorMesh = new THREE.Mesh(floorGeo, floorMat);
+      floorMesh.position.y = -0.7;
+      floorMesh.receiveShadow = true;
+      segGroup.add(floorMesh);
+
+      // Gold Balustrade Rails (LEFT & RIGHT)
+      const railGeo = new THREE.BoxGeometry(0.35, 0.95, SEGMENT_LENGTH);
+      const railMat = new THREE.MeshStandardMaterial({ color: 0xf59e0b, metalness: 0.8, roughness: 0.2 });
+
+      const leftRail = new THREE.Mesh(railGeo, railMat);
+      leftRail.position.set(-TRACK_WIDTH / 2 + 0.18, 0.45, 0);
+      leftRail.castShadow = true;
+
+      const rightRail = new THREE.Mesh(railGeo, railMat);
+      rightRail.position.set(TRACK_WIDTH / 2 - 0.18, 0.45, 0);
+      rightRail.castShadow = true;
+
+      // Glowing Cyan Laser Runner on Rails
+      const laserGeo = new THREE.BoxGeometry(0.12, 0.12, SEGMENT_LENGTH);
+      const laserMat = new THREE.MeshBasicMaterial({ color: 0x38bdf8 });
+      const leftLaser = new THREE.Mesh(laserGeo, laserMat);
+      leftLaser.position.set(-TRACK_WIDTH / 2 + 0.18, 0.95, 0);
+      const rightLaser = new THREE.Mesh(laserGeo, laserMat);
+      rightLaser.position.set(TRACK_WIDTH / 2 - 0.18, 0.95, 0);
+
+      segGroup.add(leftRail, rightRail, leftLaser, rightLaser);
+
+      // Grand Islamic Arch Gateway spanning high above (Pillars outside track width so they never clip camera!)
+      const arch = createGrandArch();
+      arch.position.set(0, 0, -SEGMENT_LENGTH / 2);
+      segGroup.add(arch);
+
+      segGroup.position.z = zPos;
+      scene.add(segGroup);
+      return segGroup;
+    }
+
+    // Wide Grand Arch (Width 13 so pillars never obscure runner view)
+    function createGrandArch() {
+      const g = new THREE.Group();
+      const stoneMat = new THREE.MeshStandardMaterial({ map: stoneWallTex, roughness: 0.4 });
+      const goldMat = new THREE.MeshStandardMaterial({ color: 0xf59e0b, metalness: 0.8, roughness: 0.2 });
+
+      // Left Pillar (Far outside left track)
+      const leftPillar = new THREE.Mesh(new THREE.BoxGeometry(1.2, 9, 1.2), stoneMat);
+      leftPillar.position.set(-6.5, 4.5, 0);
+
+      // Right Pillar (Far outside right track)
+      const rightPillar = new THREE.Mesh(new THREE.BoxGeometry(1.2, 9, 1.2), stoneMat);
+      rightPillar.position.set(6.5, 4.5, 0);
+
+      // Overhead Arched Architrave
+      const topBeam = new THREE.Mesh(new THREE.BoxGeometry(14.2, 1.5, 1.4), stoneMat);
+      topBeam.position.set(0, 9.2, 0);
+
+      // Golden Arch Crown
+      const crown = new THREE.Mesh(new THREE.ConeGeometry(1.6, 2.2, 8), goldMat);
+      crown.position.set(0, 10.8, 0);
+
+      // Hanging Lantern with PointLight
+      const lantern = new THREE.Mesh(new THREE.OctahedronGeometry(0.5), new THREE.MeshBasicMaterial({ color: 0xfef08a }));
+      lantern.position.set(0, 7.8, 0);
+
+      const lanternLight = new THREE.PointLight(0xffea79, 1.2, 16);
+      lanternLight.position.set(0, 7.8, 0);
+
+      g.add(leftPillar, rightPillar, topBeam, crown, lantern, lanternLight);
+      return g;
+    }
+
+    function createInitialTrack() {
+      for (let i = 0; i < NUM_SEGMENTS; i++) {
+        const z = -i * SEGMENT_LENGTH;
+        const seg = createTrackSegment(z);
+        trackSegments.push(seg);
+        if (i > 0) {
+          spawnSpawnersForSegment(z);
+        }
+      }
+    }
+
+    // =========================================================================
+    // SPAWNING LETTERS & OBSTACLES (SPASI SANGAT LEGA & NYAMAN)
+    // =========================================================================
+    function spawnSpawnersForSegment(segZ) {
+      // Dua titik kemunculan per 50 unit (Jarak 25 unit antar titik — sangat lega!)
+      const waveZ1 = segZ - 12;
+      const waveZ2 = segZ - 37;
+
+      spawnLetterWave(waveZ1);
+
+      if (Math.random() > 0.4) {
+        spawnObstacleWave(waveZ2);
+      } else {
+        spawnLetterWave(waveZ2);
+      }
+    }
+
+    function spawnLetterWave(zPos) {
+      const targetLaneIdx = Math.floor(Math.random() * 3);
+
+      for (let laneIdx = 0; laneIdx < 3; laneIdx++) {
+        const isTarget = (laneIdx === targetLaneIdx);
+        let letterData;
+
+        if (isTarget) {
+          letterData = targetLetter;
+        } else {
+          let randIdx;
+          do {
+            randIdx = Math.floor(Math.random() * HIJAIYAH_LIST.length);
+          } while (randIdx === currentMissionIndex);
+          letterData = HIJAIYAH_LIST[randIdx];
+        }
+
+        spawnLetterMedallion(lanes[laneIdx], zPos, letterData, isTarget);
+      }
+    }
+
+    function spawnObstacleWave(zPos) {
+      const obstacleType = Math.random() > 0.5 ? 'wall' : 'hurdle';
+      // Hanya memblokir 1 lane — 2 lane lainnya SELALU aman dilewati!
+      const blockedLaneIdx = Math.floor(Math.random() * 3);
+
+      if (obstacleType === 'wall') {
+        // Tembok Batu — Tabrak = LANGSUNG GAGAL!
+        spawnStoneWall(lanes[blockedLaneIdx], zPos);
+      } else {
+        // Palang Rintangan — Harus dilompati!
+        spawnHurdle(lanes[blockedLaneIdx], zPos);
+      }
+
+      // Bonus star di salah satu lane yang aman
+      const safeLaneIdx = (blockedLaneIdx + 1) % 3;
+      spawnBonusStar(lanes[safeLaneIdx], zPos);
+    }
+
+    // =========================================================================
+    // 3D COLLECTIBLE COINS & OBSTACLES
+    // =========================================================================
+    // 3D Arabic Medallion Disc
+    function spawnLetterMedallion(x, z, letterData, isTarget) {
+      const group = new THREE.Group();
+
+      // Gold Coin Cylinder Body
+      const coinGeo = new THREE.CylinderGeometry(0.95, 0.95, 0.22, 24);
+      const coinMat = new THREE.MeshStandardMaterial({
+        color: isTarget ? 0xf59e0b : 0x94a3b8,
+        metalness: 0.85,
+        roughness: 0.2
+      });
+      const coinMesh = new THREE.Mesh(coinGeo, coinMat);
+      coinMesh.rotation.x = Math.PI / 2; // Face forward
+      group.add(coinMesh);
+
+      // Calligraphy Face Plate (Front)
+      const faceGeo = new THREE.PlaneGeometry(1.6, 1.6);
+      const tex = getMedallionTexture(letterData.char, letterData.color, isTarget);
+      const faceMat = new THREE.MeshBasicMaterial({ map: tex, transparent: true });
+
+      const frontFace = new THREE.Mesh(faceGeo, faceMat);
+      frontFace.position.z = 0.12;
+      const backFace = new THREE.Mesh(faceGeo, faceMat);
+      backFace.position.z = -0.12;
+      backFace.rotation.y = Math.PI;
+
+      group.add(frontFace, backFace);
+
+      // Rotating Aura Ring for Target Letter
+      if (isTarget) {
+        const ringGeo = new THREE.TorusGeometry(1.25, 0.06, 16, 32);
+        const ringMat = new THREE.MeshBasicMaterial({ color: 0xfef08a });
+        const ring = new THREE.Mesh(ringGeo, ringMat);
+        group.add(ring);
+      }
+
+      group.position.set(x, 1.45, z);
+      group.userData = {
+        type: 'letter',
+        isTarget: isTarget,
+        letter: letterData,
+        rotSpeed: 1.8,
+        baseY: 1.45
+      };
+
+      scene.add(group);
+      collectibleItems.push(group);
+    }
+
+    // Carved Stone Wall Obstacle — "Kalo kena tembok gagal!"
+    function spawnStoneWall(x, z) {
+      const wallGroup = new THREE.Group();
+
+      const wallGeo = new THREE.BoxGeometry(2.3, 3.6, 0.8);
+      const wallMat = new THREE.MeshStandardMaterial({ map: stoneWallTex, roughness: 0.5 });
+      const wallMesh = new THREE.Mesh(wallGeo, wallMat);
+      wallMesh.position.y = 1.8;
+      wallMesh.castShadow = true;
+      wallGroup.add(wallMesh);
+
+      // Red Hazard Trim
+      const hazardGeo = new THREE.BoxGeometry(1.8, 0.45, 0.86);
+      const hazardMat = new THREE.MeshBasicMaterial({ color: 0xef4444 });
+      const hazard = new THREE.Mesh(hazardGeo, hazardMat);
+      hazard.position.y = 1.9;
+      wallGroup.add(hazard);
+
+      wallGroup.position.set(x, 0, z);
+      wallGroup.userData = { type: 'wall' };
+
+      scene.add(wallGroup);
+      obstacles.push(wallGroup);
+    }
+
+    // Jumpable Wooden Hurdle
+    function spawnHurdle(x, z) {
+      const hurdleGroup = new THREE.Group();
+
+      const woodGeo = new THREE.BoxGeometry(2.2, 0.75, 0.35);
+      const woodMat = new THREE.MeshStandardMaterial({ color: 0xb45309, roughness: 0.6 });
+      const bar = new THREE.Mesh(woodGeo, woodMat);
+      bar.position.y = 0.45;
+      bar.castShadow = true;
+
+      const postGeo = new THREE.CylinderGeometry(0.12, 0.12, 0.9, 8);
+      const postMat = new THREE.MeshStandardMaterial({ color: 0x78350f });
+      const p1 = new THREE.Mesh(postGeo, postMat);
+      p1.position.set(-1.0, 0.45, 0);
+      const p2 = new THREE.Mesh(postGeo, postMat);
+      p2.position.set(1.0, 0.45, 0);
+
+      hurdleGroup.add(bar, p1, p2);
+      hurdleGroup.position.set(x, 0, z);
+      hurdleGroup.userData = { type: 'hurdle' };
+
+      scene.add(hurdleGroup);
+      obstacles.push(hurdleGroup);
+    }
+
+    function spawnBonusStar(x, z) {
+      const starGeo = new THREE.OctahedronGeometry(0.48);
+      const starMat = new THREE.MeshStandardMaterial({ color: 0xf59e0b, metalness: 0.8, emissive: 0xd97706, emissiveIntensity: 0.4 });
+      const star = new THREE.Mesh(starGeo, starMat);
+      star.position.set(x, 1.4, z);
+      star.userData = { type: 'star', rotSpeed: 3.0, baseY: 1.4 };
+      scene.add(star);
+      collectibleItems.push(star);
+    }
+
+    // =========================================================================
+    // PARTICLE EFFECTS ENGINE
+    // =========================================================================
+    function spawnCollectBurst(pos, isTarget) {
+      const count = isTarget ? 36 : 18;
+      const pGeo = new THREE.BufferGeometry();
+      const positions = new Float32Array(count * 3);
+      const velocities = [];
+
+      for (let i = 0; i < count; i++) {
+        positions[i * 3] = pos.x;
+        positions[i * 3 + 1] = pos.y;
+        positions[i * 3 + 2] = pos.z;
+
+        const theta = Math.random() * Math.PI * 2;
+        const phi = Math.random() * Math.PI;
+        const spd = 4 + Math.random() * 7;
+        velocities.push({
+          x: Math.sin(phi) * Math.cos(theta) * spd,
+          y: Math.abs(Math.cos(phi)) * spd + 2,
+          z: Math.sin(phi) * Math.sin(theta) * spd
+        });
+      }
+
+      pGeo.setAttribute('position', new THREE.BufferAttribute(positions, 3));
+      const pMat = new THREE.PointsMaterial({
+        color: isTarget ? 0xfef08a : 0x38bdf8,
+        size: 0.35,
+        transparent: true,
+        opacity: 1
+      });
+      const pSystem = new THREE.Points(pGeo, pMat);
+      scene.add(pSystem);
+
+      particleSystems.push({ mesh: pSystem, velocities: velocities, life: 0.75, maxLife: 0.75 });
+    }
+
+    // =========================================================================
+    // CONTROLS & LANE MOVEMENT
+    // =========================================================================
+    function moveLeft() {
+      if (!gameRunning || wallCrashActive) return;
+      if (currentLane > 0) {
+        currentLane--;
+        targetX = lanes[currentLane];
+        soundLaneShift();
+      }
+    }
+
+    function moveRight() {
+      if (!gameRunning || wallCrashActive) return;
+      if (currentLane < 2) {
+        currentLane++;
+        targetX = lanes[currentLane];
+        soundLaneShift();
+      }
+    }
+
+    function jump() {
+      if (!gameRunning || wallCrashActive) return;
+      if (!isJumping) {
+        isJumping = true;
+        jumpVelocity = 13.0;
+        soundJump();
+      }
+    }
+
+    window.addEventListener('keydown', (e) => {
+      if (!gameRunning) return;
+      if (e.key === 'ArrowLeft' || e.key === 'a' || e.key === 'A') moveLeft();
+      if (e.key === 'ArrowRight' || e.key === 'd' || e.key === 'D') moveRight();
+      if (e.key === 'ArrowUp' || e.key === 'w' || e.key === 'W' || e.key === ' ') jump();
+    });
+
+    document.getElementById('btnTouchLeft').addEventListener('touchstart', (e) => { e.preventDefault(); moveLeft(); });
+    document.getElementById('btnTouchRight').addEventListener('touchstart', (e) => { e.preventDefault(); moveRight(); });
+    document.getElementById('btnTouchJump').addEventListener('touchstart', (e) => { e.preventDefault(); jump(); });
+    document.getElementById('btnTouchLeft').addEventListener('click', moveLeft);
+    document.getElementById('btnTouchRight').addEventListener('click', moveRight);
+    document.getElementById('btnTouchJump').addEventListener('click', jump);
+
+    document.getElementById('btnAudioSay').addEventListener('click', () => {
+      speakLetter(targetLetter.sound);
+    });
+
+    // =========================================================================
+    // HUD & MISSIONS
+    // =========================================================================
+    function updateHUD() {
+      document.getElementById('targetArabic').textContent = targetLetter.char;
+      document.getElementById('targetName').textContent = 'Cari Huruf ' + targetLetter.name;
+      document.getElementById('targetHint').textContent = `Ucapkan "${targetLetter.sound}"`;
+      document.getElementById('scoreText').textContent = score;
+      document.getElementById('streakText').textContent = 'x' + streak;
+    }
+
+    function advanceToNextLetter() {
+      lettersCollectedCount++;
+      currentMissionIndex = (currentMissionIndex + 1) % HIJAIYAH_LIST.length;
+      targetLetter = HIJAIYAH_LIST[currentMissionIndex];
+      streak++;
+      if (streak > maxStreak) maxStreak = streak;
+
+      updateHUD();
+      speakLetter(targetLetter.sound);
+    }
+
+    function showToast(char, points) {
+      const toast = document.getElementById('celebrationToast');
+      if (!toast) return;
+      toast.innerHTML = `✨ Masya Allah! Benar: <strong>${char}</strong> (+${points})`;
+      toast.classList.add('show');
+      setTimeout(() => toast.classList.remove('show'), 1200);
+    }
+
+    // =========================================================================
+    // WALL COLLISION -> INSTANT FAIL / GAME OVER!
+    // "kalo kena tembok gagal"
+    // =========================================================================
+    function triggerWallCrash(reason = "Menabrak Tembok!") {
+      if (wallCrashActive) return;
+      wallCrashActive = true;
+      gameRunning = false;
+
+      soundCrash();
+
+      const flash = document.getElementById('wallCrashFlash');
+      flash.style.opacity = '1';
+
+      const warningToast = document.getElementById('crashWarningToast');
+      warningToast.textContent = `💥 ${reason} Gagal!`;
+      warningToast.classList.add('show');
+
+      // Camera Shake
+      camera.position.y += 0.6;
+      camera.position.x += (Math.random() - 0.5) * 1.2;
+
+      setTimeout(() => {
+        flash.style.opacity = '0';
+        warningToast.classList.remove('show');
+        setTimeout(() => {
+          endGame();
+        }, 300);
+      }, 700);
+    }
+
+    function startGame() {
+      initAudio();
+      document.getElementById('startScreen').classList.add('hidden');
+      document.getElementById('gameOverScreen').classList.add('hidden');
+
+      score = 0;
+      streak = 1;
+      maxStreak = 1;
+      lettersCollectedCount = 0;
+      currentMissionIndex = 1; // Mulai dari 'Ba'
+      targetLetter = HIJAIYAH_LIST[currentMissionIndex];
+      currentLane = 1;
+      targetX = lanes[1];
+      wallCrashActive = false;
+
+      playerGroup.position.set(0, groundY, 0);
+      updateHUD();
+      gameRunning = true;
+
+      setTimeout(() => speakLetter(targetLetter.sound), 300);
+    }
+
+    function endGame() {
+      gameRunning = false;
+      document.getElementById('finalScore').textContent = score;
+      document.getElementById('finalStats').textContent = `Huruf Dipelajari: ${lettersCollectedCount} • Kombo Maks: ${maxStreak}x`;
+      document.getElementById('gameOverScreen').classList.remove('hidden');
+
+      if (score >= 400) {
+        document.getElementById('gameOverTitle').textContent = 'Subhanallah! Juara Langit!';
+        document.getElementById('gameOverDesc').textContent = 'Prestasi mengagumkan! Kamu menghafal dan mengumpulkan banyak huruf suci Al-Qur\'an dengan luar biasa!';
+      } else {
+        document.getElementById('gameOverTitle').textContent = 'Alhamdulillah, Tetap Semangat!';
+        document.getElementById('gameOverDesc').textContent = 'Setiap huruf Al-Qur\'an yang dipelajari bernilai 10 kebaikan pahala. Ayo coba lagi dan hindari tembok!';
+      }
+    }
+
+    document.getElementById('btnStartGame').addEventListener('click', startGame);
+    document.getElementById('btnRestartGame').addEventListener('click', startGame);
+
+    // =========================================================================
+    // MAIN ANIMATION LOOP
+    // =========================================================================
+    let clock = new THREE.Clock();
+
+    function animate() {
+      requestAnimationFrame(animate);
+
+      const delta = Math.min(clock.getDelta(), 0.08);
+      const time = clock.getElapsedTime();
+
+      if (gameRunning && !wallCrashActive) {
+        const moveDist = runSpeed * delta;
+
+        // Smooth Lane lerp
+        playerGroup.position.x += (targetX - playerGroup.position.x) * 16 * delta;
+
+        // Jump physics
+        if (isJumping) {
+          playerGroup.position.y += jumpVelocity * delta;
+          jumpVelocity += gravity * delta;
+          if (playerGroup.position.y <= groundY) {
+            playerGroup.position.y = groundY;
+            isJumping = false;
+            jumpVelocity = 0;
+          }
+        }
+
+        // Limb swinging animation
+        if (!isJumping) {
+          const runPhase = time * 18;
+          leftLegMesh.rotation.x = Math.sin(runPhase) * 0.55;
+          rightLegMesh.rotation.x = -Math.sin(runPhase) * 0.55;
+          leftArmMesh.rotation.x = -Math.sin(runPhase) * 0.55;
+          rightArmMesh.rotation.x = Math.sin(runPhase) * 0.55;
+          playerInner.position.y = Math.abs(Math.sin(runPhase * 2)) * 0.08;
+        } else {
+          leftLegMesh.rotation.x = -0.4;
+          rightLegMesh.rotation.x = -0.4;
+          leftArmMesh.rotation.x = 0.5;
+          rightArmMesh.rotation.x = 0.5;
+          playerInner.position.y = 0;
+        }
+
+        // Advance Track Segments
+        trackSegments.forEach(seg => {
+          seg.position.z += moveDist;
+          if (seg.position.z > 35) {
+            let minZ = 0;
+            trackSegments.forEach(s => { if (s.position.z < minZ) minZ = s.position.z; });
+            seg.position.z = minZ - SEGMENT_LENGTH;
+            spawnSpawnersForSegment(seg.position.z);
+          }
+        });
+
+        // Collectibles (Coins & Stars)
+        for (let i = collectibleItems.length - 1; i >= 0; i--) {
+          const item = collectibleItems[i];
+          item.position.z += moveDist;
+
+          // Rotation & gentle float
+          item.rotation.y += delta * item.userData.rotSpeed;
+          item.position.y = item.userData.baseY + Math.sin(time * 3 + i) * 0.12;
+
+          // Collision detection
+          const dx = Math.abs(playerGroup.position.x - item.position.x);
+          const dz = Math.abs(playerGroup.position.z - item.position.z);
+          const dy = Math.abs(playerGroup.position.y - item.position.y);
+
+          if (dx < 0.95 && dz < 1.1 && dy < 1.4) {
+            if (item.userData.type === 'letter') {
+              if (item.userData.isTarget) {
+                // Correct target letter!
+                const points = 100 * streak;
+                score += points;
+                soundSuccess();
+                spawnCollectBurst(item.position, true);
+                showToast(item.userData.letter.char, points);
+                advanceToNextLetter();
+              } else {
+                score += 25;
+                streak = 1;
+                soundCoin();
+                spawnCollectBurst(item.position, false);
+                updateHUD();
+              }
+            } else if (item.userData.type === 'star') {
+              score += 50;
+              soundCoin();
+              spawnCollectBurst(item.position, false);
+              updateHUD();
+            }
+
+            scene.remove(item);
+            collectibleItems.splice(i, 1);
+            continue;
+          }
+
+          if (item.position.z > 15) {
+            scene.remove(item);
+            collectibleItems.splice(i, 1);
+          }
+        }
+
+        // ============================================================
+        // OBSTACLES: STONE WALLS & JUMPABLE HURDLES
+        // "kalo kena tembok gagal"
+        // ============================================================
+        for (let i = obstacles.length - 1; i >= 0; i--) {
+          const obs = obstacles[i];
+          obs.position.z += moveDist;
+
+          const dx = Math.abs(playerGroup.position.x - obs.position.x);
+          const dz = Math.abs(playerGroup.position.z - obs.position.z);
+          const pY = playerGroup.position.y;
+
+          if (obs.userData.type === 'wall') {
+            // Tembok batu tidak bisa dilompati — Tabrak = GAGAL!
+            if (dx < 1.15 && dz < 0.85) {
+              triggerWallCrash("Menabrak Pilar Tembok!");
+              break;
+            }
+          } else if (obs.userData.type === 'hurdle') {
+            // Palang rintangan — Jika tidak melompat = GAGAL!
+            if (dx < 1.05 && dz < 0.75 && pY < (groundY + 0.6)) {
+              triggerWallCrash("Menabrak Palang Kayu!");
+              break;
+            }
+          }
+
+          if (obs.position.z > 15) {
+            scene.remove(obs);
+            obstacles.splice(i, 1);
+          }
+        }
+
+        // Camera Follow
+        camera.position.x = playerGroup.position.x * 0.32;
+        camera.lookAt(playerGroup.position.x * 0.12, 1.5, -6);
+      }
+
+      // Animate Particles
+      for (let pIdx = particleSystems.length - 1; pIdx >= 0; pIdx--) {
+        const ps = particleSystems[pIdx];
+        ps.life -= delta;
+        const positions = ps.mesh.geometry.attributes.position.array;
+
+        for (let i = 0; i < ps.velocities.length; i++) {
+          positions[i * 3] += ps.velocities[i].x * delta;
+          positions[i * 3 + 1] += ps.velocities[i].y * delta;
+          positions[i * 3 + 2] += ps.velocities[i].z * delta;
+          ps.velocities[i].y -= 9.8 * delta;
+        }
+        ps.mesh.geometry.attributes.position.needsUpdate = true;
+        ps.mesh.material.opacity = Math.max(0, ps.life / ps.maxLife);
+
+        if (ps.life <= 0) {
+          scene.remove(ps.mesh);
+          particleSystems.splice(pIdx, 1);
+        }
+      }
+
+      // Background Drift
+      backgroundClouds.forEach(c => {
+        c.position.x += 0.5 * delta;
+        if (c.position.x > 70) c.position.x = -70;
+      });
+
+      distantIslands.forEach((isl, idx) => {
+        isl.position.y += Math.sin(time * 0.8 + idx) * 0.005;
+      });
+
+      renderer.render(scene, camera);
+    }
+
+    function onWindowResize() {
+      camera.aspect = window.innerWidth / window.innerHeight;
+      camera.updateProjectionMatrix();
+      renderer.setSize(window.innerWidth, window.innerHeight);
+    }
+
+    initThree();
+    animate();
+  </script>
+</body>
+</html>

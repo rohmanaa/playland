@@ -1,0 +1,45 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 400">
+  <defs>
+    <linearGradient id="sky" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#35B3C4"/>
+      <stop offset="1" stop-color="#143F86"/>
+    </linearGradient>
+  </defs>
+  <rect width="640" height="400" fill="url(#sky)"/>
+  <g opacity="0.18">
+    <circle cx="90" cy="330" r="26" fill="none" stroke="#ffffff" stroke-width="4"/>
+    <circle cx="560" cy="60" r="18" fill="none" stroke="#ffffff" stroke-width="4"/>
+    <circle cx="600" cy="300" r="12" fill="#ffffff"/>
+    <circle cx="46" cy="80" r="10" fill="#ffffff"/>
+  </g>
+  <g transform="translate(232,196)">
+    <circle r="130" fill="#0B2F5C" stroke="#FFD15E" stroke-width="10"/>
+    <g stroke="#0B2F5C" stroke-width="6">
+      <path d="M0 0 L0 -124 A124 124 0 0 1 107 -62 Z" fill="#FF8AC0"/>
+      <path d="M0 0 L107 -62 A124 124 0 0 1 107 62 Z" fill="#5EB6FF"/>
+      <path d="M0 0 L107 62 A124 124 0 0 1 0 124 Z" fill="#4FE3F5"/>
+      <path d="M0 0 L0 124 A124 124 0 0 1 -107 62 Z" fill="#B79BFF"/>
+      <path d="M0 0 L-107 62 A124 124 0 0 1 -107 -62 Z" fill="#6EE79A"/>
+      <path d="M0 0 L-107 -62 A124 124 0 0 1 0 -124 Z" fill="#FFD23C"/>
+    </g>
+    <circle r="34" fill="#FFF7D6" stroke="#E8920C" stroke-width="7"/>
+    <path d="M-6 -12 a13 13 0 1 0 8 22 a15 15 0 1 1 -8 -22 Z" fill="#E8920C"/>
+    <path d="M14 -14 l3.5 8 8 3.5 -8 3.5 -3.5 8 -3.5 -8 -8 -3.5 8 -3.5 Z" fill="#E8920C"/>
+  </g>
+  <polygon points="232,32 244,58 232,52 220,58" fill="#FFD15E" stroke="#0B2F5C" stroke-width="4"/>
+  <g transform="translate(470,180) rotate(8)">
+    <rect x="-86" y="-118" width="172" height="236" rx="22" fill="#FFF7D6" stroke="#E8920C" stroke-width="8"/>
+    <rect x="-70" y="-102" width="140" height="60" rx="12" fill="#FF8AC0"/>
+    <path d="M-16 -78 a14 14 0 1 0 9 24 a17 17 0 1 1 -9 -24 Z" fill="#ffffff"/>
+    <text x="-56" y="-16" font-family="Fredoka, Nunito, sans-serif" font-size="26" font-weight="700" fill="#3B2208">Roda Jelajah</text>
+    <text x="-56" y="16" font-family="Fredoka, Nunito, sans-serif" font-size="26" font-weight="700" fill="#3B2208">Islami</text>
+    <g fill="#E8920C">
+      <circle cx="-52" cy="52" r="7"/>
+      <circle cx="-24" cy="52" r="7"/>
+      <circle cx="4" cy="52" r="7"/>
+      <circle cx="32" cy="52" r="7"/>
+      <circle cx="60" cy="52" r="7"/>
+    </g>
+    <text x="-56" y="96" font-family="Fredoka, Nunito, sans-serif" font-size="17" font-weight="600" fill="#8A5A00">Putar &#38; jelajahi kartunya!</text>
+  </g>
+</svg>

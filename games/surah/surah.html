@@ -1,0 +1,3018 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no, viewport-fit=cover">
+  <title>Hafalan Surah 3D: Petualangan Ayat Juz 'Amma</title>
+  <meta name="description" content="Game edukasi interaktif 3D hafalan surah Juz 'Amma: sambung ayat, tebak nama surah, dan pahami makna Al-Qur'an secara menyenangkan.">
+
+  <!-- Google Fonts: Fredoka & Amiri with system-ui fallback -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600;700&family=Amiri:wght@700&display=swap" rel="stylesheet">
+
+  <!-- Three.js r128 CDN -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+
+  <style>
+    /* ==========================================================================
+       CSS TOKENS & RESET (CRAZYGAMES MODERN ISLAMIC PALETTE)
+       ========================================================================== */
+    :root {
+      --bg: #0b172a;
+      --panel: #ffffff;
+      --panel2: #f0f7ff;
+      --ink: #11264c;
+      --mute: #59739d;
+      --accent: #0ea5e9;
+      --accent-d: #0284c7;
+      --gold: #f59e0b;
+      --gold-d: #d97706;
+      --emerald: #10b981;
+      --emerald-d: #059669;
+      --bad: #ef4444;
+      --purple: #8b5cf6;
+      --radius: 24px;
+      --s: 1;
+      box-sizing: border-box;
+      padding-top: env(safe-area-inset-top, 0px);
+      padding-bottom: env(safe-area-inset-bottom, 0px);
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      user-select: none;
+      -webkit-user-select: none;
+      touch-action: none;
+    }
+
+    html, body {
+      width: 100%;
+      height: 100%;
+      overflow: hidden;
+      background: var(--bg);
+      font-family: 'Fredoka', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, system-ui, sans-serif;
+      font-weight: 500;
+      color: var(--ink);
+    }
+
+    #gameCanvas {
+      position: fixed;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      display: block;
+      z-index: 1;
+    }
+
+    /* SVG Inlines */
+    .ico {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 1.25em;
+      height: 1.25em;
+      vertical-align: middle;
+      flex-shrink: 0;
+    }
+    .ico svg {
+      width: 100%;
+      height: 100%;
+      fill: currentColor;
+    }
+
+    /* 3D Beveled Buttons */
+    .btn {
+      font-family: inherit;
+      font-weight: 700;
+      font-size: 17px;
+      border: 3px solid #ffffff;
+      border-radius: 6px;
+      padding: 10px 24px;
+      color: #ffffff;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      background: linear-gradient(180deg, #38bdf8, #0284c7);
+      box-shadow: 0 5px 0 #0369a1, 0 8px 0 rgba(0,0,0,0.22);
+      text-shadow: 0 2px 0 rgba(0,0,0,0.25);
+      transition: transform 0.08s ease, box-shadow 0.08s ease;
+      position: relative;
+    }
+    .btn:active {
+      transform: translateY(4px);
+      box-shadow: 0 1px 0 #0369a1, 0 2px 0 rgba(0,0,0,0.2);
+    }
+    .btn-gold {
+      background: linear-gradient(180deg, #fbbf24, #d97706);
+      box-shadow: 0 5px 0 #b45309, 0 8px 0 rgba(0,0,0,0.22);
+    }
+    .btn-gold:active { box-shadow: 0 1px 0 #b45309; }
+    .btn-emerald {
+      background: linear-gradient(180deg, #34d399, #059669);
+      box-shadow: 0 5px 0 #047857, 0 8px 0 rgba(0,0,0,0.22);
+    }
+    .btn-emerald:active { box-shadow: 0 1px 0 #047857; }
+    .btn-purple {
+      background: linear-gradient(180deg, #a78bfa, #7c3aed);
+      box-shadow: 0 5px 0 #6d28d9, 0 8px 0 rgba(0,0,0,0.22);
+    }
+    .btn-purple:active { box-shadow: 0 1px 0 #6d28d9; }
+    .btn-round {
+      width: 48px;
+      height: 48px;
+      padding: 0;
+      border-radius: 6px;
+      border: 3px solid #ffffff;
+      background: linear-gradient(180deg, #38bdf8, #0284c7);
+      box-shadow: 0 4px 0 #0369a1, 0 6px 0 rgba(0,0,0,0.25);
+      color: #ffffff;
+      font-size: 20px;
+    }
+    .btn-round:active {
+      transform: translateY(3px);
+      box-shadow: 0 1px 0 #0369a1;
+    }
+    .btn:disabled {
+      filter: grayscale(0.85);
+      opacity: 0.65;
+      cursor: not-allowed;
+      transform: none !important;
+    }
+
+    /* Resource Chips */
+    .chip {
+      display: inline-flex;
+      align-items: center;
+      gap: 7px;
+      padding: 4px 14px 4px 8px;
+      border-radius: 6px;
+      background: linear-gradient(180deg, #ffffff, #dce9f8);
+      border: 2px solid #ffffff;
+      box-shadow: 0 3px 0 rgba(16, 42, 82, 0.22);
+      font-weight: 700;
+      font-size: 15px;
+      color: var(--ink);
+      font-variant-numeric: tabular-nums;
+    }
+    .chip .ico { font-size: 18px; }
+
+    /* Modals & Overlays */
+    .overlay {
+      position: fixed;
+      inset: 0;
+      background: radial-gradient(ellipse at center, rgba(14, 34, 65, 0.45), rgba(7, 18, 38, 0.88));
+      backdrop-filter: blur(4px);
+      -webkit-backdrop-filter: blur(4px);
+      z-index: 50;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      padding: 16px;
+      opacity: 0;
+      transition: opacity 0.25s ease;
+    }
+    .overlay.active {
+      display: flex;
+      opacity: 1;
+    }
+
+    .modal-card {
+      width: 100%;
+      max-width: 530px;
+      max-height: 90vh;
+      background: linear-gradient(180deg, #ffffff, #f2f7ff);
+      border: 3.5px solid #ffffff;
+      border-radius: 8px;
+      box-shadow: 0 8px 0 rgba(20, 48, 88, 0.22), 0 24px 48px rgba(5, 15, 32, 0.5);
+      padding: 22px 20px;
+      text-align: center;
+      overflow-y: auto;
+      overflow-x: hidden;
+      transform: translateY(20px) scale(0.92);
+      transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+      position: relative;
+    }
+    .overlay.active .modal-card {
+      transform: translateY(0) scale(1);
+    }
+    .modal-card::-webkit-scrollbar { width: 6px; }
+    .modal-card::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
+
+    .modal-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 14px;
+      position: relative;
+    }
+    .modal-title {
+      font-size: 26px;
+      font-weight: 700;
+      color: var(--ink);
+      flex: 1;
+    }
+    .modal-close {
+      position: absolute;
+      right: 0;
+      top: -2px;
+      width: 36px;
+      height: 36px;
+      border-radius: 6px;
+      border: 2px solid #ffffff;
+      background: #ef4444;
+      color: #fff;
+      cursor: pointer;
+      box-shadow: 0 3px 0 #b91c1c;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 18px;
+      font-weight: 700;
+    }
+    .modal-close:active { transform: translateY(2px); box-shadow: 0 1px 0 #b91c1c; }
+
+    /* HUD IN GAME */
+    #hud {
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      z-index: 20;
+      display: none;
+      flex-direction: column;
+      justify-content: space-between;
+      padding: calc(env(safe-area-inset-top, 0px) + 12px) 16px calc(env(safe-area-inset-bottom, 0px) + 14px);
+    }
+    .hud-topbar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      pointer-events: auto;
+    }
+    .hud-top-left, .hud-top-right {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .hud-center-pill {
+      background: rgba(255, 255, 255, 0.94);
+      border: 2.5px solid #ffffff;
+      border-radius: 999px;
+      padding: 6px 18px;
+      box-shadow: 0 5px 16px rgba(12, 32, 64, 0.2);
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .hud-level-name {
+      font-weight: 700;
+      font-size: 15px;
+      color: var(--ink);
+      white-space: nowrap;
+    }
+    .hud-timer {
+      font-weight: 700;
+      font-size: 17px;
+      color: #d97706;
+      font-variant-numeric: tabular-nums;
+      display: flex;
+      align-items: center;
+      gap: 4px;
+    }
+
+    /* Ayat Prompt Box */
+    .surah-box {
+      pointer-events: auto;
+      max-width: 620px;
+      width: 100%;
+      margin: 0 auto;
+      background: rgba(255, 255, 255, 0.96);
+      border: 3.5px solid #ffffff;
+      border-radius: 26px;
+      box-shadow: 0 8px 0 rgba(20, 48, 88, 0.2), 0 20px 40px rgba(0, 0, 0, 0.35);
+      padding: 16px 20px 18px;
+      text-align: center;
+      animation: popBounce 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+    }
+    @keyframes popBounce {
+      from { transform: translateY(30px) scale(0.9); opacity: 0; }
+      to { transform: translateY(0) scale(1); opacity: 1; }
+    }
+    .surah-tag {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      background: linear-gradient(180deg, #0284c7, #0369a1);
+      color: #fff;
+      font-size: 13px;
+      font-weight: 700;
+      padding: 3px 14px;
+      border-radius: 999px;
+      box-shadow: 0 2px 6px rgba(2, 132, 199, 0.3);
+      margin-bottom: 8px;
+    }
+    .surah-arabic-display {
+      font-family: 'Amiri', serif;
+      direction: rtl;
+      font-size: 32px;
+      line-height: 1.8;
+      color: #0369a1;
+      font-weight: 700;
+      margin: 6px 0 10px;
+      text-shadow: 0 1px 2px rgba(0,0,0,0.1);
+    }
+    .surah-prompt {
+      font-size: 16.5px;
+      font-weight: 700;
+      color: var(--ink);
+      line-height: 1.35;
+      margin-bottom: 14px;
+    }
+    .options-grid {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 10px;
+    }
+    .btn-option {
+      background: linear-gradient(180deg, #ffffff, #eff6ff);
+      border: 2.5px solid #bae6fd;
+      border-radius: 16px;
+      padding: 12px 16px;
+      text-align: left;
+      font-family: inherit;
+      font-size: 15px;
+      font-weight: 700;
+      color: var(--ink);
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      box-shadow: 0 4px 0 #7dd3fc;
+      transition: all 0.1s ease;
+    }
+    .btn-option:hover {
+      background: #e0f2fe;
+      border-color: #0284c7;
+      box-shadow: 0 4px 0 #0369a1;
+    }
+    .btn-option:active {
+      transform: translateY(3px);
+      box-shadow: 0 1px 0 #0369a1;
+    }
+    .btn-option .opt-arabic {
+      font-family: 'Amiri', serif;
+      direction: rtl;
+      font-size: 24px;
+      color: #0284c7;
+      font-weight: 700;
+    }
+    .btn-option.correct {
+      background: #dcfce7 !important;
+      border-color: #22c55e !important;
+      color: #15803d !important;
+      box-shadow: 0 4px 0 #16a34a !important;
+    }
+    .btn-option.wrong {
+      background: #fee2e2 !important;
+      border-color: #ef4444 !important;
+      color: #b91c1c !important;
+      box-shadow: 0 4px 0 #dc2626 !important;
+      animation: shake 0.3s;
+    }
+    @keyframes shake {
+      0%, 100% { transform: translateX(0); }
+      25% { transform: translateX(-8px); }
+      75% { transform: translateX(8px); }
+    }
+
+    /* Boosters */
+    .hud-boosters {
+      display: flex;
+      justify-content: center;
+      gap: 12px;
+      pointer-events: auto;
+      margin-top: 10px;
+    }
+    .btn-booster {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      background: rgba(255, 255, 255, 0.95);
+      border: 2px solid #ffffff;
+      border-radius: 999px;
+      padding: 6px 14px;
+      font-size: 13px;
+      font-weight: 700;
+      color: var(--ink);
+      box-shadow: 0 4px 10px rgba(0,0,0,0.15);
+      cursor: pointer;
+    }
+    .btn-booster:active { transform: translateY(2px); }
+
+    /* Tartil Box Popup */
+    .tartil-card {
+      background: #f8fafc;
+      border: 2px solid #e2e8f0;
+      border-radius: 18px;
+      padding: 14px;
+      margin-top: 12px;
+      text-align: center;
+    }
+    .tartil-arabic {
+      font-family: 'Amiri', serif;
+      direction: rtl;
+      font-size: 26px;
+      line-height: 1.8;
+      color: #0284c7;
+      font-weight: 700;
+    }
+    .tartil-arti {
+      font-size: 14px;
+      font-weight: 600;
+      color: var(--ink);
+      line-height: 1.4;
+      margin-top: 4px;
+    }
+
+    /* Screen Shake & Floating Juice */
+    .floating-text {
+      position: fixed;
+      pointer-events: none;
+      font-size: 28px;
+      font-weight: 700;
+      color: #fbbf24;
+      text-shadow: 0 4px 0 #92400e, 0 0 12px rgba(245, 158, 11, 0.7);
+      z-index: 100;
+      animation: floatUp 0.9s cubic-bezier(0.18, 0.89, 0.32, 1.28) forwards;
+    }
+    @keyframes floatUp {
+      0% { opacity: 0; transform: translate(-50%, 20px) scale(0.6); }
+      30% { opacity: 1; transform: translate(-50%, 0) scale(1.2); }
+      100% { opacity: 0; transform: translate(-50%, -60px) scale(1); }
+    }
+
+    /* Toast Notification */
+    #toastContainer {
+      position: fixed;
+      top: 18px;
+      left: 50%;
+      transform: translateX(-50%);
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      align-items: center;
+      z-index: 999;
+      pointer-events: none;
+    }
+    .toast-msg {
+      background: linear-gradient(180deg, #1e293b, #0f172a);
+      color: #fff;
+      font-weight: 700;
+      font-size: 14px;
+      border: 2px solid rgba(255, 255, 255, 0.3);
+      border-radius: 999px;
+      padding: 8px 22px;
+      box-shadow: 0 8px 20px rgba(0,0,0,0.3);
+      animation: toastIn 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+    }
+    @keyframes toastIn {
+      from { transform: translateY(-20px); opacity: 0; }
+      to { transform: translateY(0); opacity: 1; }
+    }
+
+    #confettiCanvas {
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      z-index: 90;
+    }
+
+    /* UI SCREENS */
+    #screenSplash {
+      position: fixed;
+      inset: 0;
+      z-index: 40;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      background: radial-gradient(circle at center, #0369a1, #08152c);
+      color: #fff;
+      text-align: center;
+      padding: 24px;
+    }
+    .splash-logo {
+      font-size: clamp(38px, 9vw, 64px);
+      font-weight: 700;
+      line-height: 1.1;
+      color: #facc15;
+      text-shadow: 0 6px 0 #b45309, 0 16px 32px rgba(0,0,0,0.5);
+      margin-bottom: 8px;
+    }
+    .splash-logo span {
+      color: #ffffff;
+      text-shadow: 0 6px 0 #0284c7;
+    }
+    .splash-sub {
+      font-size: clamp(15px, 3.5vw, 20px);
+      color: #e0f2fe;
+      max-width: 520px;
+      margin-bottom: 28px;
+      text-shadow: 0 2px 4px rgba(0,0,0,0.3);
+    }
+    .splash-progress-wrap {
+      width: 260px;
+      height: 18px;
+      background: rgba(255,255,255,0.2);
+      border: 2px solid #fff;
+      border-radius: 999px;
+      overflow: hidden;
+      margin-bottom: 24px;
+    }
+    .splash-progress-bar {
+      height: 100%;
+      width: 0%;
+      background: linear-gradient(90deg, #38bdf8, #0ea5e9);
+      border-radius: 999px;
+      transition: width 0.3s;
+    }
+
+    /* Menu Screen */
+    #screenMenu {
+      position: fixed;
+      inset: 0;
+      z-index: 30;
+      display: none;
+      flex-direction: column;
+      justify-content: space-between;
+      padding: calc(env(safe-area-inset-top, 0px) + 16px) 20px calc(env(safe-area-inset-bottom, 0px) + 20px);
+      pointer-events: none;
+    }
+    .menu-top-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      pointer-events: auto;
+    }
+    .menu-title-block {
+      text-align: center;
+      margin: 10px 0;
+      pointer-events: auto;
+    }
+    .menu-main-title {
+      font-size: clamp(42px, 11vw, 76px);
+      color: #fff;
+      font-weight: 700;
+      line-height: 1.05;
+      text-shadow: 0 6px 0 #0369a1, 0 16px 36px rgba(0,0,0,0.45);
+    }
+    .menu-main-title span {
+      color: #facc15;
+      text-shadow: 0 6px 0 #b45309;
+    }
+    .menu-sub-title {
+      font-size: 17px;
+      font-weight: 600;
+      color: #e0f2fe;
+      text-shadow: 0 2px 4px rgba(0,0,0,0.4);
+    }
+    .menu-actions {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 12px;
+      pointer-events: auto;
+    }
+    .menu-btn-play {
+      font-size: 26px;
+      padding: 14px 52px;
+      border-radius: 24px;
+    }
+    .menu-nav-grid {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+      justify-content: center;
+    }
+
+    /* Level Select Screen */
+    .worlds-tabs {
+      display: flex;
+      gap: 8px;
+      overflow-x: auto;
+      padding: 4px 2px 10px;
+      margin-bottom: 12px;
+    }
+    .world-tab-btn {
+      padding: 8px 16px;
+      border-radius: 14px;
+      border: 2px solid #bae6fd;
+      background: #ffffff;
+      color: var(--ink);
+      font-weight: 700;
+      font-size: 13.5px;
+      cursor: pointer;
+      white-space: nowrap;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .world-tab-btn.active {
+      background: #0284c7;
+      border-color: #0284c7;
+      color: #ffffff;
+      box-shadow: 0 4px 10px rgba(2, 132, 199, 0.3);
+    }
+    .levels-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 12px;
+      padding: 6px 0;
+    }
+    .level-node {
+      background: #ffffff;
+      border: 3px solid #cbd5e1;
+      border-radius: 20px;
+      padding: 14px 10px;
+      cursor: pointer;
+      box-shadow: 0 5px 0 #94a3b8;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 6px;
+      transition: all 0.1s ease;
+      position: relative;
+    }
+    .level-node:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 7px 0 #94a3b8;
+    }
+    .level-node:active {
+      transform: translateY(3px);
+      box-shadow: 0 2px 0 #94a3b8;
+    }
+    .level-node.locked {
+      background: #f1f5f9;
+      border-color: #cbd5e1;
+      box-shadow: 0 4px 0 #94a3b8;
+      opacity: 0.75;
+      cursor: not-allowed;
+    }
+    .level-node.boss {
+      border-color: #f59e0b;
+      box-shadow: 0 5px 0 #d97706;
+      background: linear-gradient(180deg, #fffbeb, #fef3c7);
+    }
+    .level-node-num {
+      width: 38px;
+      height: 38px;
+      border-radius: 50%;
+      background: #0284c7;
+      color: #fff;
+      font-size: 18px;
+      font-weight: 700;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .level-node.boss .level-node-num { background: #d97706; }
+    .level-node-stars {
+      display: flex;
+      gap: 3px;
+      color: #cbd5e1;
+      font-size: 14px;
+    }
+    .level-node-stars .filled { color: #f59e0b; }
+    .level-node-title {
+      font-size: 12px;
+      font-weight: 700;
+      color: var(--ink);
+      line-height: 1.2;
+      text-align: center;
+    }
+
+    /* Shop Items */
+    .shop-tabs {
+      display: flex;
+      justify-content: center;
+      gap: 8px;
+      margin-bottom: 14px;
+    }
+    .shop-items-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 12px;
+    }
+    .shop-item-card {
+      background: #ffffff;
+      border: 2.5px solid #e2e8f0;
+      border-radius: 18px;
+      padding: 12px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 6px;
+      box-shadow: 0 4px 0 #cbd5e1;
+    }
+    .shop-item-card.equipped {
+      border-color: #0284c7;
+      box-shadow: 0 4px 0 #0369a1;
+      background: #f0f9ff;
+    }
+    .shop-item-icon {
+      font-size: 38px;
+      margin: 6px 0;
+    }
+    .shop-item-name {
+      font-size: 14.5px;
+      font-weight: 700;
+      color: var(--ink);
+    }
+    .shop-item-desc {
+      font-size: 11.5px;
+      color: var(--mute);
+      min-height: 28px;
+    }
+
+    /* Daily Rewards Grid */
+    .daily-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 8px;
+      margin: 12px 0 18px;
+    }
+    .daily-day-card {
+      background: #ffffff;
+      border: 2px solid #e2e8f0;
+      border-radius: 14px;
+      padding: 10px 6px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 4px;
+      box-shadow: 0 3px 0 #cbd5e1;
+    }
+    .daily-day-card.claimed {
+      background: #ecfdf5;
+      border-color: #10b981;
+      box-shadow: 0 3px 0 #059669;
+    }
+    .daily-day-card.today {
+      background: #fef3c7;
+      border-color: #f59e0b;
+      box-shadow: 0 4px 0 #d97706;
+      transform: scale(1.05);
+    }
+
+    /* Missions & Achievements */
+    .mission-row {
+      background: #ffffff;
+      border: 2px solid #e2e8f0;
+      border-radius: 16px;
+      padding: 12px 14px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      margin-bottom: 8px;
+      text-align: left;
+      box-shadow: 0 3px 0 #cbd5e1;
+    }
+    .mission-info h4 {
+      font-size: 14.5px;
+      color: var(--ink);
+      margin-bottom: 4px;
+    }
+    .mission-info p {
+      font-size: 12px;
+      color: var(--mute);
+    }
+    .mission-progress-bar {
+      width: 100px;
+      height: 8px;
+      background: #e2e8f0;
+      border-radius: 999px;
+      overflow: hidden;
+      margin-top: 5px;
+    }
+    .mission-progress-fill {
+      height: 100%;
+      background: #0284c7;
+      border-radius: 999px;
+    }
+
+    @media (max-width: 480px) {
+      .modal-card { padding: 18px 14px; }
+      .levels-grid { grid-template-columns: repeat(2, 1fr); }
+      .surah-prompt { font-size: 15px; }
+      .surah-arabic-display { font-size: 26px; }
+      .btn-option { font-size: 13.5px; padding: 10px 12px; }
+      .menu-main-title { font-size: 40px; }
+      .daily-grid { grid-template-columns: repeat(3, 1fr); }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- THREE.JS CANVAS -->
+  <canvas id="gameCanvas"></canvas>
+
+  <!-- CONFETTI CANVAS -->
+  <canvas id="confettiCanvas"></canvas>
+
+  <!-- FLOATING TOAST -->
+  <div id="toastContainer"></div>
+
+  <!-- =========================================================================
+       SPLASH SCREEN
+       ========================================================================= -->
+  <div id="screenSplash">
+    <div class="splash-logo">HAFALAN <span>SURAH</span> 3D</div>
+    <div class="splash-sub">Petualangan Ayat Juz 'Amma — Sambung Ayat, Tebak Surah & Tartil Al-Qur'an</div>
+    <div class="splash-progress-wrap">
+      <div id="splashProgressBar" class="splash-progress-bar"></div>
+    </div>
+    <button id="btnSplashStart" class="btn btn-gold" style="font-size: 20px; padding: 12px 36px; display: none;">
+      <span class="ico" data-i="play"></span> BUKA & MAIN
+    </button>
+  </div>
+
+  <!-- =========================================================================
+       MAIN MENU SCREEN
+       ========================================================================= -->
+  <div id="screenMenu">
+    <div class="menu-top-row">
+      <div style="display: flex; gap: 8px;">
+        <div class="chip">
+          <span class="ico" data-i="coin" style="color: #f59e0b;"></span>
+          <span id="menuCoinCount">0</span>
+        </div>
+        <div class="chip">
+          <span class="ico" data-i="gem" style="color: #06b6d4;"></span>
+          <span id="menuGemCount">0</span>
+        </div>
+      </div>
+      <div style="display: flex; gap: 8px;">
+        <button id="btnAudioToggle" class="btn-round" aria-label="Audio">
+          <span class="ico" data-i="sound"></span>
+        </button>
+        <button id="btnSettings" class="btn-round" aria-label="Pengaturan" style="background: linear-gradient(180deg,#94a3b8,#475569);">
+          <span class="ico" data-i="settings"></span>
+        </button>
+      </div>
+    </div>
+
+    <div class="menu-title-block">
+      <h1 class="menu-main-title">HAFALAN <span>SURAH</span></h1>
+      <p class="menu-sub-title">📖 Petualangan Mutiara Ayat Juz 'Amma 3D 📖</p>
+    </div>
+
+    <div class="menu-actions">
+      <button id="btnMenuPlay" class="btn menu-btn-play btn-gold">
+        <span class="ico" data-i="play"></span> MAIN SEKARANG
+      </button>
+      <div class="menu-nav-grid">
+        <button id="btnOpenLevels" class="btn">
+          <span class="ico" data-i="map"></span> Pilih Level
+        </button>
+        <button id="btnOpenShop" class="btn btn-purple">
+          <span class="ico" data-i="shop"></span> Toko Mushaf
+        </button>
+        <button id="btnOpenDaily" class="btn btn-gold">
+          <span class="ico" data-i="gift"></span> Hadiah Harian
+        </button>
+        <button id="btnOpenMissions" class="btn btn-emerald">
+          <span class="ico" data-i="check"></span> Misi
+        </button>
+        <button id="btnOpenAchievements" class="btn btn-purple">
+          <span class="ico" data-i="trophy"></span> Prestasi
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- =========================================================================
+       IN-GAME HUD
+       ========================================================================= -->
+  <div id="hud">
+    <div class="hud-topbar">
+      <div class="hud-top-left">
+        <button id="btnPause" class="btn-round" aria-label="Jeda" style="width: 42px; height: 42px; font-size: 16px;">
+          <span class="ico" data-i="pause"></span>
+        </button>
+        <div class="chip">
+          <span class="ico" data-i="star" style="color: #f59e0b;"></span>
+          <span id="hudStarCount">0</span>
+        </div>
+      </div>
+      <div class="hud-center-pill">
+        <span id="hudLevelTitle" class="hud-level-name">Level 1: Al-Fatihah</span>
+        <div class="hud-timer">
+          <span class="ico" data-i="clock"></span>
+          <span id="hudTimerSec">35s</span>
+        </div>
+      </div>
+      <div class="hud-top-right">
+        <div class="chip">
+          <span class="ico" data-i="coin" style="color: #f59e0b;"></span>
+          <span id="hudCoinCount">0</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Surah Prompt Box -->
+    <div id="surahBox" class="surah-box">
+      <div class="surah-tag" id="surahCategoryTag">
+        <span class="ico" data-i="book"></span> Surah Al-Fatihah
+      </div>
+      <div class="surah-arabic-display" id="surahArabicPrompt">
+        بِسْمِ اللَّهِ الرَّحْمَٰنِ الرَّحِيمِ
+      </div>
+      <div class="surah-prompt" id="surahQuestionText">
+        Lanjutan ayat berikutnya dari QS. Al-Fatihah adalah...
+      </div>
+      <div class="options-grid" id="surahOptionsList">
+        <!-- Injected via JavaScript -->
+      </div>
+      <div class="hud-boosters">
+        <button id="btnBoostHint" class="btn-booster" title="Hilangkan 1 opsi salah">
+          <span class="ico" data-i="bolt" style="color: #f59e0b;"></span> Petunjuk (<span id="hintCount">2</span>)
+        </button>
+        <button id="btnBoostTime" class="btn-booster" title="Tambah 20 detik">
+          <span class="ico" data-i="clock" style="color: #0284c7;"></span> +20 Detik (<span id="timeCount">2</span>)
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- =========================================================================
+       MODAL: LEVEL SELECT
+       ========================================================================= -->
+  <div id="modalLevels" class="overlay">
+    <div class="modal-card">
+      <div class="modal-header">
+        <h2 class="modal-title">Pilih Surah Juz 'Amma</h2>
+        <button class="modal-close" data-close="levels">&times;</button>
+      </div>
+      <div class="worlds-tabs" id="worldTabsList"></div>
+      <div class="levels-grid" id="levelsGridList"></div>
+    </div>
+  </div>
+
+  <!-- =========================================================================
+       MODAL: BRIEFING
+       ========================================================================= -->
+  <div id="modalBriefing" class="overlay">
+    <div class="modal-card">
+      <div class="modal-header">
+        <h2 class="modal-title" id="briefingLevelTitle">Level 1: Al-Fatihah</h2>
+        <button class="modal-close" data-close="briefing">&times;</button>
+      </div>
+      <div id="briefingWorldTag" class="surah-tag" style="margin-bottom: 12px;">Dunia 1: Surah Pembuka & Pelindung</div>
+      <p id="briefingDesc" style="font-size: 15px; color: var(--mute); margin-bottom: 16px; line-height: 1.4;">
+        Ummul Kitab (Induk Al-Qur'an) yang wajib dibaca pada setiap rakaat shalat.
+      </p>
+      <div class="tartil-card" id="briefingTartilBox">
+        <div class="tartil-arabic" id="briefingArabic">الْحَمْدُ لِلَّهِ رَبِّ الْعَالَمِينَ</div>
+        <div class="tartil-arti" id="briefingArti">"Segala puji bagi Allah, Tuhan seluruh alam."</div>
+      </div>
+      <div style="margin-top: 18px; display: flex; justify-content: center; gap: 10px;">
+        <button id="btnStartLevelNow" class="btn btn-gold" style="font-size: 18px; padding: 12px 32px;">
+          <span class="ico" data-i="play"></span> MULAI TANTANGAN
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- =========================================================================
+       MODAL: LEVEL RESULT (WIN / LOSE)
+       ========================================================================= -->
+  <div id="modalResult" class="overlay">
+    <div class="modal-card">
+      <h2 id="resultTitle" style="font-size: 28px; color: #10b981; margin-bottom: 8px;">Alhamdulillah! Benar!</h2>
+      <div id="resultStarsRow" style="font-size: 38px; color: #cbd5e1; margin-bottom: 12px; display: flex; justify-content: center; gap: 6px;">
+        <span id="star1" class="ico" data-i="star"></span>
+        <span id="star2" class="ico" data-i="star"></span>
+        <span id="star3" class="ico" data-i="star"></span>
+      </div>
+      <div style="display: flex; justify-content: center; gap: 14px; margin-bottom: 16px;">
+        <div class="chip">
+          <span class="ico" data-i="coin" style="color: #f59e0b;"></span>
+          +<span id="resultCoinReward">50</span>
+        </div>
+        <div class="chip">
+          <span class="ico" data-i="sparkle" style="color: #8b5cf6;"></span>
+          +<span id="resultXpReward">120</span> XP
+        </div>
+      </div>
+      <div class="tartil-card" id="resultTartilBox">
+        <div class="tartil-arabic" id="resultArabic">خَيْرُكُمْ مَنْ تَعَلَّمَ الْقُرْآنَ وَعَلَّمَهُ</div>
+        <div class="tartil-arti" id="resultArti">"Sebaik-baik kalian adalah orang yang mempelajari Al-Qur'an dan mengajarkannya." (HR. Bukhari)</div>
+      </div>
+      <div style="margin-top: 20px; display: flex; justify-content: center; gap: 10px; flex-wrap: wrap;">
+        <button id="btnResultNext" class="btn btn-emerald">
+          <span class="ico" data-i="next"></span> Level Lanjut
+        </button>
+        <button id="btnResultRetry" class="btn">
+          <span class="ico" data-i="retry"></span> Ulangi
+        </button>
+        <button id="btnResultMenu" class="btn btn-purple">
+          <span class="ico" data-i="home"></span> Menu
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- =========================================================================
+       MODAL: SHOP
+       ========================================================================= -->
+  <div id="modalShop" class="overlay">
+    <div class="modal-card">
+      <div class="modal-header">
+        <h2 class="modal-title">Toko Mushaf Al-Qur'an</h2>
+        <button class="modal-close" data-close="shop">&times;</button>
+      </div>
+      <div style="display: flex; justify-content: center; gap: 10px; margin-bottom: 12px;">
+        <div class="chip"><span class="ico" data-i="coin" style="color: #f59e0b;"></span> <span id="shopCoinCount">0</span></div>
+        <div class="chip"><span class="ico" data-i="gem" style="color: #06b6d4;"></span> <span id="shopGemCount">0</span></div>
+      </div>
+      <div class="shop-tabs">
+        <button class="btn shop-tab-btn active" data-tab="mushafs" style="padding: 6px 14px; font-size: 13px;">Mushaf 3D</button>
+        <button class="btn btn-purple shop-tab-btn" data-tab="auras" style="padding: 6px 14px; font-size: 13px;">Lentera Nur</button>
+        <button class="btn btn-gold shop-tab-btn" data-tab="boosters" style="padding: 6px 14px; font-size: 13px;">Booster</button>
+      </div>
+      <div class="shop-items-grid" id="shopItemsGrid"></div>
+    </div>
+  </div>
+
+  <!-- =========================================================================
+       MODAL: DAILY REWARDS
+       ========================================================================= -->
+  <div id="modalDaily" class="overlay">
+    <div class="modal-card">
+      <div class="modal-header">
+        <h2 class="modal-title">Hadiah Harian Penghafal</h2>
+        <button class="modal-close" data-close="daily">&times;</button>
+      </div>
+      <p style="font-size: 14px; color: var(--mute);">Istiqomah muroja'ah setiap hari untuk meraih Koin dan Permata Berkah!</p>
+      <div class="daily-grid" id="dailyGrid"></div>
+      <button id="btnClaimDaily" class="btn btn-gold" style="padding: 10px 28px;">
+        <span class="ico" data-i="gift"></span> KLAIM HADIAH HARI INI
+      </button>
+    </div>
+  </div>
+
+  <!-- =========================================================================
+       MODAL: MISSIONS
+       ========================================================================= -->
+  <div id="modalMissions" class="overlay">
+    <div class="modal-card">
+      <div class="modal-header">
+        <h2 class="modal-title">Misi Muroja'ah Harian</h2>
+        <button class="modal-close" data-close="missions">&times;</button>
+      </div>
+      <div id="missionsList"></div>
+    </div>
+  </div>
+
+  <!-- =========================================================================
+       MODAL: ACHIEVEMENTS
+       ========================================================================= -->
+  <div id="modalAchievements" class="overlay">
+    <div class="modal-card">
+      <div class="modal-header">
+        <h2 class="modal-title">Prestasi Bintang Hafizh</h2>
+        <button class="modal-close" data-close="achievements">&times;</button>
+      </div>
+      <div id="achievementsList"></div>
+    </div>
+  </div>
+
+  <!-- =========================================================================
+       MODAL: SETTINGS
+       ========================================================================= -->
+  <div id="modalSettings" class="overlay">
+    <div class="modal-card">
+      <div class="modal-header">
+        <h2 class="modal-title">Pengaturan</h2>
+        <button class="modal-close" data-close="settings">&times;</button>
+      </div>
+      <div style="display: flex; flex-direction: column; gap: 14px; text-align: left; margin: 12px 0;">
+        <div style="display: flex; justify-content: space-between; align-items: center;">
+          <b>Melodi & Murottal Damai</b>
+          <button id="btnToggleMusic" class="btn" style="padding: 6px 14px; font-size: 14px;">ON</button>
+        </div>
+        <div style="display: flex; justify-content: space-between; align-items: center;">
+          <b>Efek Suara (SFX)</b>
+          <button id="btnToggleSfx" class="btn" style="padding: 6px 14px; font-size: 14px;">ON</button>
+        </div>
+        <div style="display: flex; justify-content: space-between; align-items: center;">
+          <b>Bahasa / Language</b>
+          <button id="btnToggleLang" class="btn btn-purple" style="padding: 6px 14px; font-size: 14px;">Indonesia</button>
+        </div>
+        <div style="display: flex; justify-content: space-between; align-items: center;">
+          <b>Ekspor / Impor Progres</b>
+          <button id="btnExportData" class="btn btn-gold" style="padding: 6px 14px; font-size: 13px;">Salin Kode</button>
+        </div>
+        <div style="display: flex; justify-content: space-between; align-items: center;">
+          <b>Reset Data Progres</b>
+          <button id="btnResetData" class="btn" style="background: #ef4444; border-color: #fff; padding: 6px 14px; font-size: 13px;">Reset</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- =========================================================================
+       MODAL: PAUSE
+       ========================================================================= -->
+  <div id="modalPause" class="overlay">
+    <div class="modal-card">
+      <h2 style="font-size: 28px; margin-bottom: 16px;">Game Dijeda</h2>
+      <div style="display: flex; flex-direction: column; gap: 10px; max-width: 260px; margin: 0 auto;">
+        <button id="btnResumeGame" class="btn btn-emerald">
+          <span class="ico" data-i="play"></span> Lanjutkan
+        </button>
+        <button id="btnRetryFromPause" class="btn">
+          <span class="ico" data-i="retry"></span> Ulangi Level
+        </button>
+        <button id="btnMenuFromPause" class="btn btn-purple">
+          <span class="ico" data-i="home"></span> Kembali ke Menu
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    /*==== CONFIG ====*/
+    const CONFIG = {
+      TITLE: 'Hafalan Surah 3D',
+      VERSION: '1.0.0',
+      STORAGE_KEY: 'g_surah_v1',
+      TOTAL_WORLDS: 5,
+      LEVELS_PER_WORLD: 6,
+      BASE_TIME_PER_LEVEL: 35,
+      COIN_PER_STAR: 20,
+      XP_PER_STAR: 40,
+      GEM_WORLD_CLEAR: 3,
+      DAILY_CYCLE: 7
+    };
+
+    /*==== I18N DICTIONARY ====*/
+    const I18N = {
+      id: {
+        correct: 'Masya Allah, Ayat Benar!',
+        wrong: 'Kurang tepat, ingat urutan bacaannya ya!',
+        timeUp: 'Waktu Habis!'
+      },
+      en: {
+        correct: 'Masha Allah, Correct Ayah!',
+        wrong: 'Not quite, remember the recitation order!',
+        timeUp: 'Time Up!'
+      }
+    };
+    let currentLang = 'id';
+
+    /*==== SVG ICON ATLAS ====*/
+    const ICONS = {
+      play: '<path d="M8 5v14l11-7z"/>',
+      pause: '<path d="M6 5h4v14H6zM14 5h4v14h-4z"/>',
+      home: '<path d="M12 3 2 12h3v8h5v-5h4v5h5v-8h3z"/>',
+      retry: '<path d="M12 5V2L7 6l5 4V7a5 5 0 1 1-5 5H5a7 7 0 1 0 7-7z"/>',
+      next: '<path d="M5 5v14l11-7zm11 0h3v14h-3z"/>',
+      coin: '<circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="6" fill="#e0a000"/>',
+      gem: '<path d="M12 2l7 7-7 13-7-13z"/>',
+      star: '<path d="M12 2l3.1 6.6 7.2.9-5.3 5 1.4 7.1L12 18l-6.4 3.6L7 14.5 1.7 9.5l7.2-.9z"/>',
+      shop: '<path d="M4 4h16l1 5-2 1v10H5V10L3 9zm3 8v6h10v-6z"/>',
+      map: '<path d="M9 3L3 6v15l6-3 6 3 6-3V3l-6 3zM9 5.5l6-3v14l-6 3z"/>',
+      gift: '<path d="M20 12v8H4v-8m18-4h-7.5a2.5 2.5 0 0 0-5 0H2v4h20zM12 8V2m0 6v14"/>',
+      trophy: '<path d="M7 3h10v4a5 5 0 0 1-10 0zM3.5 4H7v2a2 2 0 0 1-3.5 0zM17 4h3.5v2a2 2 0 0 1-3.5 0zM11 12h2v4h3v3H8v-3h3z"/>',
+      check: '<path d="M5 13l4 4L19 7" stroke="currentColor" stroke-width="2.5" fill="none"/>',
+      sound: '<path d="M3 9v6h4l5 4V5L7 9zM15.5 8.5a5 5 0 0 1 0 7z"/>',
+      settings: '<path d="M12 8a4 4 0 1 0 0 8 4 4 0 0 0 0-8zm7 4a7 7 0 0 0-.2-1.5l2-1.6-2-3.5-2.4 1a7.2 7.2 0 0 0-2.5-1.5L13.5 2h-3l-.4 2.9A7.2 7.2 0 0 0 7.6 6.4L5.2 5.4l-2 3.5 2 1.6A7 7 0 0 0 5 12l-2 1.5 2 3.5 2.4-1a7.2 7.2 0 0 0 2.5 1.5l.4 2.5h3l.4-2.5a7.2 7.2 0 0 0 2.5-1.5l2.4 1 2-3.5-2-1.6c.1-.5.2-1 .2-1.4z"/>',
+      clock: '<circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2" stroke="currentColor" stroke-width="2" fill="none"/>',
+      bolt: '<path d="M13 2L3 14h8l-2 8 10-12h-8z"/>',
+      book: '<path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20v-14H6.5A2.5 2.5 0 0 0 4 5.5zM4 19.5A2.5 2.5 0 0 0 6.5 22H20v-3H6.5a2.5 2.5 0 0 0-2.5.5z"/>',
+      sparkle: '<path d="M12 2l2.5 7.5L22 12l-7.5 2.5L12 22l-2.5-7.5L2 12l7.5-2.5z"/>'
+    };
+    function ICON(name) {
+      return `<svg viewBox="0 0 24 24">${ICONS[name] || ICONS.star}</svg>`;
+    }
+    function updateIconNodes() {
+      document.querySelectorAll('[data-i]').forEach(el => {
+        el.innerHTML = ICON(el.dataset.i);
+      });
+    }
+
+    /*==== SAVE SYSTEM ====*/
+    let SAVE_DATA = {
+      coins: 120,
+      gems: 5,
+      xp: 0,
+      level: 1,
+      unlockedLevel: 1,
+      stars: {},
+      mushafs: ['mushaf_blue'],
+      activeMushaf: 'mushaf_blue',
+      auras: ['none'],
+      activeAura: 'none',
+      boosters: { hint: 2, time: 2 },
+      dailyDay: 1,
+      lastDailyClaim: 0,
+      missions: { fastAnswers: 0 },
+      achievements: {},
+      settings: {
+        music: true,
+        sfx: true,
+        lang: 'id'
+      }
+    };
+
+    function loadSaveData() {
+      try {
+        const stored = localStorage.getItem(CONFIG.STORAGE_KEY);
+        if (stored) {
+          SAVE_DATA = Object.assign(SAVE_DATA, JSON.parse(stored));
+        }
+      } catch (err) {
+        console.warn('Gagal memuat save data:', err);
+      }
+    }
+    function saveGameData() {
+      try {
+        localStorage.setItem(CONFIG.STORAGE_KEY, JSON.stringify(SAVE_DATA));
+      } catch (err) {
+        console.warn('Gagal menyimpan save data:', err);
+      }
+    }
+
+    /*==== WEBAUDIO PROSEDURAL (HARMONIOUS TARTIL CHIMES) ====*/
+    let audioCtx = null;
+    let bgmStep = 0;
+    let bgmInterval = null;
+
+    function initAudio() {
+      if (!audioCtx) {
+        const AudioClass = window.AudioContext || window.webkitAudioContext;
+        audioCtx = new AudioClass();
+      }
+      if (audioCtx.state === 'suspended') {
+        audioCtx.resume();
+      }
+      if (SAVE_DATA.settings.music && !bgmInterval) {
+        startTartilBGM();
+      }
+    }
+
+    function playTone(freq, duration = 0.14, type = 'sine', vol = 0.15, slideTo = null) {
+      if (!SAVE_DATA.settings.sfx || !audioCtx) return;
+      try {
+        const t = audioCtx.currentTime;
+        const osc = audioCtx.createOscillator();
+        const gain = audioCtx.createGain();
+        osc.type = type;
+        osc.frequency.setValueAtTime(freq, t);
+        if (slideTo) osc.frequency.exponentialRampToValueAtTime(slideTo, t + duration);
+        gain.gain.setValueAtTime(vol, t);
+        gain.gain.exponentialRampToValueAtTime(0.001, t + duration);
+        osc.connect(gain);
+        gain.connect(audioCtx.destination);
+        osc.start();
+        osc.stop(t + duration);
+      } catch (e) {}
+    }
+
+    const SFX = {
+      click: () => playTone(580, 0.08, 'sine', 0.1, 440),
+      correct: () => {
+        if (!audioCtx || !SAVE_DATA.settings.sfx) return;
+        // Calm Islamic Maqam chime (Bayyati melodic interval)
+        [440, 493.88, 554.37, 659.25, 880].forEach((f, idx) => {
+          setTimeout(() => playTone(f, 0.22, 'triangle', 0.18), idx * 90);
+        });
+      },
+      wrong: () => playTone(220, 0.22, 'sawtooth', 0.12, 140),
+      starPop: (num) => {
+        const freqs = [659.25, 783.99, 987.77];
+        playTone(freqs[num - 1] || 660, 0.22, 'sine', 0.2, (freqs[num - 1] || 660) * 1.25);
+      },
+      coin: () => playTone(987.77, 0.1, 'sine', 0.15, 1318.51),
+      gem: () => playTone(1318.51, 0.2, 'sine', 0.2, 1760),
+      victory: () => {
+        if (!audioCtx || !SAVE_DATA.settings.sfx) return;
+        [523, 659, 784, 1046, 1318].forEach((f, i) => {
+          setTimeout(() => playTone(f, 0.25, 'sine', 0.2), i * 120);
+        });
+      }
+    };
+
+    function startTartilBGM() {
+      if (!audioCtx || bgmInterval) return;
+      // Peaceful oriental oud/marimba notes
+      const notes = [293.66, 349.23, 392.00, 440.00, 523.25, 440.00, 392.00, 349.23];
+      bgmInterval = setInterval(() => {
+        if (!SAVE_DATA.settings.music || !audioCtx) return;
+        try {
+          const f = notes[bgmStep % notes.length];
+          bgmStep++;
+          const t = audioCtx.currentTime;
+          const osc = audioCtx.createOscillator();
+          const gain = audioCtx.createGain();
+          osc.type = 'sine';
+          osc.frequency.setValueAtTime(f, t);
+          gain.gain.setValueAtTime(0.02, t);
+          gain.gain.exponentialRampToValueAtTime(0.0001, t + 1.4);
+          osc.connect(gain);
+          gain.connect(audioCtx.destination);
+          osc.start();
+          osc.stop(t + 1.4);
+        } catch (e) {}
+      }, 750);
+    }
+    function stopTartilBGM() {
+      if (bgmInterval) {
+        clearInterval(bgmInterval);
+        bgmInterval = null;
+      }
+    }
+
+    /*==== 30 LEVEL DATABASE JUZ 'AMMA (5 DUNIA X 6 LEVEL) ====*/
+    const LEVELS = [
+      /* Dunia 1: Surah Pembuka & Perlindungan */
+      {
+        id: 1, world: 1, worldName: 'Pembuka & Perlindungan',
+        title: 'QS. Al-Fatihah', isBoss: false,
+        desc: 'Ummul Qur\'an (Induk Al-Qur\'an) yang membuka keagungan firman Allah Ta\'ala.',
+        arabicPrompt: 'بِسْمِ اللَّهِ الرَّحْمَٰنِ الرَّحِيمِ',
+        question: 'Lanjutan ayat ke-2 dari Surah Al-Fatihah adalah...',
+        options: [
+          { text: 'الْحَمْدُ لِلَّهِ رَبِّ الْعَالَمِينَ', arti: 'Segala puji bagi Allah, Tuhan seluruh alam.' },
+          { text: 'الرَّحْمَٰنِ الرَّحِيمِ', arti: 'Yang Maha Pengasih lagi Maha Penyayang.' },
+          { text: 'مَالِكِ يَوْمِ الدِّينِ', arti: 'Pemilik hari pembalasan.' }
+        ],
+        correct: 0,
+        arabicFull: 'الْحَمْدُ لِلَّهِ رَبِّ الْعَالَمِينَ الرَّحْمَٰنِ الرَّحِيمِ مَالِكِ يَوْمِ الدِّينِ',
+        artiFull: '"Segala puji bagi Allah, Tuhan seluruh alam. Yang Maha Pengasih lagi Maha Penyayang. Pemilik hari pembalasan."'
+      },
+      {
+        id: 2, world: 1, worldName: 'Pembuka & Perlindungan',
+        title: 'QS. An-Nas', isBoss: false,
+        desc: 'Memohon perlindungan kepada Allah dari bisikan jahat jin dan manusia.',
+        arabicPrompt: 'قُلْ أَعُوذُ بِرَبِّ النَّاسِ',
+        question: 'Lanjutan ayat ke-2 dari Surah An-Nas adalah...',
+        options: [
+          { text: 'مَلِكِ النَّاسِ', arti: 'Raja manusia.' },
+          { text: 'إِلَٰهِ النَّاسِ', arti: 'Sembahan manusia.' },
+          { text: 'مِنْ شَرِّ الْوَسْوَاسِ الْخَنَّاسِ', arti: 'Dari kejahatan bisikan yang bersembunyi.' }
+        ],
+        correct: 0,
+        arabicFull: 'قُلْ أَعُوذُ بِرَبِّ النَّاسِ مَلِكِ النَّاسِ إِلَٰهِ النَّاسِ',
+        artiFull: '"Katakanlah: Aku berlindung kepada Tuhannya manusia, Raja manusia, Sembahan manusia."'
+      },
+      {
+        id: 3, world: 1, worldName: 'Pembuka & Perlindungan',
+        title: 'QS. Al-Falaq', isBoss: false,
+        desc: 'Berlindung dari kegelapan malam, sihir, dan kedengkian orang yang hasad.',
+        arabicPrompt: 'قُلْ أَعُوذُ بِرَبِّ الْفَلَقِ',
+        question: 'Lanjutan ayat ke-2 dari Surah Al-Falaq adalah...',
+        options: [
+          { text: 'مِنْ شَرِّ مَا خَلَقَ', arti: 'Dari kejahatan makhluk yang Dia ciptakan.' },
+          { text: 'وَمِنْ شَرِّ غَاسِقٍ إِذَا وَقَبَ', arti: 'Dan dari kejahatan malam apabila telah gelap gulita.' },
+          { text: 'وَمِنْ شَرِّ النَّفَّاثَاتِ فِي الْعُقَدِ', arti: 'Dan dari kejahatan wanita-wanita penyihir.' }
+        ],
+        correct: 0,
+        arabicFull: 'قُلْ أَعُوذُ بِرَبِّ الْفَلَقِ مِنْ شَرِّ مَا خَلَقَ',
+        artiFull: '"Katakanlah: Aku berlindung kepada Tuhan yang menguasai subuh, dari kejahatan makhluk yang Dia ciptakan."'
+      },
+      {
+        id: 4, world: 1, worldName: 'Pembuka & Perlindungan',
+        title: 'QS. Al-Ikhlas', isBoss: false,
+        desc: 'Ketegasan tauhid yang nilainya sebanding dengan sepertiga Al-Qur\'an.',
+        arabicPrompt: 'قُلْ هُوَ اللَّهُ أَحَدٌ',
+        question: 'Lanjutan ayat ke-2 dari Surah Al-Ikhlas adalah...',
+        options: [
+          { text: 'اللَّهُ الصَّمَدُ', arti: 'Allah tempat meminta segala sesuatu.' },
+          { text: 'لَمْ يَلِدْ وَلَمْ يُولَدْ', arti: 'Dia tidak beranak dan tidak pula diperanakkan.' },
+          { text: 'وَلَمْ يَكُنْ لَهُ كُفُوًا أَحَدٌ', arti: 'Dan tidak ada sesuatupun yang setara dengan Dia.' }
+        ],
+        correct: 0,
+        arabicFull: 'قُلْ هُوَ اللَّهُ أَحَدٌ اللَّهُ الصَّمَدُ لَمْ يَلِدْ وَلَمْ يُولَدْ',
+        artiFull: '"Katakanlah: Dialah Allah, Yang Maha Esa. Allah adalah Tuhan yang bergantung kepada-Nya segala sesuatu."'
+      },
+      {
+        id: 5, world: 1, worldName: 'Pembuka & Perlindungan',
+        title: 'QS. Al-Lahab', isBoss: false,
+        desc: 'Pelajaran tentang kehancuran orang yang memusuhi dakwah Islam.',
+        arabicPrompt: 'تَبَّتْ يَدَا أَبِي لَهَبٍ وَتَبَّ',
+        question: 'Lanjutan ayat ke-2 dari Surah Al-Lahab adalah...',
+        options: [
+          { text: 'مَا أَغْنَىٰ عَنْهُ مَالُهُ وَمَا كَسَبَ', arti: 'Tidaklah berfaedah kepadanya harta bendanya dan apa yang ia usahakan.' },
+          { text: 'سَيَصْلَىٰ نَارًا ذَاتَ لَهَبٍ', arti: 'Kelak ia akan masuk ke dalam api yang bergejolak.' },
+          { text: 'وَامْرَأَتُهُ حَمَّالَةَ الْحَطَبِ', arti: 'Dan (begitu pula) istrinya, pembawa kayu bakar.' }
+        ],
+        correct: 0,
+        arabicFull: 'تَبَّتْ يَدَا أَبِي لَهَبٍ وَتَبَّ مَا أَغْنَىٰ عَنْهُ مَالُهُ وَمَا كَسَبَ',
+        artiFull: '"Binasalah kedua tangan Abu Lahab dan benar-benar binasa dia! Tidaklah berguna hartanya dan apa yang dia usahakan."'
+      },
+      {
+        id: 6, world: 1, worldName: 'Pembuka & Perlindungan',
+        title: 'Ujian Tiga Benteng Perlindungan', isBoss: true,
+        desc: 'Tantangan Puncak! Rangkaian surah Mu\'awwidzatain & Tauhid pembersih hati.',
+        arabicPrompt: 'وَلَمْ يَكُنْ لَهُ كُفُوًا أَحَدٌ',
+        question: 'Setelah menuntaskan Al-Ikhlas, surah pelindung manakah yang diawali dengan ayat "Qul a\'udzu birabbil falaq"?',
+        options: [
+          { text: 'Surah Al-Falaq', arti: 'Surah Waktu Subuh (113)' },
+          { text: 'Surah An-Nas', arti: 'Surah Manusia (114)' },
+          { text: 'Surah Al-Kafirun', arti: 'Surah Orang Kafir (109)' }
+        ],
+        correct: 0,
+        arabicFull: 'قُلْ هُوَ اللَّهُ أَحَدٌ • قُلْ أَعُوذُ بِرَبِّ الْفَلَقِ • قُلْ أَعُوذُ بِرَبِّ النَّاسِ',
+        artiFull: '"Tiga surah perlindungan agung yang senantiasa dibaca Rasulullah SAW sebelum tidur."'
+      },
+
+      /* Dunia 2: Kemenangan & Kemudahan */
+      {
+        id: 7, world: 2, worldName: 'Kemenangan & Kemudahan',
+        title: 'QS. An-Nasr', isBoss: false,
+        desc: 'Kabar gembira pertolongan Allah dan kemenangan Fathu Makkah.',
+        arabicPrompt: 'إِذَا جَاءَ نَصْرُ اللَّهِ وَالْفَتْحُ',
+        question: 'Lanjutan ayat ke-2 dari Surah An-Nasr adalah...',
+        options: [
+          { text: 'وَرَأَيْتَ النَّاسَ يَدْخُلُونَ فِي دِينِ اللَّهِ أَفْوَاجًا', arti: 'Dan kamu lihat manusia masuk agama Allah dengan berbondong-bondong.' },
+          { text: 'فَسَبِّحْ بِحَمْدِ رَبِّكَ وَاسْتَغْفِرْهُ', arti: 'Maka bertasbihlah dengan memuji Tuhanmu dan mohonlah ampun.' },
+          { text: 'إِنَّهُ كَانَ تَوَّابًا', arti: 'Sesungguhnya Dia adalah Maha Penerima tobat.' }
+        ],
+        correct: 0,
+        arabicFull: 'إِذَا جَاءَ نَصْرُ اللَّهِ وَالْفَتْحُ • وَرَأَيْتَ النَّاسَ يَدْخُلُونَ فِي دِينِ اللَّهِ أَفْوَاجًا',
+        artiFull: '"Apabila telah datang pertolongan Allah dan kemenangan, dan engkau melihat manusia berbondong-bondong masuk agama Allah."'
+      },
+      {
+        id: 8, world: 2, worldName: 'Kemenangan & Kemudahan',
+        title: 'QS. Al-Kafirun', isBoss: false,
+        desc: 'Ketegasan tidak akan menyembah apa yang disembah orang musyrik.',
+        arabicPrompt: 'قُلْ يَا أَيُّهَا الْكَافِرُونَ',
+        question: 'Lanjutan ayat ke-2 dari Surah Al-Kafirun adalah...',
+        options: [
+          { text: 'لَا أَعْبُدُ مَا تَعْبُدُونَ', arti: 'Aku tidak akan menyembah apa yang kamu sembah.' },
+          { text: 'وَلَا أَنْتُمْ عَابِدُونَ مَا أَعْبُدُ', arti: 'Dan kamu bukan penyembah Tuhan yang aku sembah.' },
+          { text: 'لَكُمْ دِينُكُمْ وَلِيَ دِينِ', arti: 'Untukmu agamamu, dan untukkulah agamaku.' }
+        ],
+        correct: 0,
+        arabicFull: 'قُلْ يَا أَيُّهَا الْكَافِرُونَ • لَا أَعْبُدُ مَا تَعْبُدُونَ • لَكُمْ دِينُكُمْ وَلِيَ دِينِ',
+        artiFull: '"Katakanlah wahai orang kafir, aku tidak menyembah apa yang kamu sembah. Bagimu agamamu, bagiku agamaku."'
+      },
+      {
+        id: 9, world: 2, worldName: 'Kemenangan & Kemudahan',
+        title: 'QS. Al-Kautsar', isBoss: false,
+        desc: 'Karunia nikmat telaga Al-Kautsar yang berlimpah ruah.',
+        arabicPrompt: 'إِنَّا أَعْطَيْنَاكَ الْكَوْثَرَ',
+        question: 'Lanjutan ayat ke-2 dari Surah Al-Kautsar adalah...',
+        options: [
+          { text: 'فَصَلِّ لِرَبِّكَ وَانْحَرْ', arti: 'Maka dirikanlah shalat karena Tuhanmu; dan berkurbanlah.' },
+          { text: 'إِنَّ شَانِئَكَ هُوَ الْأَبْتَرُ', arti: 'Sesungguhnya orang-orang yang membenci kamu dialah yang terputus.' },
+          { text: 'وَرَأَيْتَ النَّاسَ يَدْخُلُونَ', arti: 'Dan kamu melihat manusia masuk berbondong-bondong.' }
+        ],
+        correct: 0,
+        arabicFull: 'إِنَّا أَعْطَيْنَاكَ الْكَوْثَرَ • فَصَلِّ لِرَبِّكَ وَانْحَرْ • إِنَّ شَانِئَكَ هُوَ الْأَبْتَرُ',
+        artiFull: '"Sesungguhnya Kami telah memberikan kepadamu nikmat yang banyak. Maka shalatlah untuk Tuhanmu dan berkurbanlah."'
+      },
+      {
+        id: 10, world: 2, worldName: 'Kemenangan & Kemudahan',
+        title: 'QS. Al-Ma\'un', isBoss: false,
+        desc: 'Peringatan keras bagi orang yang lalai dari shalat dan menghardik anak yatim.',
+        arabicPrompt: 'أَرَأَيْتَ الَّذِي يُكَذِّبُ بِالدِّينِ',
+        question: 'Lanjutan ayat ke-2 dari Surah Al-Ma\'un adalah...',
+        options: [
+          { text: 'فَذَٰلِكَ الَّذِي يَدُعُّ الْيَتِيمَ', arti: 'Itulah orang yang menghardik anak yatim.' },
+          { text: 'وَلَا يَحُضُّ عَلَىٰ طَعَامِ الْمِسْكِينِ', arti: 'Dan tidak menganjurkan memberi makan orang miskin.' },
+          { text: 'فَوَيْلٌ لِلْمُصَلِّينَ', arti: 'Maka celakalah bagi orang-orang yang shalat.' }
+        ],
+        correct: 0,
+        arabicFull: 'أَرَأَيْتَ الَّذِي يُكَذِّبُ بِالدِّينِ • فَذَٰلِكَ الَّذِي يَدُعُّ الْيَتِيمَ',
+        artiFull: '"Tahukah kamu orang yang mendustakan agama? Dialah orang yang menghardik anak yatim."'
+      },
+      {
+        id: 11, world: 2, worldName: 'Kemenangan & Kemudahan',
+        title: 'QS. Quraisy', isBoss: false,
+        desc: 'Mengingat nikmat keamanan dan kecukupan makanan dari Allah SWT.',
+        arabicPrompt: 'لِإِيلَافِ قُرَيْشٍ',
+        question: 'Lanjutan ayat ke-2 dari Surah Quraisy adalah...',
+        options: [
+          { text: 'إِيلَافِهِمْ رِحْلَةَ الشِّتَاءِ وَالصَّيْفِ', arti: 'Kebiasaan mereka bepergian pada musim dingin dan musim panas.' },
+          { text: 'فَلْيَعْبُدُوا رَبَّ هَٰذَا الْبَيْتِ', arti: 'Maka hendaklah mereka menyembah Tuhan Pemilik rumah ini (Ka\'bah).' },
+          { text: 'الَّذِي أَطْعَمَهُمْ مِنْ جُوعٍ', arti: 'Yang telah memberi makanan kepada mereka untuk menghilangkan lapar.' }
+        ],
+        correct: 0,
+        arabicFull: 'لِإِيلَافِ قُرَيْشٍ • إِيلَافِهِمْ رِحْلَةَ الشِّتَاءِ وَالصَّيْفِ',
+        artiFull: '"Karena kebiasaan orang-orang Quraisy, yaitu kebiasaan mereka bepergian pada musim dingin dan musim panas."'
+      },
+      {
+        id: 12, world: 2, worldName: 'Kemenangan & Kemudahan',
+        title: 'Kemenangan Telaga Kautsar', isBoss: true,
+        desc: 'Tantangan Puncak! Buktikan penguasaan surah An-Nasr, Al-Kautsar, dan Quraisy.',
+        arabicPrompt: 'فَلْيَعْبُدُوا رَبَّ هَٰذَا الْبَيْتِ',
+        question: 'Ayat di atas terdapat dalam Surah Quraisy yang memerintahkan manusia untuk menyembah...',
+        options: [
+          { text: 'Allah, Tuhan Pemilik Ka\'bah (Baitullah).', arti: 'Tauhid sejati dan kesyukuran' },
+          { text: 'Berhala yang dibuat di padang pasir.', arti: 'Kesesatan jahiliyah' },
+          { text: 'Harta dan kendaraan perniagaan.', arti: 'Keserakahan duniawi' }
+        ],
+        correct: 0,
+        arabicFull: 'فَلْيَعْبُدُوا رَبَّ هَٰذَا الْبَيْتِ الَّذِي أَطْعَمَهُمْ مِنْ جُوعٍ وَآمَنَهُمْ مِنْ خَوْفٍ',
+        artiFull: '"Maka hendaklah mereka menyembah Tuhan pemilik Ka\'bah ini, yang memberi mereka makan dan mengamankan mereka dari ketakutan."'
+      },
+
+      /* Dunia 3: Waktu & Peringatan */
+      {
+        id: 13, world: 3, worldName: 'Waktu & Peringatan',
+        title: 'QS. Al-Fil', isBoss: false,
+        desc: 'Kisah tentara bergajah yang dihancurkan dengan burung Ababil pembawa batu sijjil.',
+        arabicPrompt: 'أَلَمْ تَرَ كَيْفَ فَعَلَ رَبُّكَ بِأَصْحَابِ الْفِيلِ',
+        question: 'Lanjutan ayat ke-2 dari Surah Al-Fil adalah...',
+        options: [
+          { text: 'أَلَمْ يَجْعَلْ كَيْدَهُمْ فِي تَضْلِيلٍ', arti: 'Bukankah Dia telah menjadikan tipu daya mereka sia-sia?' },
+          { text: 'وَأَرْسَلَ عَلَيْهِمْ طَيْرًا أَبَابِيلَ', arti: 'Dan Dia mengirimkan kepada mereka burung yang berbondong-bondong.' },
+          { text: 'تَرْمِيهِمْ بِحِجَارَةٍ مِنْ سِجِّيلٍ', arti: 'Yang melempari mereka dengan batu dari tanah liat yang dibakar.' }
+        ],
+        correct: 0,
+        arabicFull: 'أَلَمْ تَرَ كَيْفَ فَعَلَ رَبُّكَ بِأَصْحَابِ الْفِيلِ • أَلَمْ يَجْعَلْ كَيْدَهُمْ فِي تَضْلِيلٍ',
+        artiFull: '"Tidakkah engkau perhatikan bagaimana Tuhanmu bertindak terhadap pasukan bergajah? Bukankah Dia jadikan tipu daya mereka sia-sia?"'
+      },
+      {
+        id: 14, world: 3, worldName: 'Waktu & Peringatan',
+        title: 'QS. Al-Humazah', isBoss: false,
+        desc: 'Peringatan keras bagi para pengumpat dan pencela yang gila menumpuk harta.',
+        arabicPrompt: 'وَيْلٌ لِكُلِّ هُمَزَةٍ لُمَزَةٍ',
+        question: 'Lanjutan ayat ke-2 dari Surah Al-Humazah adalah...',
+        options: [
+          { text: 'الَّذِي جَمَعَ مَالًا وَعَدَّدَهُ', arti: 'Yang mengumpulkan harta dan menghitung-hitungnya.' },
+          { text: 'يَحْسَبُ أَنَّ مَالَهُ أَخْلَدَهُ', arti: 'Dia mengira bahwa hartanya itu dapat mengekalkannya.' },
+          { text: 'كَلَّا لَيُنْبَذَنَّ فِي الْحُطَمَةِ', arti: 'Sekali-kali tidak! Pasti dia akan dilemparkan ke dalam Huthamah.' }
+        ],
+        correct: 0,
+        arabicFull: 'وَيْلٌ لِكُلِّ هُمَزَةٍ لُمَزَةٍ • الَّذِي جَمَعَ مَالًا وَعَدَّدَهُ',
+        artiFull: '"Celakalah bagi setiap pengumpat lagi pencela, yang mengumpulkan harta dan menghitung-hitungnya."'
+      },
+      {
+        id: 15, world: 3, worldName: 'Waktu & Peringatan',
+        title: 'QS. Al-\'Ashr', isBoss: false,
+        desc: 'Sumpah demi masa: manusia sungguh merugi kecuali yang beriman dan beramal shalih.',
+        arabicPrompt: 'وَالْعَصْرِ',
+        question: 'Lanjutan ayat ke-2 dari Surah Al-\'Ashr adalah...',
+        options: [
+          { text: 'إِنَّ الْإِنْسَانَ لَفِي خُسْرٍ', arti: 'Sesungguhnya manusia benar-benar berada dalam kerugian.' },
+          { text: 'إِلَّا الَّذِينَ آمَنُوا وَعَمِلُوا الصَّالِحَاتِ', arti: 'Kecuali orang-orang yang beriman dan mengerjakan amal kebajikan.' },
+          { text: 'وَتَوَاصَوْا بِالْحَقِّ وَتَوَاصَوْا بِالصَّبْرِ', arti: 'Dan saling menasihati untuk kebenaran dan kesabaran.' }
+        ],
+        correct: 0,
+        arabicFull: 'وَالْعَصْرِ • إِنَّ الْإِنْسَانَ لَفِي خُسْرٍ • إِلَّا الَّذِينَ آمَنُوا وَعَمِلُوا الصَّالِحَاتِ',
+        artiFull: '"Demi masa. Sungguh manusia berada dalam kerugian, kecuali orang-orang yang beriman, beramal saleh, dan saling menasihati."'
+      },
+      {
+        id: 16, world: 3, worldName: 'Waktu & Peringatan',
+        title: 'QS. At-Takatsur', isBoss: false,
+        desc: 'Peringatan bermegah-megahan hingga masuk liang kubur.',
+        arabicPrompt: 'أَلْهَاكُمُ التَّكَاثُرُ',
+        question: 'Lanjutan ayat ke-2 dari Surah At-Takatsur adalah...',
+        options: [
+          { text: 'حَتَّىٰ زُرْتُمُ الْمَقَابِرَ', arti: 'Sampai kamu masuk ke dalam kubur.' },
+          { text: 'كَلَّا سَوْفَ تَعْلَمُونَ', arti: 'Sekali-kali tidak! Kelak kamu akan mengetahui.' },
+          { text: 'ثُمَّ كَلَّا سَوْفَ تَعْلَمُونَ', arti: 'Kemudian sekali-kali tidak! Kelak kamu akan mengetahui.' }
+        ],
+        correct: 0,
+        arabicFull: 'أَلْهَاكُمُ التَّكَاثُرُ • حَتَّىٰ زُرْتُمُ الْمَقَابِرَ',
+        artiFull: '"Bermegah-megahan telah melalaikan kamu, sampai kamu masuk ke dalam kubur."'
+      },
+      {
+        id: 17, world: 3, worldName: 'Waktu & Peringatan',
+        title: 'QS. Al-Qari\'ah', isBoss: false,
+        desc: 'Hari kiamat yang mengetuk hati dan timbangan amal kebajikan.',
+        arabicPrompt: 'الْقَارِعَةُ • مَا الْقَارِعَةُ',
+        question: 'Lanjutan ayat ke-3 dari Surah Al-Qari\'ah adalah...',
+        options: [
+          { text: 'وَمَا أَدْرَاكَ مَا الْقَارِعَةُ', arti: 'Dan tahukah kamu apakah hari Kiamat itu?' },
+          { text: 'يَوْمَ يَكُونُ النَّاسُ كَالْفَرَاشِ الْمَبْثُوثِ', arti: 'Pada hari itu manusia seperti laron yang beterbangan.' },
+          { text: 'وَتَكُونُ الْجِبَالُ كَالْعِهْنِ الْمَنْفُوشِ', arti: 'Dan gunung-gunung seperti bulu yang dihambur-hamburkan.' }
+        ],
+        correct: 0,
+        arabicFull: 'الْقَارِعَةُ • مَا الْقَارِعَةُ • وَمَا أَدْرَاكَ مَا الْقَارِعَةُ',
+        artiFull: '"Hari Kiamat. Apakah hari Kiamat itu? Dan tahukah kamu apakah hari Kiamat itu?"'
+      },
+      {
+        id: 18, world: 3, worldName: 'Waktu & Peringatan',
+        title: 'Mahkota Masa & Kebajikan', isBoss: true,
+        desc: 'Tantangan Puncak! Hafalkan ayat-ayat pengingat waktu dan timbangan amal.',
+        arabicPrompt: 'فَأَمَّا مَنْ ثَقُلَتْ مَوَازِينُهُ',
+        question: 'Dalam Surah Al-Qari\'ah, orang yang timbangan amal kebaikannya berat akan berada dalam...',
+        options: [
+          { text: 'فَهُوَ فِي عِيشَةٍ رَاضِيَةٍ', arti: 'Kehidupan yang memuaskan dan penuh kenikmatan surga.' },
+          { text: 'فَأُمُّهُ هَاوِيَةٌ', arti: 'Tempat kembalinya neraka Hawiyah.' },
+          { text: 'فِي خُسْرٍ', arti: 'Dalam kerugian besar.' }
+        ],
+        correct: 0,
+        arabicFull: 'فَأَمَّا مَنْ ثَقُلَتْ مَوَازِينُهُ • فَهُوَ فِي عِيشَةٍ رَاضِيَةٍ',
+        artiFull: '"Dan adapun orang yang berat timbangan (kebaikannya), maka dia berada dalam kehidupan yang memuaskan (surga)."'
+      },
+
+      /* Dunia 4: Kemuliaan & Penciptaan */
+      {
+        id: 19, world: 4, worldName: 'Kemuliaan & Penciptaan',
+        title: 'QS. Al-\'Adiyat', isBoss: false,
+        desc: 'Derap langkah kuda perang yang setia berjuang di jalan Allah.',
+        arabicPrompt: 'وَالْعَادِيَاتِ ضَبْحًا',
+        question: 'Lanjutan ayat ke-2 dari Surah Al-\'Adiyat adalah...',
+        options: [
+          { text: 'فَالْمُورِيَاتِ قَدْحًا', arti: 'Dan kuda yang mencetuskan bunga api dengan pukulan kukunya.' },
+          { text: 'فَالْمُغِيرَاتِ صُبْحًا', arti: 'Dan kuda yang menyerang dengan tiba-tiba di waktu pagi.' },
+          { text: 'فَأَثَرْنَ بِهِ نَقْعًا', arti: 'Maka ia menerbangkan debu.' }
+        ],
+        correct: 0,
+        arabicFull: 'وَالْعَادِيَاتِ ضَبْحًا • فَالْمُورِيَاتِ قَدْحًا',
+        artiFull: '"Demi kuda perang yang berlari kencang terengah-engah, dan kuda yang mencetuskan bunga api dengan pukulan kukunya."'
+      },
+      {
+        id: 20, world: 4, worldName: 'Kemuliaan & Penciptaan',
+        title: 'QS. Az-Zalzalah', isBoss: false,
+        desc: 'Guncangan dahsyat bumi dan keadilan balasan sebutir zarrah.',
+        arabicPrompt: 'إِذَا زُلْزِلَتِ الْأَرْضُ زِلْزَالَهَا',
+        question: 'Lanjutan ayat ke-2 dari Surah Az-Zalzalah adalah...',
+        options: [
+          { text: 'وَأَخْرَجَتِ الْأَرْضُ أَثْقَالَهَا', arti: 'Dan bumi telah mengeluarkan beban-beban berat yang dikandungnya.' },
+          { text: 'وَقَالَ الْإِنْسَانُ مَا لَهَا', arti: 'Dan manusia bertanya: "Mengapa bumi begini?"' },
+          { text: 'يَوْمَئِذٍ تُحَدِّثُ أَخْبَارَهَا', arti: 'Pada hari itu bumi menceritakan beritanya.' }
+        ],
+        correct: 0,
+        arabicFull: 'إِذَا زُلْزِلَتِ الْأَرْضُ زِلْزَالَهَا • وَأَخْرَجَتِ الْأَرْضُ أَثْقَالَهَا',
+        artiFull: '"Apabila bumi diguncangkan dengan guncangan dahsyat, dan bumi telah mengeluarkan beban-beban berat (yang dikandung)nya."'
+      },
+      {
+        id: 21, world: 4, worldName: 'Kemuliaan & Penciptaan',
+        title: 'QS. Al-Bayyinah', isBoss: false,
+        desc: 'Bukti nyata Al-Qur\'an dan risalah Nabi Muhammad SAW.',
+        arabicPrompt: 'لَمْ يَكُنِ الَّذِينَ كَفَرُوا مِنْ أَهْلِ الْكِتَابِ وَالْمُشْرِكِينَ مُنْفَكِّينَ حَتَّىٰ تَأْتِيَهُمُ الْبَيِّنَةُ',
+        question: 'Lanjutan ayat ke-2 dari Surah Al-Bayyinah adalah...',
+        options: [
+          { text: 'رَسُولٌ مِنَ اللَّهِ يَتْلُو صُحُفًا مُطَهَّرَةً', arti: '(Yaitu) seorang Rasul dari Allah yang membacakan lembaran-lembaran suci.' },
+          { text: 'فِيهَا كُتُبٌ قَيِّمَةٌ', arti: 'Di dalamnya terdapat (isi) kitab-kitab yang lurus.' },
+          { text: 'وَمَا تَفَرَّقَ الَّذِينَ أُوتُوا الْكِتَابَ', arti: 'Dan tidaklah terpecah belah orang-orang yang diberi Al-Kitab.' }
+        ],
+        correct: 0,
+        arabicFull: 'رَسُولٌ مِنَ اللَّهِ يَتْلُو صُحُفًا مُطَهَّرَةً • فِيهَا كُتُبٌ قَيِّمَةٌ',
+        artiFull: '"(Yaitu) seorang Rasul dari Allah (Muhammad) yang membacakan lembaran-lembaran yang disucikan, di dalamnya terdapat kitab-kitab yang lurus."'
+      },
+      {
+        id: 22, world: 4, worldName: 'Kemuliaan & Penciptaan',
+        title: 'QS. Al-Qadr', isBoss: false,
+        desc: 'Malam Lailatul Qadr yang lebih mulia dari seribu bulan.',
+        arabicPrompt: 'إِنَّا أَنْزَلْنَاهُ فِي لَيْلَةِ الْقَدْرِ',
+        question: 'Lanjutan ayat ke-2 dari Surah Al-Qadr adalah...',
+        options: [
+          { text: 'وَمَا أَدْرَاكَ مَا لَيْلَةُ الْقَدْرِ', arti: 'Dan tahukah kamu apakah malam kemuliaan itu?' },
+          { text: 'لَيْلَةُ الْقَدْرِ خَيْرٌ مِنْ أَلْفِ شَهْرٍ', arti: 'Malam kemuliaan itu lebih baik dari seribu bulan.' },
+          { text: 'تَنَزَّلُ الْمَلَائِكَةُ وَالرُّوحُ فِيهَا', arti: 'Pada malam itu turun malaikat-malaikat dan malaikat Jibril.' }
+        ],
+        correct: 0,
+        arabicFull: 'إِنَّا أَنْزَلْنَاهُ فِي لَيْلَةِ الْقَدْرِ • وَمَا أَدْرَاكَ مَا لَيْلَةُ الْقَدْرِ • لَيْلَةُ الْقَدْرِ خَيْرٌ مِنْ أَلْفِ شَهْرٍ',
+        artiFull: '"Sesungguhnya Kami telah menurunkannya pada malam kemuliaan. Dan tahukah kamu apakah malam kemuliaan itu? Malam kemuliaan itu lebih baik dari seribu bulan."'
+      },
+      {
+        id: 23, world: 4, worldName: 'Kemuliaan & Penciptaan',
+        title: 'QS. Al-\'Alaq', isBoss: false,
+        desc: 'Wahyu pertama di Gua Hira: Perintah membaca dengan nama Allah.',
+        arabicPrompt: 'اقْرَأْ بِاسْمِ رَبِّكَ الَّذِي خَلَقَ',
+        question: 'Lanjutan ayat ke-2 dari Surah Al-\'Alaq adalah...',
+        options: [
+          { text: 'خَلَقَ الْإِنْسَانَ مِنْ عَلَقٍ', arti: 'Dia telah menciptakan manusia dari segumpal darah.' },
+          { text: 'اقْرَأْ وَرَبُّكَ الْأَكْرَمُ', arti: 'Bacalah, dan Tuhanmulah Yang Maha Pemurah.' },
+          { text: 'الَّذِي عَلَّمَ بِالْقَلَمِ', arti: 'Yang mengajar (manusia) dengan perantaraan pena.' }
+        ],
+        correct: 0,
+        arabicFull: 'اقْرَأْ بِاسْمِ رَبِّكَ الَّذِي خَلَقَ • خَلَقَ الْإِنْسَانَ مِنْ عَلَقٍ • اقْرَأْ وَرَبُّكَ الْأَكْرَمُ',
+        artiFull: '"Bacalah dengan (menyebut) nama Tuhanmu yang menciptakan. Dia telah menciptakan manusia dari segumpal darah. Bacalah, dan Tuhanmulah Yang Maha Mulia."'
+      },
+      {
+        id: 24, world: 4, worldName: 'Kemuliaan & Penciptaan',
+        title: 'Malam Wahyu Pertama', isBoss: true,
+        desc: 'Tantangan Puncak! Cahaya Al-Qadr dan kalam pertama Al-\'Alaq.',
+        arabicPrompt: 'لَيْلَةُ الْقَدْرِ خَيْرٌ مِنْ أَلْفِ شَهْرٍ',
+        question: 'Apa keutamaan malam Lailatul Qadr yang disebutkan dalam Surah Al-Qadr?',
+        options: [
+          { text: 'Lebih utama dan lebih baik daripada seribu bulan.', arti: 'Pahala ibadah dilipatgandakan' },
+          { text: 'Waktu untuk bermain game semalaman.', arti: 'Kelalaian' },
+          { text: 'Hanya terjadi pada siang hari.', arti: 'Kekeliruan waktu' }
+        ],
+        correct: 0,
+        arabicFull: 'سَلَامٌ هِيَ حَتَّىٰ مَطْلَعِ الْفَجْرِ',
+        artiFull: '"Malam itu penuh kesejahteraan sampai terbit fajar."'
+      },
+
+      /* Dunia 5: Pelipur Lara & Janji Ilahi */
+      {
+        id: 25, world: 5, worldName: 'Pelipur Lara & Janji Ilahi',
+        title: 'QS. At-Tin', isBoss: false,
+        desc: 'Manusia diciptakan dalam bentuk yang sebaik-baiknya.',
+        arabicPrompt: 'وَالتِّينِ وَالزَّيْتُونِ',
+        question: 'Lanjutan ayat ke-2 dari Surah At-Tin adalah...',
+        options: [
+          { text: 'وَطُورِ سِينِينَ', arti: 'Dan demi bukit Sinai.' },
+          { text: 'وَهَٰذَا الْبَلَدِ الْأَمِينِ', arti: 'Dan demi kota (Mekah) ini yang aman.' },
+          { text: 'لَقَدْ خَلَقْنَا الْإِنْسَانَ فِي أَحْسَنِ تَقْوِيمٍ', arti: 'Sesungguhnya Kami telah menciptakan manusia dalam bentuk yang sebaik-baiknya.' }
+        ],
+        correct: 0,
+        arabicFull: 'وَالتِّينِ وَالزَّيْتُونِ • وَطُورِ سِينِينَ • وَهَٰذَا الْبَلَدِ الْأَمِينِ',
+        artiFull: '"Demi buah Tin dan buah Zaitun, dan demi gunung Sinai, dan demi negeri (Mekah) yang aman ini."'
+      },
+      {
+        id: 26, world: 5, worldName: 'Pelipur Lara & Janji Ilahi',
+        title: 'QS. Al-Insyirah', isBoss: false,
+        desc: 'Kelapangan dada: bersama kesulitan sungguh ada kemudahan.',
+        arabicPrompt: 'أَلَمْ نَشْرَحْ لَكَ صَدْرَكَ',
+        question: 'Lanjutan ayat ke-2 dari Surah Al-Insyirah adalah...',
+        options: [
+          { text: 'وَوَضَعْنَا عَنْكَ وِزْرَكَ', arti: 'Dan Kami telah menghilangkan daripadamu bebanmu.' },
+          { text: 'الَّذِي أَنْقَضَ ظَهْرَكَ', arti: 'Yang memberatkan punggungmu.' },
+          { text: 'فَإِنَّ مَعَ الْعُسْرِ يُسْرًا', arti: 'Karena sesungguhnya sesudah kesulitan itu ada kemudahan.' }
+        ],
+        correct: 0,
+        arabicFull: 'فَإِنَّ مَعَ الْعُسْرِ يُسْرًا • إِنَّ مَعَ الْعُسْرِ يُسْرًا',
+        artiFull: '"Karena sesungguhnya bersama kesulitan ada kemudahan, sesungguhnya bersama kesulitan ada kemudahan."'
+      },
+      {
+        id: 27, world: 5, worldName: 'Pelipur Lara & Janji Ilahi',
+        title: 'QS. Adh-Dhuha', isBoss: false,
+        desc: 'Hiburan Ilahi: Tuhanmu tiada meninggalkanmu dan tiada pula membencimu.',
+        arabicPrompt: 'وَالضُّحَىٰ • وَاللَّيْلِ إِذَا سَجَىٰ',
+        question: 'Lanjutan ayat ke-3 dari Surah Adh-Dhuha adalah...',
+        options: [
+          { text: 'مَا وَدَّعَكَ رَبُّكَ وَمَا قَلَىٰ', arti: 'Tuhanmu tiada meninggalkan kamu dan tiada (pula) benci kepadamu.' },
+          { text: 'وَلَلْآخِرَةُ خَيْرٌ لَكَ مِنَ الْأُولَىٰ', arti: 'Dan sesungguhnya hari kemudian itu lebih baik bagimu daripada yang sekarang.' },
+          { text: 'وَلَسَوْفَ يُعْطِيكَ رَبُّكَ فَتَرْضَىٰ', arti: 'Dan kelak Tuhanmu pasti memberikan karunia-Nya kepadamu, lalu kamu menjadi puas.' }
+        ],
+        correct: 0,
+        arabicFull: 'مَا وَدَّعَكَ رَبُّكَ وَمَا قَلَىٰ • وَلَلْآخِرَةُ خَيْرٌ لَكَ مِنَ الْأُولَىٰ',
+        artiFull: '"Tuhanmu tidak meninggalkan engkau dan tidak pula membencimu. Dan sungguh, akhirat itu lebih baik bagimu daripada permulaan (dunia)."'
+      },
+      {
+        id: 28, world: 5, worldName: 'Pelipur Lara & Janji Ilahi',
+        title: 'QS. Al-Lail', isBoss: false,
+        desc: 'Kemudahan jalan surga bagi orang yang gemar memberi dan bertakwa.',
+        arabicPrompt: 'وَاللَّيْلِ إِذَا يَغْشَىٰ • وَالنَّهَارِ إِذَا تَجَلَّىٰ',
+        question: 'Lanjutan ayat ke-3 dari Surah Al-Lail adalah...',
+        options: [
+          { text: 'وَمَا خَلَقَ الذَّكَرَ وَالْأُنْثَىٰ', arti: 'Dan penciptaan laki-laki dan perempuan.' },
+          { text: 'إِنَّ سَعْيَكُمْ لَشَتَّىٰ', arti: 'Sesungguhnya usaha kamu memang berbeda-beda.' },
+          { text: 'فَأَمَّا مَنْ أَعْطَىٰ وَاتَّقَىٰ', arti: 'Adapun orang yang memberikan (hartanya) dan bertakwa.' }
+        ],
+        correct: 0,
+        arabicFull: 'فَأَمَّا مَنْ أَعْطَىٰ وَاتَّقَىٰ • وَصَدَّقَ بِالْحُسْنَىٰ • فَسَنُيَسِّرُهُ لِلْيُسْرَىٰ',
+        artiFull: '"Adapun orang yang memberi (hartanya di jalan Allah) dan bertakwa, serta membenarkan adanya pahala terbaik, maka Kami mudahkan baginya jalan kemudahan."'
+      },
+      {
+        id: 29, world: 5, worldName: 'Pelipur Lara & Janji Ilahi',
+        title: 'QS. Asy-Syams', isBoss: false,
+        desc: 'Beruntunglah orang yang menyucikan jiwa dan merugilah yang mengotorinya.',
+        arabicPrompt: 'وَالشَّمْسِ وَضُحَاهَا',
+        question: 'Lanjutan ayat ke-2 dari Surah Asy-Syams adalah...',
+        options: [
+          { text: 'وَالْقَمَرِ إِذَا تَلَاهَا', arti: 'Dan bulan apabila mengiringinya.' },
+          { text: 'وَالنَّهَارِ إِذَا جَلَّاهَا', arti: 'Dan siang apabila menampakkannya.' },
+          { text: 'وَاللَّيْلِ إِذَا يَغْشَاهَا', arti: 'Dan malam apabila menutupinya.' }
+        ],
+        correct: 0,
+        arabicFull: 'قَدْ أَفْلَحَ مَنْ زَكَّاهَا • وَقَدْ خَابَ مَنْ دَسَّاهَا',
+        artiFull: '"Sungguh beruntung orang yang menyucikan jiwa itu, dan sungguh merugi orang yang mengotorinya."'
+      },
+      {
+        id: 30, world: 5, worldName: 'Pelipur Lara & Janji Ilahi',
+        title: 'Penobatan Hafizh Bintang Juz \'Amma', isBoss: true,
+        desc: 'Tantangan Terakhir! Mahkota hafizh dan mutiara Al-Qur\'an penyejuk jiwa.',
+        arabicPrompt: 'إِنَّ مَعَ الْعُسْرِ يُسْرًا',
+        question: 'Janji Allah SWT dalam Surah Al-Insyirah yang diulang dua kali untuk hamba-Nya adalah...',
+        options: [
+          { text: 'Sesungguhnya bersama setiap kesulitan pasti ada kemudahan yang luas.', arti: 'Janji kemenangan Ilahi' },
+          { text: 'Kesulitan akan berlangsung selamanya tanpa jalan keluar.', arti: 'Keputusasaan' },
+          { text: 'Kemudahan hanya didapat dengan jalan kekayaan semata.', arti: 'Kesesatan' }
+        ],
+        correct: 0,
+        arabicFull: 'وَرَفَعْنَا لَكَ ذِكْرَكَ • فَإِنَّ مَعَ الْعُسْرِ يُسْرًا • إِنَّ مَعَ الْعُسْرِ يُسْرًا',
+        artiFull: '"Dan Kami tinggikan bagimu sebutan (nama)mu. Maka sesungguhnya bersama kesulitan ada kemudahan, sesungguhnya bersama kesulitan ada kemudahan."'
+      }
+    ];
+
+    /*==== SHOP DATABASE ====*/
+    const SHOP_ITEMS = [
+      { id: 'mushaf_blue', type: 'mushafs', name: 'Mushaf Samudra Biru', desc: 'Cover mushaf biru langit bertinta emas', price: 0, currency: 'coins', icon: '📘' },
+      { id: 'mushaf_emerald', type: 'mushafs', name: 'Mushaf Zamrud', desc: 'Cover mushaf hijau permata menyejukkan hati', price: 150, currency: 'coins', icon: '📗' },
+      { id: 'mushaf_gold', type: 'mushafs', name: 'Mushaf Kencana Emas', desc: 'Cover mushaf keemasan bercahaya agung', price: 300, currency: 'coins', icon: '📙' },
+      { id: 'mushaf_royal', type: 'mushafs', name: 'Mushaf Kerajaan Surga', desc: 'Mushaf berhiaskan ornamen istimewa penghafal Al-Qur\'an', price: 5, currency: 'gems', icon: '👑' },
+
+      { id: 'none', type: 'auras', name: 'Tanpa Lentera', desc: 'Penerangan alami', price: 0, currency: 'coins', icon: '⚪' },
+      { id: 'aura_nur_gold', type: 'auras', name: 'Lentera Nur Ilahi', desc: 'Lentera fanoos emas memancarkan cahaya berkah', price: 250, currency: 'coins', icon: '🏮' },
+      { id: 'aura_bintang', type: 'auras', name: 'Cahaya Bintang Tartil', desc: 'Kilau butiran bintang melayang anggun', price: 400, currency: 'coins', icon: '✨' },
+
+      { id: 'boost_hint', type: 'boosters', name: 'Petunjuk Tilawah x3', desc: 'Hilangkan 1 opsi ayat yang keliru', price: 80, currency: 'coins', icon: '⚡', grant: { type: 'hint', amount: 3 } },
+      { id: 'boost_time', type: 'boosters', name: 'Waktu Muroja\'ah x3', desc: 'Tambah 20 detik waktu mengingat', price: 80, currency: 'coins', icon: '⏳', grant: { type: 'time', amount: 3 } }
+    ];
+
+    /*==== 15 ACHIEVEMENTS ====*/
+    const ACHIEVEMENTS_LIST = [
+      { id: 'ach_surah_first', name: 'Muroja\'ah Perdana', desc: 'Selesaikan Level 1 (Al-Fatihah)', reward: 1, req: (s) => (s.stars[1] || 0) >= 1 },
+      { id: 'ach_world1', name: 'Penjaga Benteng Tauhid', desc: 'Selesaikan seluruh level Dunia 1', reward: 2, req: (s) => [1,2,3,4,5,6].every(l => (s.stars[l] || 0) >= 1) },
+      { id: 'ach_world2', name: 'Pemenang Kautsar', desc: 'Selesaikan seluruh level Dunia 2', reward: 2, req: (s) => [7,8,9,10,11,12].every(l => (s.stars[l] || 0) >= 1) },
+      { id: 'ach_world3', name: 'Pemelihara Waktu', desc: 'Selesaikan seluruh level Dunia 3', reward: 2, req: (s) => [13,14,15,16,17,18].every(l => (s.stars[l] || 0) >= 1) },
+      { id: 'ach_world4', name: 'Kekasih Al-Qadr', desc: 'Selesaikan seluruh level Dunia 4', reward: 2, req: (s) => [19,20,21,22,23,24].every(l => (s.stars[l] || 0) >= 1) },
+      { id: 'ach_world5', name: 'Hafizh Bintang Juz \'Amma', desc: 'Selesaikan seluruh 30 level', reward: 5, req: (s) => [25,26,27,28,29,30].every(l => (s.stars[l] || 0) >= 1) },
+      { id: 'ach_stars10', name: 'Koleksi 10 Bintang', desc: 'Kumpulkan 10 Bintang Al-Qur\'an', reward: 1, req: (s) => getTotalStars() >= 10 },
+      { id: 'ach_stars30', name: 'Koleksi 30 Bintang', desc: 'Kumpulkan 30 Bintang Al-Qur\'an', reward: 2, req: (s) => getTotalStars() >= 30 },
+      { id: 'ach_stars60', name: 'Koleksi 60 Bintang', desc: 'Kumpulkan 60 Bintang Al-Qur\'an', reward: 3, req: (s) => getTotalStars() >= 60 },
+      { id: 'ach_stars90', name: 'Sempurna 90 Bintang', desc: 'Raih bintang 3 di seluruh 30 level!', reward: 5, req: (s) => getTotalStars() >= 90 },
+      { id: 'ach_mushaf2', name: 'Pecinta Mushaf', desc: 'Miliki minimal 2 mushaf Al-Qur\'an', reward: 1, req: (s) => s.mushafs.length >= 2 },
+      { id: 'ach_lentera', name: 'Cahaya Nur', desc: 'Gunakan lentera nur di sekeliling mushaf', reward: 1, req: (s) => s.auras.length >= 2 },
+      { id: 'ach_fast', name: 'Penghafal Cepat', desc: 'Jawab benar dalam waktu kurang dari 5 detik', reward: 1, req: (s) => s.missions.fastAnswers >= 1 },
+      { id: 'ach_coins400', name: 'Harta Berkah', desc: 'Kumpulkan saldo 400 koin', reward: 1, req: (s) => s.coins >= 400 },
+      { id: 'ach_boss_master', name: 'Penakluk Boss Makam', desc: 'Selesaikan semua level boss tiap dunia', reward: 3, req: (s) => [6,12,18,24,30].every(l => (s.stars[l] || 0) >= 1) }
+    ];
+
+    function getTotalStars() {
+      return Object.values(SAVE_DATA.stars).reduce((a, b) => a + b, 0);
+    }
+
+    /*==== 3D ENGINE (THREE.JS R128) - INTERACTIVE 3D MUSHAF ====*/
+    let scene, camera, renderer;
+    let islandGroup, mushafGroup, lanternGroup;
+    let clock = new THREE.Clock();
+
+    function initThreeScene() {
+      const canvas = document.getElementById('gameCanvas');
+      scene = new THREE.Scene();
+      scene.background = new THREE.Color(0x24557d);
+      scene.fog = new THREE.FogExp2(0x24557d, 0.026);
+
+      camera = new THREE.PerspectiveCamera(40, window.innerWidth / window.innerHeight, 0.1, 100);
+      camera.position.set(0, 7.5, 12);
+      camera.lookAt(0, 0.8, 0);
+
+      renderer = new THREE.WebGLRenderer({ canvas, antialias: true, alpha: false });
+      renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+      renderer.setSize(window.innerWidth, window.innerHeight);
+      renderer.shadowMap.enabled = true;
+      renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+      renderer.outputEncoding = THREE.sRGBEncoding;
+      renderer.toneMapping = THREE.ACESFilmicToneMapping;
+      renderer.toneMappingExposure = 1.12;
+
+      // Lights
+      const hemiLight = new THREE.HemisphereLight(0xcdeeff, 0xffd9a8, 0.6);
+      scene.add(hemiLight);
+
+      const dirLight = new THREE.DirectionalLight(0xfff1d6, 1.05);
+      dirLight.position.set(8, 16, 8);
+      dirLight.castShadow = true;
+      dirLight.shadow.mapSize.width = 2048;
+      dirLight.shadow.mapSize.height = 2048;
+      dirLight.shadow.bias = -0.0004;
+      const shc = dirLight.shadow.camera;
+      shc.left = shc.bottom = -8; shc.right = shc.top = 8; shc.far = 50;
+      scene.add(dirLight);
+
+      const fillLight = new THREE.DirectionalLight(0x9dc8ff, 0.3);
+      fillLight.position.set(-6, 8, -6);
+      scene.add(fillLight);
+
+      // Groups
+      islandGroup = new THREE.Group();
+      scene.add(islandGroup);
+
+      mushafGroup = new THREE.Group();
+      scene.add(mushafGroup);
+
+      lanternGroup = new THREE.Group();
+      scene.add(lanternGroup);
+
+      buildIsland();
+      buildMushafModel();
+      buildLanterns();
+
+      window.addEventListener('resize', onWindowResize);
+    }
+
+    function onWindowResize() {
+      if (!camera || !renderer) return;
+      camera.aspect = window.innerWidth / window.innerHeight;
+      camera.updateProjectionMatrix();
+      renderer.setSize(window.innerWidth, window.innerHeight);
+    }
+
+    /*==== BLOCK KIT HELPER (SMOOTH HAND-PAINTED TOY) ====*/
+    function blockTex(base, seed, dots = 8, opt = {}) {
+      const S = opt.fine ? 256 : 64;
+      const c = document.createElement('canvas'); c.width = c.height = S; const x = c.getContext('2d');
+      let s = typeof seed === 'number' ? seed : [...String(seed)].reduce((a,ch) => (a*31 + ch.charCodeAt(0))>>>0, 12345);
+      const r = () => (s = (s * 1664525 + 1013904223) >>> 0) / 4294967296;
+      const K = S / 64;
+      x.fillStyle = base; x.fillRect(0, 0, S, S);
+      for (let i = 0; i < dots * 3; i++) {
+        const px = r() * S, py = r() * S, pr = (3 + r() * 7) * K, lite = r() < 0.5;
+        const g = x.createRadialGradient(px, py, 0, px, py, pr);
+        g.addColorStop(0, lite ? 'rgba(255,255,255,.09)' : 'rgba(30,15,0,.08)'); g.addColorStop(1, 'rgba(0,0,0,0)');
+        x.fillStyle = g; x.fillRect(px - pr, py - pr, pr * 2, pr * 2);
+      }
+      let g = x.createLinearGradient(0, 0, 0, S);
+      g.addColorStop(0, 'rgba(255,255,255,.16)'); g.addColorStop(.42, 'rgba(255,255,255,0)');
+      g.addColorStop(.72, 'rgba(0,0,0,0)'); g.addColorStop(1, 'rgba(0,0,0,.18)');
+      x.fillStyle = g; x.fillRect(0, 0, S, S);
+      g = x.createLinearGradient(0, 0, S, 0);
+      g.addColorStop(0, 'rgba(255,255,255,.10)'); g.addColorStop(.28, 'rgba(255,255,255,0)');
+      g.addColorStop(.78, 'rgba(0,0,0,0)'); g.addColorStop(1, 'rgba(0,0,0,.10)');
+      x.fillStyle = g; x.fillRect(0, 0, S, S);
+      if (opt.vignette) {
+        g = x.createRadialGradient(S / 2, S / 2, S * .16, S / 2, S / 2, S * .52);
+        g.addColorStop(0, 'rgba(0,0,0,0)'); g.addColorStop(.72, 'rgba(0,0,0,0)'); g.addColorStop(1, 'rgba(60,40,15,.14)');
+        x.fillStyle = g; x.fillRect(0, 0, S, S);
+      }
+      const t = new THREE.CanvasTexture(c); t.encoding = THREE.sRGBEncoding; t.anisotropy = 4; return t;
+    }
+
+    /* 3D Floating Island & Mihrab */
+    function buildIsland() {
+      // Pedestal Platform - cream marble toy pedestal
+      const topMat = new THREE.MeshLambertMaterial({ map: blockTex('#efe3c8', 'ped_top', 8, { fine: true, vignette: true }) });
+      const sideMat = new THREE.MeshLambertMaterial({ map: blockTex('#dcc79c', 'ped_side', 6) });
+      const lowerBase = new THREE.Mesh(new THREE.BoxGeometry(9.2, 0.6, 9.2), sideMat);
+      lowerBase.position.y = -0.7;
+      lowerBase.receiveShadow = true;
+      islandGroup.add(lowerBase);
+
+      const upperBase = new THREE.Mesh(new THREE.BoxGeometry(8.4, 0.5, 8.4), [sideMat, sideMat, topMat, sideMat, sideMat, sideMat]);
+      upperBase.position.y = -0.2;
+      upperBase.receiveShadow = true;
+      islandGroup.add(upperBase);
+
+      // Gold ornamental square frame border
+      const ringMat = new THREE.MeshLambertMaterial({ map: blockTex('#ffc928', 'goldring', 6) });
+      const fw = 8.6, fh = 0.16, fd = 0.25;
+      [
+        { pos: [0, 0.08, fw/2], sz: [fw + fd*2, fh, fd] },
+        { pos: [0, 0.08, -fw/2], sz: [fw + fd*2, fh, fd] },
+        { pos: [fw/2, 0.08, 0], sz: [fd, fh, fw] },
+        { pos: [-fw/2, 0.08, 0], sz: [fd, fh, fw] }
+      ].forEach(b => {
+        const edge = new THREE.Mesh(new THREE.BoxGeometry(b.sz[0], b.sz[1], b.sz[2]), ringMat);
+        edge.position.set(...b.pos);
+        islandGroup.add(edge);
+      });
+
+      // Mosque Arch behind (rounded pillars & beam, sky-blue identity)
+      const archMat = new THREE.MeshLambertMaterial({ map: blockTex('#5cb8e8', 'archpillar', 6) });
+      const capMat = new THREE.MeshLambertMaterial({ map: blockTex('#ffc928', 'archcap', 8) });
+      [-2.4, 2.4].forEach(x => {
+        const p = new THREE.Mesh(new THREE.CylinderGeometry(0.32, 0.4, 3.8, 12), archMat);
+        p.position.set(x, 1.9, -2.4);
+        p.castShadow = true;
+        islandGroup.add(p);
+        const cap = new THREE.Mesh(new THREE.SphereGeometry(0.4, 12, 9, 0, Math.PI * 2, 0, Math.PI / 2), capMat);
+        cap.position.set(x, 3.82, -2.4);
+        cap.castShadow = true;
+        islandGroup.add(cap);
+      });
+      const topBeamGeo = new THREE.BoxGeometry(5.6, 0.5, 0.6);
+      const topBeam = new THREE.Mesh(topBeamGeo, archMat);
+      topBeam.position.set(0, 3.95, -2.4);
+      topBeam.castShadow = true;
+      islandGroup.add(topBeam);
+      const beamTrim = new THREE.Mesh(new THREE.BoxGeometry(5.8, 0.14, 0.72), capMat);
+      beamTrim.position.set(0, 4.25, -2.4);
+      islandGroup.add(beamTrim);
+
+      // Drifting toy clouds
+      const cloudMat = new THREE.MeshLambertMaterial({ color: 0xffffff, emissive: 0xfff4e2, emissiveIntensity: .45 });
+      const puffGeo = new THREE.SphereGeometry(1, 10, 8);
+      [[-8.5, 5.2, -5], [8.8, 6.2, -3.5], [7, 6.8, 6.5], [-7.5, 7, 6.8]].forEach(([px, py, pz], ci) => {
+        const g = new THREE.Group();
+        for (let j = 0; j < 3; j++) {
+          const puff = new THREE.Mesh(puffGeo, cloudMat);
+          const ps = (.5 + (j % 2) * .25) * .85;
+          puff.scale.set(ps * 1.3, ps, ps);
+          puff.position.set((j - 1) * .95, (j % 2) * .18, 0);
+          g.add(puff);
+        }
+        g.position.set(px, py, pz);
+        g.userData.cloudPhase = ci * 1.8;
+        islandGroup.add(g);
+      });
+    }
+
+    /* 3D Open Mushaf Model */
+    let leftPage, rightPage;
+    function buildMushafModel() {
+      while (mushafGroup.children.length > 0) {
+        mushafGroup.remove(mushafGroup.children[0]);
+      }
+
+      let coverColor = '#0284c7'; // Blue default
+      if (SAVE_DATA.activeMushaf === 'mushaf_emerald') coverColor = '#059669';
+      if (SAVE_DATA.activeMushaf === 'mushaf_gold') coverColor = '#d97706';
+      if (SAVE_DATA.activeMushaf === 'mushaf_royal') coverColor = '#7c3aed';
+
+      // Wooden Quran Stand (Rihal) - Block Toy Voxel
+      const standMat = new THREE.MeshLambertMaterial({ map: blockTex('#78350f', 'woodrihal', 8) });
+      const leg1Geo = new THREE.BoxGeometry(0.3, 1.4, 2.6);
+      const leg1 = new THREE.Mesh(leg1Geo, standMat);
+      leg1.position.set(-0.6, 0.7, 0);
+      leg1.rotation.z = Math.PI / 6;
+      leg1.castShadow = true;
+      mushafGroup.add(leg1);
+
+      const leg2 = leg1.clone();
+      leg2.position.set(0.6, 0.7, 0);
+      leg2.rotation.z = -Math.PI / 6;
+      mushafGroup.add(leg2);
+
+      // Book Spine & Cover
+      const coverMat = new THREE.MeshLambertMaterial({ map: blockTex(coverColor, 'mushaf_cov', 6) });
+      const pageMat = new THREE.MeshLambertMaterial({ map: blockTex('#fffdf5', 'paper', 4) });
+
+      // Left open page
+      const pageGeo = new THREE.BoxGeometry(1.6, 0.12, 2.4);
+      leftPage = new THREE.Mesh(pageGeo, pageMat);
+      leftPage.position.set(-0.85, 1.35, 0);
+      leftPage.rotation.z = Math.PI / 10;
+      leftPage.castShadow = true;
+      mushafGroup.add(leftPage);
+
+      // Right open page
+      rightPage = new THREE.Mesh(pageGeo, pageMat);
+      rightPage.position.set(0.85, 1.35, 0);
+      rightPage.rotation.z = -Math.PI / 10;
+      rightPage.castShadow = true;
+      mushafGroup.add(rightPage);
+
+      // Glowing Golden Ayah Line on pages
+      const lineMat = new THREE.MeshBasicMaterial({ map: blockTex('#f59e0b', 'ayahline', 2) });
+      for (let i = 0; i < 4; i++) {
+        const lLine = new THREE.Mesh(new THREE.BoxGeometry(1.1, 0.02, 0.14), lineMat);
+        lLine.position.set(-0.85, 1.45, -0.7 + i * 0.45);
+        lLine.rotation.z = Math.PI / 10;
+        mushafGroup.add(lLine);
+
+        const rLine = new THREE.Mesh(new THREE.BoxGeometry(1.1, 0.02, 0.14), lineMat);
+        rLine.position.set(0.85, 1.45, -0.7 + i * 0.45);
+        rLine.rotation.z = -Math.PI / 10;
+        mushafGroup.add(rLine);
+      }
+    }
+
+    function buildLanterns() {
+      while (lanternGroup.children.length > 0) {
+        lanternGroup.remove(lanternGroup.children[0]);
+      }
+      if (SAVE_DATA.activeAura === 'none') return;
+
+      const lanternColor = SAVE_DATA.activeAura === 'aura_nur_gold' ? '#ffc928' : '#5cb8e8';
+      const latMat = new THREE.MeshBasicMaterial({ map: blockTex(lanternColor, 'surahlantern', 4) });
+      const capMat = new THREE.MeshBasicMaterial({ map: blockTex('#d9920c', 'lanterncap', 4) });
+
+      // Rounded glowing lanterns hanging left and right
+      [-2.4, 2.4].forEach(x => {
+        const lGroup = new THREE.Group();
+        const latMesh = new THREE.Mesh(new THREE.SphereGeometry(0.4, 12, 10), latMat);
+        latMesh.scale.y = 1.2;
+        lGroup.add(latMesh);
+
+        const capMesh = new THREE.Mesh(new THREE.ConeGeometry(0.3, 0.35, 10), capMat);
+        capMesh.position.y = 0.58;
+        lGroup.add(capMesh);
+
+        const knop = new THREE.Mesh(new THREE.SphereGeometry(0.08, 8, 6), capMat);
+        knop.position.y = 0.82;
+        lGroup.add(knop);
+
+        lGroup.position.set(x, 2.8, -1.8);
+        lGroup.userData = { baseY: 2.8, phase: x };
+        lanternGroup.add(lGroup);
+      });
+    }
+
+    function renderLoop() {
+      requestAnimationFrame(renderLoop);
+      const elapsed = clock.getElapsedTime();
+
+      // Slow floating animation of the mushaf
+      if (mushafGroup) {
+        mushafGroup.position.y = Math.sin(elapsed * 1.8) * 0.08;
+      }
+
+      // Rotate island in menu
+      if (gameState === 'MENU' && islandGroup) {
+        islandGroup.rotation.y = elapsed * 0.15;
+      } else if (islandGroup) {
+        islandGroup.rotation.y = Math.sin(elapsed * 0.4) * 0.06;
+      }
+
+      // Sway lanterns
+      lanternGroup.children.forEach(l => {
+        if (l.userData) {
+          l.position.y = l.userData.baseY + Math.sin(elapsed * 3 + l.userData.phase) * 0.12;
+        }
+      });
+
+      renderer.render(scene, camera);
+      renderConfetti();
+    }
+
+    /*==== CONFETTI PARTICLE SYSTEM ====*/
+    const confettiCanvas = document.getElementById('confettiCanvas');
+    const confettiCtx = confettiCanvas.getContext('2d');
+    let confettiList = [];
+
+    function resizeConfetti() {
+      confettiCanvas.width = window.innerWidth;
+      confettiCanvas.height = window.innerHeight;
+    }
+    window.addEventListener('resize', resizeConfetti);
+    resizeConfetti();
+
+    function triggerConfettiBurst() {
+      const colors = ['#f59e0b', '#0284c7', '#10b981', '#38bdf8', '#8b5cf6', '#ec4899'];
+      for (let i = 0; i < 90; i++) {
+        confettiList.push({
+          x: window.innerWidth * 0.5,
+          y: window.innerHeight * 0.4,
+          vx: (Math.random() - 0.5) * 16,
+          vy: (Math.random() - 0.8) * 18,
+          size: Math.random() * 8 + 6,
+          color: colors[Math.floor(Math.random() * colors.length)],
+          rotation: Math.random() * 360,
+          rotSpeed: (Math.random() - 0.5) * 12,
+          alpha: 1
+        });
+      }
+    }
+
+    function renderConfetti() {
+      if (confettiList.length === 0) return;
+      confettiCtx.clearRect(0, 0, confettiCanvas.width, confettiCanvas.height);
+      for (let i = confettiList.length - 1; i >= 0; i--) {
+        const p = confettiList[i];
+        p.x += p.vx;
+        p.y += p.vy;
+        p.vy += 0.45;
+        p.rotation += p.rotSpeed;
+        p.alpha -= 0.012;
+
+        if (p.alpha <= 0 || p.y > confettiCanvas.height) {
+          confettiList.splice(i, 1);
+          continue;
+        }
+
+        confettiCtx.save();
+        confettiCtx.translate(p.x, p.y);
+        confettiCtx.rotate((p.rotation * Math.PI) / 180);
+        confettiCtx.fillStyle = p.color;
+        confettiCtx.globalAlpha = p.alpha;
+        confettiCtx.fillRect(-p.size / 2, -p.size / 2, p.size, p.size * 0.6);
+        confettiCtx.restore();
+      }
+    }
+
+    function spawnFloatingText(text, x, y, color = '#f59e0b') {
+      const el = document.createElement('div');
+      el.className = 'floating-text';
+      el.textContent = text;
+      el.style.left = (x || window.innerWidth / 2) + 'px';
+      el.style.top = (y || window.innerHeight / 2) + 'px';
+      el.style.color = color;
+      document.body.appendChild(el);
+      setTimeout(() => el.remove(), 900);
+    }
+
+    function showToast(msg) {
+      const container = document.getElementById('toastContainer');
+      const el = document.createElement('div');
+      el.className = 'toast-msg';
+      el.textContent = msg;
+      container.appendChild(el);
+      setTimeout(() => {
+        el.style.opacity = '0';
+        el.style.transition = 'opacity 0.3s ease';
+        setTimeout(() => el.remove(), 300);
+      }, 2500);
+    }
+
+    /*==== MODAL STACK MANAGER ====*/
+    const modalStack = [];
+    function openModal(id) {
+      const overlay = document.getElementById(id);
+      if (!overlay) return;
+      overlay.classList.add('active');
+      modalStack.push(id);
+      SFX.click();
+    }
+    function closeModal(id) {
+      const overlay = document.getElementById(id);
+      if (!overlay) return;
+      overlay.classList.remove('active');
+      const idx = modalStack.indexOf(id);
+      if (idx > -1) modalStack.splice(idx, 1);
+      SFX.click();
+    }
+    function closeTopModal() {
+      if (modalStack.length > 0) {
+        closeModal(modalStack[modalStack.length - 1]);
+      }
+    }
+
+    document.querySelectorAll('[data-close]').forEach(btn => {
+      btn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        const targetId = 'modal' + btn.dataset.close.charAt(0).toUpperCase() + btn.dataset.close.slice(1);
+        closeModal(targetId);
+      });
+    });
+
+    document.querySelectorAll('.overlay').forEach(ov => {
+      ov.addEventListener('click', (e) => {
+        if (e.target === ov) closeModal(ov.id);
+      });
+    });
+
+    window.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape') {
+        if (modalStack.length > 0) closeTopModal();
+        else if (gameState === 'PLAYING') pauseGame();
+      }
+    });
+
+    /*==== STATE MACHINE & CONTROLLER ====*/
+    let gameState = 'BOOT';
+    let currentLevelData = null;
+    let levelTimer = 0;
+    let timerInterval = null;
+    let answerStartTime = 0;
+    let mistakesInLevel = 0;
+    let selectedWorldTab = 1;
+
+    function switchState(newState) {
+      gameState = newState;
+      const screenSplash = document.getElementById('screenSplash');
+      const screenMenu = document.getElementById('screenMenu');
+      const hud = document.getElementById('hud');
+
+      if (newState === 'SPLASH') {
+        screenSplash.style.display = 'flex';
+        screenMenu.style.display = 'none';
+        hud.style.display = 'none';
+      } else if (newState === 'MENU') {
+        screenSplash.style.display = 'none';
+        screenMenu.style.display = 'flex';
+        hud.style.display = 'none';
+        updateMenuChips();
+      } else if (newState === 'PLAYING') {
+        screenSplash.style.display = 'none';
+        screenMenu.style.display = 'none';
+        hud.style.display = 'flex';
+      } else if (newState === 'RESULT') {
+        hud.style.display = 'none';
+      }
+    }
+
+    function updateMenuChips() {
+      document.getElementById('menuCoinCount').textContent = SAVE_DATA.coins;
+      document.getElementById('menuGemCount').textContent = SAVE_DATA.gems;
+      document.getElementById('hudCoinCount').textContent = SAVE_DATA.coins;
+      document.getElementById('hudStarCount').textContent = getTotalStars();
+    }
+
+    function openBriefing(levelId) {
+      const lvl = LEVELS.find(l => l.id === levelId);
+      if (!lvl) return;
+      currentLevelData = lvl;
+
+      document.getElementById('briefingLevelTitle').textContent = `Level ${lvl.id}: ${lvl.title}`;
+      document.getElementById('briefingWorldTag').textContent = `Dunia ${lvl.world}: ${lvl.worldName}`;
+      document.getElementById('briefingDesc').textContent = lvl.desc;
+      document.getElementById('briefingArabic').textContent = lvl.arabicPrompt;
+      document.getElementById('briefingArti').textContent = lvl.artiFull;
+
+      closeModal('modalLevels');
+      openModal('modalBriefing');
+    }
+
+    function startLevel(lvl) {
+      currentLevelData = lvl;
+      closeModal('modalBriefing');
+      closeModal('modalResult');
+      closeModal('modalPause');
+
+      levelTimer = CONFIG.BASE_TIME_PER_LEVEL;
+      mistakesInLevel = 0;
+      answerStartTime = Date.now();
+
+      document.getElementById('hudLevelTitle').textContent = `Level ${lvl.id}: ${lvl.title}`;
+      document.getElementById('hudTimerSec').textContent = levelTimer + 's';
+      document.getElementById('surahCategoryTag').textContent = `Dunia ${lvl.world} • ${lvl.worldName}`;
+      document.getElementById('surahArabicPrompt').textContent = lvl.arabicPrompt;
+      document.getElementById('surahQuestionText').textContent = lvl.question;
+
+      document.getElementById('hintCount').textContent = SAVE_DATA.boosters.hint;
+      document.getElementById('timeCount').textContent = SAVE_DATA.boosters.time;
+
+      renderSurahOptions(lvl);
+
+      switchState('PLAYING');
+      startTimer();
+      initAudio();
+    }
+
+    function renderSurahOptions(lvl) {
+      const list = document.getElementById('surahOptionsList');
+      list.innerHTML = '';
+      const letters = ['A', 'B', 'C'];
+
+      lvl.options.forEach((opt, idx) => {
+        const btn = document.createElement('button');
+        btn.className = 'btn-option';
+        btn.innerHTML = `
+          <span><b>${letters[idx]}.</b> ${opt.arti}</span>
+          <span class="opt-arabic">${opt.text}</span>
+        `;
+        btn.addEventListener('click', (e) => {
+          e.stopPropagation();
+          onOptionSelected(idx, btn);
+        });
+        list.appendChild(btn);
+      });
+    }
+
+    function startTimer() {
+      if (timerInterval) clearInterval(timerInterval);
+      timerInterval = setInterval(() => {
+        if (gameState !== 'PLAYING') return;
+        levelTimer--;
+        document.getElementById('hudTimerSec').textContent = levelTimer + 's';
+        if (levelTimer <= 5 && levelTimer > 0) {
+          playTone(440, 0.08, 'square', 0.1);
+        }
+        if (levelTimer <= 0) {
+          clearInterval(timerInterval);
+          onTimeUp();
+        }
+      }, 1000);
+    }
+
+    function pauseGame() {
+      if (gameState !== 'PLAYING') return;
+      gameState = 'PAUSED';
+      openModal('modalPause');
+    }
+    function resumeGame() {
+      closeModal('modalPause');
+      gameState = 'PLAYING';
+    }
+
+    function onOptionSelected(optIndex, btnEl) {
+      if (gameState !== 'PLAYING') return;
+      const isCorrect = (optIndex === currentLevelData.correct);
+
+      if (isCorrect) {
+        btnEl.classList.add('correct');
+        SFX.correct();
+
+        const timeTaken = (Date.now() - answerStartTime) / 1000;
+        if (timeTaken <= 5) {
+          SAVE_DATA.missions.fastAnswers = (SAVE_DATA.missions.fastAnswers || 0) + 1;
+        }
+
+        let stars = 1;
+        if (levelTimer >= 15) stars++;
+        if (mistakesInLevel === 0) stars++;
+
+        clearInterval(timerInterval);
+        setTimeout(() => {
+          finishLevelSuccess(stars);
+        }, 900);
+
+      } else {
+        btnEl.classList.add('wrong');
+        SFX.wrong();
+        mistakesInLevel++;
+        showToast(I18N[currentLang].wrong);
+        btnEl.disabled = true;
+
+        if (mistakesInLevel >= 2) {
+          clearInterval(timerInterval);
+          setTimeout(() => {
+            finishLevelFailed('Yuk muroja\'ah dan coba lagi!');
+          }, 800);
+        }
+      }
+    }
+
+    function onTimeUp() {
+      SFX.wrong();
+      finishLevelFailed(I18N[currentLang].timeUp);
+    }
+
+    function finishLevelSuccess(starsEarned) {
+      switchState('RESULT');
+      SFX.victory();
+      triggerConfettiBurst();
+
+      const lvlId = currentLevelData.id;
+      const prevStars = SAVE_DATA.stars[lvlId] || 0;
+      if (starsEarned > prevStars) {
+        SAVE_DATA.stars[lvlId] = starsEarned;
+      }
+
+      if (lvlId === SAVE_DATA.unlockedLevel && lvlId < 30) {
+        SAVE_DATA.unlockedLevel = lvlId + 1;
+      }
+
+      const coinsReward = starsEarned * CONFIG.COIN_PER_STAR;
+      const xpReward = starsEarned * CONFIG.XP_PER_STAR;
+      SAVE_DATA.coins += coinsReward;
+      SAVE_DATA.xp += xpReward;
+
+      checkPlayerLevelUp();
+      checkAchievements();
+      saveGameData();
+
+      document.getElementById('resultTitle').textContent = 'Alhamdulillah! Ayat Sempurna!';
+      document.getElementById('resultTitle').style.color = '#10b981';
+      document.getElementById('resultCoinReward').textContent = coinsReward;
+      document.getElementById('resultXpReward').textContent = xpReward;
+      document.getElementById('resultArabic').textContent = currentLevelData.arabicFull;
+      document.getElementById('resultArti').textContent = currentLevelData.artiFull;
+
+      for (let s = 1; s <= 3; s++) {
+        const starEl = document.getElementById('star' + s);
+        starEl.style.color = '#cbd5e1';
+        if (s <= starsEarned) {
+          setTimeout(() => {
+            starEl.style.color = '#f59e0b';
+            starEl.style.transform = 'scale(1.25)';
+            SFX.starPop(s);
+            setTimeout(() => starEl.style.transform = 'scale(1)', 200);
+          }, s * 220);
+        }
+      }
+
+      spawnFloatingText(`+${coinsReward} Koin`, window.innerWidth / 2, window.innerHeight * 0.45);
+      openModal('modalResult');
+    }
+
+    function finishLevelFailed(reason) {
+      switchState('RESULT');
+      document.getElementById('resultTitle').textContent = reason || 'Belum Berhasil, Ayo Muroja\'ah!';
+      document.getElementById('resultTitle').style.color = '#ef4444';
+      document.getElementById('resultCoinReward').textContent = '5';
+      document.getElementById('resultXpReward').textContent = '10';
+      SAVE_DATA.coins += 5;
+      saveGameData();
+
+      for (let s = 1; s <= 3; s++) {
+        document.getElementById('star' + s).style.color = '#cbd5e1';
+      }
+
+      document.getElementById('resultArabic').textContent = currentLevelData.arabicFull;
+      document.getElementById('resultArti').textContent = currentLevelData.artiFull;
+      openModal('modalResult');
+    }
+
+    function checkPlayerLevelUp() {
+      const nextLevelXp = SAVE_DATA.level * 200;
+      if (SAVE_DATA.xp >= nextLevelXp && SAVE_DATA.level < 10) {
+        SAVE_DATA.level++;
+        SAVE_DATA.gems += 2;
+        showToast(`🎉 Naik Pangkat! Selamat mencapai Level Hafizh ${SAVE_DATA.level}!`);
+        SFX.gem();
+      }
+    }
+
+    /* Boosters */
+    document.getElementById('btnBoostHint').addEventListener('click', () => {
+      if (SAVE_DATA.boosters.hint <= 0) {
+        showToast('Booster Petunjuk habis! Beli di Toko.');
+        return;
+      }
+      const list = document.getElementById('surahOptionsList');
+      const buttons = Array.from(list.querySelectorAll('.btn-option'));
+      const wrongBtn = buttons.find((b, idx) => idx !== currentLevelData.correct && !b.disabled);
+      if (wrongBtn) {
+        SAVE_DATA.boosters.hint--;
+        document.getElementById('hintCount').textContent = SAVE_DATA.boosters.hint;
+        wrongBtn.disabled = true;
+        wrongBtn.style.opacity = '0.35';
+        showToast('1 Pilihan salah berhasil disingkirkan!');
+        SFX.click();
+        saveGameData();
+      }
+    });
+
+    document.getElementById('btnBoostTime').addEventListener('click', () => {
+      if (SAVE_DATA.boosters.time <= 0) {
+        showToast('Booster Waktu habis! Beli di Toko.');
+        return;
+      }
+      SAVE_DATA.boosters.time--;
+      document.getElementById('timeCount').textContent = SAVE_DATA.boosters.time;
+      levelTimer += 20;
+      document.getElementById('hudTimerSec').textContent = levelTimer + 's';
+      showToast('+20 Detik waktu berpikir ditambahkan!');
+      SFX.click();
+      saveGameData();
+    });
+
+    /* Result Modal Buttons */
+    document.getElementById('btnResultNext').addEventListener('click', () => {
+      closeModal('modalResult');
+      if (currentLevelData.id < 30) {
+        const nextLvl = LEVELS.find(l => l.id === currentLevelData.id + 1);
+        startLevel(nextLvl);
+      } else {
+        showToast('🏆 Masya Allah! Kamu telah menamatkan 30 Surah Juz \'Amma!');
+        switchState('MENU');
+      }
+    });
+    document.getElementById('btnResultRetry').addEventListener('click', () => {
+      closeModal('modalResult');
+      startLevel(currentLevelData);
+    });
+    document.getElementById('btnResultMenu').addEventListener('click', () => {
+      closeModal('modalResult');
+      switchState('MENU');
+    });
+
+    /* Pause Buttons */
+    document.getElementById('btnPause').addEventListener('click', pauseGame);
+    document.getElementById('btnResumeGame').addEventListener('click', resumeGame);
+    document.getElementById('btnRetryFromPause').addEventListener('click', () => {
+      closeModal('modalPause');
+      startLevel(currentLevelData);
+    });
+    document.getElementById('btnMenuFromPause').addEventListener('click', () => {
+      closeModal('modalPause');
+      switchState('MENU');
+    });
+
+    document.getElementById('btnStartLevelNow').addEventListener('click', () => {
+      startLevel(currentLevelData);
+    });
+
+    /* UI RENDERERS */
+    function renderWorldTabs() {
+      const container = document.getElementById('worldTabsList');
+      container.innerHTML = '';
+      const worldNames = [
+        'D1: Pembuka & Pelindung',
+        'D2: Kemenangan & Kemudahan',
+        'D3: Waktu & Peringatan',
+        'D4: Kemuliaan & Penciptaan',
+        'D5: Pelipur Lara & Janji Ilahi'
+      ];
+
+      for (let w = 1; w <= 5; w++) {
+        const btn = document.createElement('button');
+        btn.className = `world-tab-btn ${selectedWorldTab === w ? 'active' : ''}`;
+        btn.textContent = worldNames[w - 1];
+        btn.addEventListener('click', () => {
+          selectedWorldTab = w;
+          SFX.click();
+          renderWorldTabs();
+          renderLevelsGrid();
+        });
+        container.appendChild(btn);
+      }
+    }
+
+    function renderLevelsGrid() {
+      const container = document.getElementById('levelsGridList');
+      container.innerHTML = '';
+      const worldLevels = LEVELS.filter(l => l.world === selectedWorldTab);
+
+      worldLevels.forEach(lvl => {
+        const isUnlocked = lvl.id <= SAVE_DATA.unlockedLevel;
+        const stars = SAVE_DATA.stars[lvl.id] || 0;
+
+        const node = document.createElement('div');
+        node.className = `level-node ${!isUnlocked ? 'locked' : ''} ${lvl.isBoss ? 'boss' : ''}`;
+
+        let starsHtml = '';
+        for (let s = 1; s <= 3; s++) {
+          starsHtml += `<span class="${s <= stars ? 'filled' : ''}">★</span>`;
+        }
+
+        node.innerHTML = `
+          <div class="level-node-num">${isUnlocked ? lvl.id : '🔒'}</div>
+          <div class="level-node-stars">${starsHtml}</div>
+          <div class="level-node-title">${lvl.title}</div>
+        `;
+
+        if (isUnlocked) {
+          node.addEventListener('click', () => {
+            SFX.click();
+            openBriefing(lvl.id);
+          });
+        }
+        container.appendChild(node);
+      });
+    }
+
+    /* Toko Mushaf */
+    let currentShopTab = 'mushafs';
+    function renderShop() {
+      document.getElementById('shopCoinCount').textContent = SAVE_DATA.coins;
+      document.getElementById('shopGemCount').textContent = SAVE_DATA.gems;
+
+      const grid = document.getElementById('shopItemsGrid');
+      grid.innerHTML = '';
+      const items = SHOP_ITEMS.filter(it => it.type === currentShopTab);
+
+      items.forEach(item => {
+        const card = document.createElement('div');
+        let isOwned = false;
+        let isEquipped = false;
+
+        if (item.type === 'mushafs') {
+          isOwned = SAVE_DATA.mushafs.includes(item.id);
+          isEquipped = SAVE_DATA.activeMushaf === item.id;
+        } else if (item.type === 'auras') {
+          isOwned = SAVE_DATA.auras.includes(item.id);
+          isEquipped = SAVE_DATA.activeAura === item.id;
+        }
+
+        card.className = `shop-item-card ${isEquipped ? 'equipped' : ''}`;
+        card.innerHTML = `
+          <div class="shop-item-icon">${item.icon}</div>
+          <div class="shop-item-name">${item.name}</div>
+          <div class="shop-item-desc">${item.desc}</div>
+          <div style="margin-top: 6px; width: 100%;">
+            ${renderShopButton(item, isOwned, isEquipped)}
+          </div>
+        `;
+        grid.appendChild(card);
+      });
+
+      grid.querySelectorAll('[data-buy]').forEach(btn => {
+        btn.addEventListener('click', () => buyShopItem(btn.dataset.buy));
+      });
+      grid.querySelectorAll('[data-equip]').forEach(btn => {
+        btn.addEventListener('click', () => equipShopItem(btn.dataset.equip));
+      });
+    }
+
+    function renderShopButton(item, isOwned, isEquipped) {
+      if (item.type === 'boosters') {
+        return `<button class="btn btn-gold" data-buy="${item.id}" style="width: 100%; padding: 6px 12px; font-size: 13px;">Beli ${item.price} Koin</button>`;
+      }
+      if (isEquipped) {
+        return `<button class="btn btn-emerald" disabled style="width: 100%; padding: 6px 12px; font-size: 13px;">Dipakai</button>`;
+      }
+      if (isOwned) {
+        return `<button class="btn btn-purple" data-equip="${item.id}" style="width: 100%; padding: 6px 12px; font-size: 13px;">Gunakan</button>`;
+      }
+      const priceTag = item.currency === 'gems' ? `${item.price} Gem` : `${item.price} Koin`;
+      return `<button class="btn btn-gold" data-buy="${item.id}" style="width: 100%; padding: 6px 12px; font-size: 13px;">Beli (${priceTag})</button>`;
+    }
+
+    function buyShopItem(itemId) {
+      const item = SHOP_ITEMS.find(it => it.id === itemId);
+      if (!item) return;
+
+      const currencyKey = item.currency;
+      if (SAVE_DATA[currencyKey] < item.price) {
+        showToast(`Saldo ${currencyKey} tidak mencukupi!`);
+        SFX.wrong();
+        return;
+      }
+
+      SAVE_DATA[currencyKey] -= item.price;
+      SFX.coin();
+
+      if (item.type === 'mushafs') {
+        SAVE_DATA.mushafs.push(item.id);
+        SAVE_DATA.activeMushaf = item.id;
+        buildMushafModel();
+      } else if (item.type === 'auras') {
+        SAVE_DATA.auras.push(item.id);
+        SAVE_DATA.activeAura = item.id;
+        buildLanterns();
+      } else if (item.type === 'boosters') {
+        if (item.grant.type === 'hint') SAVE_DATA.boosters.hint += item.grant.amount;
+        if (item.grant.type === 'time') SAVE_DATA.boosters.time += item.grant.amount;
+      }
+
+      showToast(`Berhasil membeli ${item.name}!`);
+      saveGameData();
+      renderShop();
+      updateMenuChips();
+    }
+
+    function equipShopItem(itemId) {
+      const item = SHOP_ITEMS.find(it => it.id === itemId);
+      if (!item) return;
+      if (item.type === 'mushafs') {
+        SAVE_DATA.activeMushaf = item.id;
+        buildMushafModel();
+      } else if (item.type === 'auras') {
+        SAVE_DATA.activeAura = item.id;
+        buildLanterns();
+      }
+      SFX.click();
+      showToast(`${item.name} berhasil digunakan!`);
+      saveGameData();
+      renderShop();
+    }
+
+    document.querySelectorAll('.shop-tab-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        document.querySelectorAll('.shop-tab-btn').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        currentShopTab = btn.dataset.tab;
+        SFX.click();
+        renderShop();
+      });
+    });
+
+    /* Daily Rewards */
+    function renderDaily() {
+      const grid = document.getElementById('dailyGrid');
+      grid.innerHTML = '';
+      const now = Date.now();
+      const ONE_DAY = 24 * 60 * 60 * 1000;
+      const canClaim = (now - SAVE_DATA.lastDailyClaim) > ONE_DAY;
+
+      const dailyPrizes = [
+        { day: 1, coins: 50, gems: 0 },
+        { day: 2, coins: 80, gems: 0 },
+        { day: 3, coins: 100, gems: 1 },
+        { day: 4, coins: 150, gems: 0 },
+        { day: 5, coins: 200, gems: 1 },
+        { day: 6, coins: 250, gems: 2 },
+        { day: 7, coins: 500, gems: 5 }
+      ];
+
+      dailyPrizes.forEach(p => {
+        const card = document.createElement('div');
+        const isClaimed = p.day < SAVE_DATA.dailyDay;
+        const isToday = p.day === SAVE_DATA.dailyDay;
+
+        card.className = `daily-day-card ${isClaimed ? 'claimed' : ''} ${isToday ? 'today' : ''}`;
+        card.innerHTML = `
+          <b style="font-size: 13px;">Hari ${p.day}</b>
+          <div style="font-size: 24px;">${p.day === 7 ? '🎁' : '🪙'}</div>
+          <span style="font-size: 12px; font-weight: 700; color: #d97706;">+${p.coins}</span>
+          ${p.gems > 0 ? `<span style="font-size: 11px; color: #0284c7;">+${p.gems} Gem</span>` : ''}
+        `;
+        grid.appendChild(card);
+      });
+
+      const claimBtn = document.getElementById('btnClaimDaily');
+      if (canClaim) {
+        claimBtn.disabled = false;
+        claimBtn.textContent = `KLAIM HADIAH HARI ${SAVE_DATA.dailyDay}`;
+      } else {
+        claimBtn.disabled = true;
+        claimBtn.textContent = 'SUDAH DIKLAIM HARI INI';
+      }
+    }
+
+    document.getElementById('btnClaimDaily').addEventListener('click', () => {
+      const now = Date.now();
+      const ONE_DAY = 24 * 60 * 60 * 1000;
+      if ((now - SAVE_DATA.lastDailyClaim) <= ONE_DAY) {
+        showToast('Kamu sudah mengklaim hadiah hari ini. Datang lagi besok ya!');
+        return;
+      }
+
+      const prizes = [50, 80, 100, 150, 200, 250, 500];
+      const gemPrizes = [0, 0, 1, 0, 1, 2, 5];
+      const dayIdx = (SAVE_DATA.dailyDay - 1) % 7;
+
+      const coinReward = prizes[dayIdx];
+      const gemReward = gemPrizes[dayIdx];
+
+      SAVE_DATA.coins += coinReward;
+      SAVE_DATA.gems += gemReward;
+      SAVE_DATA.lastDailyClaim = now;
+      SAVE_DATA.dailyDay = (SAVE_DATA.dailyDay % 7) + 1;
+
+      SFX.coin();
+      triggerConfettiBurst();
+      showToast(`Alhamdulillah! Mendapatkan +${coinReward} Koin & +${gemReward} Gem!`);
+      saveGameData();
+      renderDaily();
+      updateMenuChips();
+    });
+
+    /* Missions Render */
+    function renderMissions() {
+      const container = document.getElementById('missionsList');
+      container.innerHTML = '';
+
+      const missions = [
+        { name: 'Muroja\'ah 3 Surah', desc: 'Selesaikan 3 level surah hari ini', cur: Math.min(3, SAVE_DATA.unlockedLevel), max: 3, reward: 60 },
+        { name: 'Hafalkan 15 Bintang', desc: 'Kumpulkan total 15 bintang di petualangan', cur: Math.min(15, getTotalStars()), max: 15, reward: 120 },
+        { name: 'Pakai 1 Booster Tilawah', desc: 'Gunakan petunjuk saat menjawab', cur: SAVE_DATA.boosters.hint < 2 ? 1 : 0, max: 1, reward: 50 }
+      ];
+
+      missions.forEach(m => {
+        const row = document.createElement('div');
+        row.className = 'mission-row';
+        row.innerHTML = `
+          <div class="mission-info">
+            <h4>${m.name}</h4>
+            <p>${m.desc} (${m.cur}/${m.max})</p>
+            <div class="mission-progress-bar">
+              <div class="mission-progress-fill" style="width: ${(m.cur / m.max) * 100}%;"></div>
+            </div>
+          </div>
+          <button class="btn btn-gold" ${m.cur >= m.max ? '' : 'disabled'} style="padding: 6px 14px; font-size: 13px;">
+            +${m.reward} Koin
+          </button>
+        `;
+        container.appendChild(row);
+      });
+    }
+
+    /* Achievements Render */
+    function renderAchievements() {
+      const container = document.getElementById('achievementsList');
+      container.innerHTML = '';
+
+      ACHIEVEMENTS_LIST.forEach(ach => {
+        const isDone = ach.req(SAVE_DATA);
+        const isClaimed = SAVE_DATA.achievements[ach.id];
+
+        const row = document.createElement('div');
+        row.className = 'mission-row';
+        row.innerHTML = `
+          <div class="mission-info">
+            <h4>${ach.name} ${isDone ? '✅' : '🔒'}</h4>
+            <p>${ach.desc}</p>
+          </div>
+          <button class="btn btn-purple" ${isDone && !isClaimed ? '' : 'disabled'} data-claim-ach="${ach.id}" style="padding: 6px 14px; font-size: 13px;">
+            ${isClaimed ? 'Klaim Selesai' : `+${ach.reward} Gem`}
+          </button>
+        `;
+        container.appendChild(row);
+      });
+
+      container.querySelectorAll('[data-claim-ach]').forEach(btn => {
+        btn.addEventListener('click', () => {
+          const achId = btn.dataset.claimAch;
+          const ach = ACHIEVEMENTS_LIST.find(a => a.id === achId);
+          if (ach && !SAVE_DATA.achievements[achId]) {
+            SAVE_DATA.achievements[achId] = true;
+            SAVE_DATA.gems += ach.reward;
+            SFX.gem();
+            showToast(`Prestasi diraih! +${ach.reward} Gem!`);
+            saveGameData();
+            renderAchievements();
+            updateMenuChips();
+          }
+        });
+      });
+    }
+
+    function checkAchievements() {
+      ACHIEVEMENTS_LIST.forEach(ach => {
+        if (!SAVE_DATA.achievements[ach.id] && ach.req(SAVE_DATA)) {
+          showToast(`🏆 Prestasi Baru Terbuka: ${ach.name}!`);
+        }
+      });
+    }
+
+    /* Settings Button Actions */
+    document.getElementById('btnToggleMusic').addEventListener('click', (e) => {
+      SAVE_DATA.settings.music = !SAVE_DATA.settings.music;
+      e.target.textContent = SAVE_DATA.settings.music ? 'ON' : 'OFF';
+      if (SAVE_DATA.settings.music) startTartilBGM();
+      else stopTartilBGM();
+      saveGameData();
+      SFX.click();
+    });
+
+    document.getElementById('btnToggleSfx').addEventListener('click', (e) => {
+      SAVE_DATA.settings.sfx = !SAVE_DATA.settings.sfx;
+      e.target.textContent = SAVE_DATA.settings.sfx ? 'ON' : 'OFF';
+      saveGameData();
+      SFX.click();
+    });
+
+    document.getElementById('btnToggleLang').addEventListener('click', (e) => {
+      currentLang = currentLang === 'id' ? 'en' : 'id';
+      SAVE_DATA.settings.lang = currentLang;
+      e.target.textContent = currentLang === 'id' ? 'Indonesia' : 'English';
+      saveGameData();
+      SFX.click();
+      showToast(`Bahasa diubah ke ${currentLang.toUpperCase()}`);
+    });
+
+    document.getElementById('btnExportData').addEventListener('click', () => {
+      const code = btoa(JSON.stringify(SAVE_DATA));
+      if (navigator.clipboard) {
+        navigator.clipboard.writeText(code).then(() => {
+          showToast('Kode progres berhasil disalin ke clipboard!');
+        });
+      } else {
+        prompt('Salin kode progres game kamu:', code);
+      }
+      SFX.click();
+    });
+
+    document.getElementById('btnResetData').addEventListener('click', () => {
+      if (confirm('Apakah kamu yakin ingin mereset seluruh data progres hafalan?')) {
+        localStorage.removeItem(CONFIG.STORAGE_KEY);
+        location.reload();
+      }
+    });
+
+    /* Audio Toggle Button in Menu */
+    document.getElementById('btnAudioToggle').addEventListener('click', () => {
+      initAudio();
+      SAVE_DATA.settings.music = !SAVE_DATA.settings.music;
+      SAVE_DATA.settings.sfx = SAVE_DATA.settings.music;
+      if (SAVE_DATA.settings.music) startTartilBGM();
+      else stopTartilBGM();
+      showToast(SAVE_DATA.settings.music ? 'Suara Diaktifkan 🔊' : 'Suara Dimatikan 🔇');
+      saveGameData();
+    });
+
+    /* Menu Button Navigation */
+    document.getElementById('btnMenuPlay').addEventListener('click', () => {
+      initAudio();
+      SFX.click();
+      const targetLvl = SAVE_DATA.unlockedLevel || 1;
+      openBriefing(targetLvl);
+    });
+
+    document.getElementById('btnOpenLevels').addEventListener('click', () => {
+      selectedWorldTab = Math.min(5, Math.ceil(SAVE_DATA.unlockedLevel / 6));
+      renderWorldTabs();
+      renderLevelsGrid();
+      openModal('modalLevels');
+    });
+
+    document.getElementById('btnOpenShop').addEventListener('click', () => {
+      renderShop();
+      openModal('modalShop');
+    });
+
+    document.getElementById('btnOpenDaily').addEventListener('click', () => {
+      renderDaily();
+      openModal('modalDaily');
+    });
+
+    document.getElementById('btnOpenMissions').addEventListener('click', () => {
+      renderMissions();
+      openModal('modalMissions');
+    });
+
+    document.getElementById('btnOpenAchievements').addEventListener('click', () => {
+      renderAchievements();
+      openModal('modalAchievements');
+    });
+
+    document.getElementById('btnSettings').addEventListener('click', () => {
+      openModal('modalSettings');
+    });
+
+    /*==== BOOT & INITIALIZATION ====*/
+    function bootGame() {
+      loadSaveData();
+      currentLang = SAVE_DATA.settings.lang || 'id';
+      updateIconNodes();
+
+      const pBar = document.getElementById('splashProgressBar');
+      const startBtn = document.getElementById('btnSplashStart');
+
+      let progress = 0;
+      const loaderInterval = setInterval(() => {
+        progress += 25;
+        pBar.style.width = progress + '%';
+        if (progress >= 100) {
+          clearInterval(loaderInterval);
+          initThreeScene();
+          renderLoop();
+          startBtn.style.display = 'inline-flex';
+          pBar.parentElement.style.display = 'none';
+        }
+      }, 150);
+
+      startBtn.addEventListener('click', () => {
+        initAudio();
+        SFX.click();
+        switchState('MENU');
+      });
+    }
+
+    window.addEventListener('DOMContentLoaded', bootGame);
+  </script>
+</body>
+</html>
