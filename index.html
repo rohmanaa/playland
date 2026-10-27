@@ -2303,9 +2303,6 @@
 
               <!-- Action buttons -->
               <div class="game-btn-toolbar-group">
-                <button class="btn-action-tool btn-exit-tool" id="btnToolbarExitGame" title="Tutup Game">
-                  <span class="iconify" data-icon="fluent-color:dismiss-circle-24"></span> Keluar Game
-                </button>
                 <button class="btn-action-tool btn-fullscreen-main" id="btnToolbarFullscreen">
                   <span class="iconify" data-icon="fluent:full-screen-maximize-24-filled"></span> Layar Penuh
                 </button>
@@ -3244,7 +3241,6 @@
     // Detail Toolbar Actions
     const gameExitConfirmModal = document.getElementById('gameExitConfirmModal');
     const btnTopbarCloseGame = document.getElementById('btnTopbarCloseGame');
-    const btnToolbarExitGame = document.getElementById('btnToolbarExitGame');
     const btnCancelExitGame = document.getElementById('btnCancelExitGame');
     const btnConfirmExitGame = document.getElementById('btnConfirmExitGame');
 
@@ -3253,7 +3249,6 @@
     }
 
     if (btnTopbarCloseGame) btnTopbarCloseGame.addEventListener('click', promptExitGame);
-    if (btnToolbarExitGame) btnToolbarExitGame.addEventListener('click', promptExitGame);
 
     if (btnCancelExitGame) {
       btnCancelExitGame.addEventListener('click', () => {
