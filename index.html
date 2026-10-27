@@ -1218,37 +1218,30 @@
       display: block;
     }
 
-    /* Floating Close Button at Top-Center of Game Screen */
-    .game-floating-close-btn {
-      position: absolute;
-      top: 14px;
-      left: 50%;
-      transform: translateX(-50%);
-      z-index: 45;
-      background: rgba(18, 30, 49, 0.88);
-      backdrop-filter: blur(12px);
-      -webkit-backdrop-filter: blur(12px);
-      border: 2px solid rgba(255, 255, 255, 0.4);
+    /* Close Button in Topbar (Outside Game Screen) */
+    .btn-topbar-close-game {
+      background: rgba(231, 76, 60, 0.1);
+      border: 1.5px solid rgba(231, 76, 60, 0.35);
       border-radius: 999px;
-      padding: 7px 18px 7px 14px;
-      color: #ffffff;
+      padding: 6px 14px;
+      color: #e74c3c;
       font-family: 'Fredoka', cursive, sans-serif;
-      font-size: 13.5px;
+      font-size: 13px;
       font-weight: 700;
       display: inline-flex;
       align-items: center;
-      gap: 8px;
+      gap: 6px;
       cursor: pointer;
-      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.45);
-      transition: all 0.25s cubic-bezier(0.34, 1.56, 0.64, 1);
+      transition: all 0.2s cubic-bezier(0.34, 1.56, 0.64, 1);
       user-select: none;
     }
 
-    .game-floating-close-btn:hover {
-      transform: translateX(-50%) translateY(-2px) scale(1.05);
-      background: linear-gradient(135deg, #e74c3c, #c0392b);
-      border-color: #ff9b91;
-      box-shadow: 0 10px 28px rgba(231, 76, 60, 0.55);
+    .btn-topbar-close-game:hover {
+      background: #e74c3c;
+      color: #ffffff;
+      border-color: #e74c3c;
+      transform: translateY(-1px);
+      box-shadow: 0 4px 14px rgba(231, 76, 60, 0.3);
     }
 
     .btn-exit-tool {
@@ -2216,7 +2209,7 @@
         <section class="view-panel" id="gameDetailView">
           <div class="game-play-section">
 
-            <!-- Breadcrumb Navigation -->
+            <!-- Breadcrumb Navigation & Topbar Close Button -->
             <div class="game-play-topbar">
               <div class="game-breadcrumb">
                 <a id="btnDetailHome"><span class="iconify" data-icon="fluent-color:home-24"
@@ -2226,15 +2219,14 @@
                 <span>/</span>
                 <span id="detailBreadcrumbTitle" style="color: var(--ink);">Petualangan Tajwid</span>
               </div>
+              <button class="btn-topbar-close-game" id="btnTopbarCloseGame" title="Keluar / Tutup Permainan">
+                <span class="iconify" data-icon="fluent-color:dismiss-circle-24" style="font-size: 17px;"></span>
+                <span>Tutup Game</span>
+              </button>
             </div>
 
             <!-- Game Player Screen with Mandatory Splash & Loading Overlay -->
             <div class="game-screen-wrapper" id="gameScreenWrapper">
-              <!-- Floating Close Button at Top-Center of Screen -->
-              <button class="game-floating-close-btn" id="btnFloatingCloseGame" title="Keluar / Tutup Permainan">
-                <span class="iconify" data-icon="fluent-color:dismiss-circle-24" style="font-size: 18px;"></span>
-                <span>Tutup Game</span>
-              </button>
 
               <!-- Confirm Exit Modal -->
               <div class="game-confirm-modal-overlay" id="gameExitConfirmModal" style="display: none;">
@@ -3251,7 +3243,7 @@
 
     // Detail Toolbar Actions
     const gameExitConfirmModal = document.getElementById('gameExitConfirmModal');
-    const btnFloatingCloseGame = document.getElementById('btnFloatingCloseGame');
+    const btnTopbarCloseGame = document.getElementById('btnTopbarCloseGame');
     const btnToolbarExitGame = document.getElementById('btnToolbarExitGame');
     const btnCancelExitGame = document.getElementById('btnCancelExitGame');
     const btnConfirmExitGame = document.getElementById('btnConfirmExitGame');
@@ -3260,7 +3252,7 @@
       if (gameExitConfirmModal) gameExitConfirmModal.style.display = 'flex';
     }
 
-    if (btnFloatingCloseGame) btnFloatingCloseGame.addEventListener('click', promptExitGame);
+    if (btnTopbarCloseGame) btnTopbarCloseGame.addEventListener('click', promptExitGame);
     if (btnToolbarExitGame) btnToolbarExitGame.addEventListener('click', promptExitGame);
 
     if (btnCancelExitGame) {
