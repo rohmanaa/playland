@@ -1430,6 +1430,107 @@
       transform: translate(-50%, 0);
     }
 
+    /* NAME INPUT MODAL (SIMULASI STORAGE NAMA PEMAIN) */
+    .name-modal-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(10, 25, 47, 0.55);
+      backdrop-filter: blur(4px);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      z-index: 3000;
+      padding: 20px;
+    }
+
+    .name-modal-overlay.visible {
+      display: flex;
+    }
+
+    .name-modal-card {
+      background: var(--card-bg);
+      border: 2px solid var(--card-border);
+      border-radius: 28px;
+      padding: 28px 26px 24px;
+      max-width: 380px;
+      width: 100%;
+      box-shadow: var(--shadow-hover);
+      text-align: center;
+      animation: namePop 0.35s cubic-bezier(0.34, 1.56, 0.64, 1);
+    }
+
+    @keyframes namePop {
+      from {
+        transform: scale(0.85);
+        opacity: 0;
+      }
+
+      to {
+        transform: scale(1);
+        opacity: 1;
+      }
+    }
+
+    .name-modal-emoji {
+      font-size: 44px;
+      line-height: 1;
+    }
+
+    .name-modal-card h2 {
+      font-family: 'Fredoka', cursive, sans-serif;
+      font-size: 22px;
+      color: var(--ink);
+      margin: 10px 0 6px;
+    }
+
+    .name-modal-card p {
+      font-size: 13px;
+      font-weight: 700;
+      color: var(--ink-soft);
+      margin-bottom: 16px;
+      line-height: 1.5;
+    }
+
+    .name-modal-input {
+      width: 100%;
+      height: 48px;
+      border-radius: 999px;
+      border: 2px solid var(--item-border);
+      background: var(--card-inner);
+      font-family: inherit;
+      font-size: 14.5px;
+      font-weight: 800;
+      color: var(--ink);
+      padding: 0 18px;
+      outline: none;
+      text-align: center;
+      margin-bottom: 12px;
+      transition: border-color 0.2s;
+    }
+
+    .name-modal-input:focus {
+      border-color: var(--primary-blue);
+    }
+
+    .btn-save-name {
+      width: 100%;
+      height: 48px;
+      border: none;
+      border-radius: 999px;
+      background: linear-gradient(135deg, #389dff, #1d82f5);
+      color: #ffffff;
+      font-family: inherit;
+      font-size: 14.5px;
+      font-weight: 900;
+      cursor: pointer;
+      box-shadow: 0 8px 20px rgba(29, 130, 245, 0.35);
+      transition: transform 0.18s;
+    }
+
+    .btn-save-name:hover {
+      transform: translateY(-2px);
+    }
+
     /* ==========================================================================
        RESPONSIVE BREAKPOINTS
        ========================================================================== */
@@ -1542,12 +1643,12 @@
           <span id="themeToggleText">Mode Terang</span>
         </button>
 
-        <!-- Player Profile -->
-        <div class="profile-pill" id="userProfilePill" title="Profil Pemain">
-          <img src="images/avatar-ahmad.png" alt="Ahmad" class="profile-avatar">
+        <!-- Player Profile (Nama Pemain - Simulasi Storage) -->
+        <div class="profile-pill" id="userProfilePill" title="Ganti Nama Pemain">
+          <img src="images/avatar-ahmad.png" alt="Avatar pemain" class="profile-avatar">
           <div class="profile-info">
-            <span class="profile-name">Ahmad <span>▾</span></span>
-            <span class="profile-badge">
+            <span class="profile-name"><span id="playerNameLabel">Ahmad</span> <span>▾</span></span>
+            <span class="profile-badge" style="display: none;">
               <span class="iconify" data-icon="fluent-color:star-24" style="font-size: 16px;"></span>
               <span id="headerCoinsCount">125</span> Poin
             </span>
@@ -1555,20 +1656,6 @@
         </div>
       </div>
     </header>
-
-    <!-- ISLAMIC VALUES: MUTIARA HIKMAH & HADITS HARIAN -->
-    <section class="hikmah-daily-banner">
-      <div class="hikmah-content">
-        <span class="hikmah-icon">🕌</span>
-        <div class="hikmah-text-col">
-          <strong>Pesan Kebaikan Hari Ini:</strong>
-          <div class="hikmah-quote" id="hikmahQuote">
-            "Sebaik-baik kalian adalah yang mempelajari Al-Qur'an dan mengajarkannya." — (HR. Bukhari)
-          </div>
-        </div>
-      </div>
-      <button class="btn-next-hikmah" id="btnNextHikmah">Ganti Hikmah ↻</button>
-    </section>
 
     <!-- 3-COLUMN PORTAL LAYOUT -->
     <div class="portal-layout">
@@ -1958,6 +2045,31 @@
 
     </div>
 
+    <!-- ISLAMIC VALUES: MUTIARA HIKMAH & HADITS HARIAN (PALING BAWAH) -->
+    <section class="hikmah-daily-banner" style="margin-top: 18px;">
+      <div class="hikmah-content">
+        <span class="hikmah-icon">🕌</span>
+        <div class="hikmah-text-col">
+          <strong>Pesan Kebaikan Hari Ini:</strong>
+          <div class="hikmah-quote" id="hikmahQuote">
+            "Sebaik-baik kalian adalah yang mempelajari Al-Qur'an dan mengajarkannya." — (HR. Bukhari)
+          </div>
+        </div>
+      </div>
+      <button class="btn-next-hikmah" id="btnNextHikmah">Ganti Hikmah ↻</button>
+    </section>
+
+  </div>
+
+  <!-- MODAL INPUT NAMA PEMAIN (SIMULASI STORAGE) -->
+  <div class="name-modal-overlay" id="nameModalOverlay" role="dialog" aria-modal="true" aria-label="Masukkan Nama Pemain">
+    <div class="name-modal-card">
+      <div class="name-modal-emoji">👤</div>
+      <h2>Selamat Datang di PlayLand!</h2>
+      <p>Siapa nama kamu? Nama ini akan tampil di pojok kanan atas saat bermain.</p>
+      <input type="text" id="playerNameInput" class="name-modal-input" placeholder="Tulis namamu di sini..." maxlength="20" autocomplete="off">
+      <button class="btn-save-name" id="btnSaveName">Mulai Bermain ▶</button>
+    </div>
   </div>
 
   <!-- TOAST NOTIFICATION -->
@@ -2224,6 +2336,59 @@
     const savedTheme = localStorage.getItem('playland-theme');
     if (savedTheme === 'dark') {
       applyTheme(true);
+    }
+
+    // =========================================================================
+    // PLAYER NAME (SIMULASI STORAGE: localStorage)
+    // =========================================================================
+    const PLAYER_NAME_KEY = 'playland-player-name';
+    const playerNameLabel = document.getElementById('playerNameLabel');
+    const nameModalOverlay = document.getElementById('nameModalOverlay');
+    const playerNameInput = document.getElementById('playerNameInput');
+    const btnSaveName = document.getElementById('btnSaveName');
+
+    function applyPlayerName(name) {
+      playerNameLabel.textContent = name;
+    }
+
+    function openNameModal() {
+      nameModalOverlay.classList.add('visible');
+      playerNameInput.value = localStorage.getItem(PLAYER_NAME_KEY) || '';
+      setTimeout(() => playerNameInput.focus(), 50);
+    }
+
+    function closeNameModal() {
+      nameModalOverlay.classList.remove('visible');
+    }
+
+    function savePlayerName() {
+      const name = playerNameInput.value.trim();
+      if (!name) {
+        showToast('✍️ Tulis dulu nama kamu ya!');
+        playerNameInput.focus();
+        return;
+      }
+      localStorage.setItem(PLAYER_NAME_KEY, name);
+      applyPlayerName(name);
+      closeNameModal();
+      showToast('👤 Selamat datang, ' + name + '! Yuk main sambil belajar.');
+    }
+
+    btnSaveName.addEventListener('click', savePlayerName);
+    playerNameInput.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter') savePlayerName();
+    });
+    nameModalOverlay.addEventListener('click', (e) => {
+      if (e.target === nameModalOverlay && localStorage.getItem(PLAYER_NAME_KEY)) {
+        closeNameModal();
+      }
+    });
+
+    const savedPlayerName = localStorage.getItem(PLAYER_NAME_KEY);
+    if (savedPlayerName) {
+      applyPlayerName(savedPlayerName);
+    } else {
+      openNameModal();
     }
 
     // =========================================================================
@@ -2615,7 +2780,7 @@
     });
 
     document.getElementById('userProfilePill').addEventListener('click', () => {
-      showToast('👤 Profil Ahmad: ' + userCoins + ' Bintang Kebaikan dikumpulkan!');
+      openNameModal();
     });
 
     window.addEventListener('hashchange', () => {
