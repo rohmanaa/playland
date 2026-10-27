@@ -453,6 +453,7 @@ if (typeof THREE === 'undefined') {
   overlay.style.textAlign = 'center';
   overlay.innerHTML = '<div style="font-size:20px;font-weight:bold;margin-bottom:12px;">Gagal memuat Three.js. Periksa koneksi internet lalu muat ulang.</div><button onclick="location.reload()" style="padding:10px 24px;font-size:16px;cursor:pointer;">Muat Ulang</button>';
   document.body.appendChild(overlay);
+  window.__NO_THREE = true;
 }
 </script>
 <script>/* Ikon: Fluent Emoji Flat (Microsoft, lisensi MIT) lewat paket Iconify @iconify-json/fluent-emoji-flat. Disematkan langsung karena halaman ini tidak boleh memuat ikon dari CDN saat berjalan. */
@@ -483,6 +484,7 @@ if(typeof document!=='undefined'&&document.body&&document.createTreeWalker)windo
 })();
 </script>
 <script>
+    if (window.__NO_THREE) { throw new Error('Three.js tidak dimuat'); }
 (function(){try{
 'use strict';
 const $=i=>document.getElementById(i),cl=(v,a,b)=>Math.max(a,Math.min(b,v)),TAU=Math.PI*2,hexs=c=>'#'+c.toString(16).padStart(6,'0');

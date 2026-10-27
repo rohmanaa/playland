@@ -28,6 +28,7 @@ if (typeof THREE === 'undefined') {
   overlay.style.textAlign = 'center';
   overlay.innerHTML = '<div style="font-size:20px;font-weight:bold;margin-bottom:12px;">Gagal memuat Three.js. Periksa koneksi internet lalu muat ulang.</div><button onclick="location.reload()" style="padding:10px 24px;font-size:16px;cursor:pointer;">Muat Ulang</button>';
   document.body.appendChild(overlay);
+  window.__NO_THREE = true;
 }
 </script>
 
@@ -631,6 +632,7 @@ body.lobby #hud{display:none!important}
 <div class="lob-row"><button class="sq lb" id="lbKamus"><img class="fi" data-fi="books" alt=""><span>KAMUS</span></button><button class="sq lb" id="lbToko"><img class="fi" data-fi="teddy-bear" alt=""><span>TOKO</span></button><i style="flex:1"></i><button class="sq lb" id="lbSet"><img class="fi" data-fi="gear" alt=""><span>PENGATURAN</span></button></div></div>
 <div class="screen-overlay hidden" id="quizScreen"><div class="modal-box" id="qBox"></div></div>
 <script>
+    if (window.__NO_THREE) { throw new Error('Three.js tidak dimuat'); }
     // =========================================================================
     // 28 HIJAIYAH ALPHABET DATABASE
     // =========================================================================
@@ -2236,6 +2238,24 @@ body.lobby #hud{display:none!important}
       window.startMusic = (mode) => { lobbyMode = mode === 'lobby'; if (!init() || SET.music === false || timer) return; nextT = AC.currentTime + 0.05; st = 0; timer = setInterval(() => { while (nextT < AC.currentTime + 0.25) mstep(); }, 80); };
       window.stopMusic = () => { clearInterval(timer); timer = null; };
       ['pointerdown', 'touchstart', 'keydown'].forEach(ev => window.addEventListener(ev, () => { if (AC && AC.state === 'suspended') AC.resume(); }, { passive: true }));
+
+      let wasPlaying = false, resumeMode = null;
+      document.addEventListener('visibilitychange', () => {
+        if (document.hidden) {
+          wasPlaying = (timer !== null);
+          resumeMode = lobbyMode ? 'lobby' : undefined;
+          if (timer) { clearInterval(timer); timer = null; }
+          if (AC && AC.state !== 'suspended') AC.suspend();
+          if (typeof audioCtx !== 'undefined' && audioCtx && audioCtx.state !== 'suspended') audioCtx.suspend();
+        } else {
+          if (AC && AC.state === 'suspended') AC.resume();
+          if (typeof audioCtx !== 'undefined' && audioCtx && audioCtx.state === 'suspended') audioCtx.resume();
+          if (wasPlaying && SET.music !== false) {
+            window.startMusic(resumeMode);
+          }
+          wasPlaying = false;
+        }
+      });
     })();
 </script>
 </body>

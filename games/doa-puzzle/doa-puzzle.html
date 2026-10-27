@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="id">
 <head>
 <meta charset="UTF-8">
@@ -333,10 +333,12 @@ if (typeof THREE === 'undefined') {
   overlay.style.padding = '24px';
   overlay.style.textAlign = 'center';
   overlay.innerHTML = '<div style="font-size:20px;font-weight:bold;margin-bottom:12px;">Gagal memuat Three.js. Periksa koneksi internet lalu muat ulang.</div><button onclick="location.reload()" style="padding:10px 24px;font-size:16px;cursor:pointer;">Muat Ulang</button>';
-  document.body.appendChild(overlay);
+  (document.body || document.documentElement).appendChild(overlay);
+  window.__NO_THREE = true;
 }
 </script>
 <script>
+    if (window.__NO_THREE) { throw new Error('Three.js tidak dimuat'); }
 // =============================================
 // DOA HARIAN DATA
 // =============================================

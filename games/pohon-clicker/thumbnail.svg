@@ -1,0 +1,17 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256">
+  <defs>
+    <linearGradient id="bg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#4cc15a"/>
+      <stop offset="100%" stop-color="#37c46b"/>
+    </linearGradient>
+  </defs>
+  <rect width="256" height="256" fill="url(#bg)"/>
+  <circle cx="128" cy="160" r="50" fill="#8fd3ff"/>
+  <ellipse cx="128" cy="190" rx="55" ry="25" fill="#37c46b"/>
+  <path d="M128 110 Q100 120 110 140 Q128 150 146 140 Q156 120 128 110" fill="#e8503a"/>
+  <circle cx="108" cy="130" r="5" fill="#ffc83d"/>
+  <circle cx="148" cy="130" r="5" fill="#ffc83d"/>
+  <circle cx="128" cy="145" r="8" fill="#1f3d2b"/>
+  <path d="M118 155 Q128 165 138 155" stroke="#1f3d2b" stroke-width="3" fill="none" stroke-linecap="round"/>
+  <text x="128" y="230" font-family="Fredoka, sans-serif" font-size="24" font-weight="700" fill="#1f3d2b" text-anchor="middle">POHON CLICKER</text>
+</svg>
