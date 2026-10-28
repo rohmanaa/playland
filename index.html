@@ -8,6 +8,15 @@
   <meta name="description"
     content="Portal PlayLand Game Islami Anak Indonesia. Mainkan Petualangan Tajwid 3D, Hijaiyah Sky Run 3D, dan pelajari nilai-nilai kebaikan Islam dengan ceria!">
 
+  <meta name="theme-color" content="#238bf7">
+  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='16' fill='%23238bf7'/%3E%3Cpath d='M38 14a18 18 0 1 0 0 36 14 14 0 1 1 0-36z' fill='%23ffc82a'/%3E%3Cpath d='M46 14l2.6 5.4 5.9.8-4.3 4.1 1 5.9-5.2-2.8-5.3 2.8 1-5.9-4.3-4.1 6-.8z' fill='%23fff'/%3E%3C/svg%3E">
+  <link rel="apple-touch-icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='16' fill='%23238bf7'/%3E%3Cpath d='M38 14a18 18 0 1 0 0 36 14 14 0 1 1 0-36z' fill='%23ffc82a'/%3E%3Cpath d='M46 14l2.6 5.4 5.9.8-4.3 4.1 1 5.9-5.2-2.8-5.3 2.8 1-5.9-4.3-4.1 6-.8z' fill='%23fff'/%3E%3C/svg%3E">
+  <meta property="og:type" content="website">
+  <meta property="og:title" content="PlayLand — Game Islami Anak Indonesia">
+  <meta property="og:description" content="Portal PlayLand Game Islami Anak Indonesia. Mainkan Petualangan Tajwid 3D, Hijaiyah Sky Run 3D, dan pelajari nilai-nilai kebaikan Islam dengan ceria!">
+  <meta property="og:locale" content="id_ID">
+  <meta property="og:site_name" content="PlayLand">
+
   <!-- Google Fonts: Fredoka, Nunito & Amiri -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -421,7 +430,7 @@
     }
 
     .nav-section-title {
-      font-size: 11px;
+      font-size: 12px;
       text-transform: uppercase;
       font-weight: 900;
       letter-spacing: 1.2px;
@@ -560,7 +569,7 @@
     }
 
     .popular-plays {
-      font-size: 11px;
+      font-size: 12px;
       font-weight: 700;
       color: var(--ink-soft);
       display: flex;
@@ -939,7 +948,7 @@
       left: 8px;
       padding: 4px 8px;
       border-radius: 999px;
-      font-size: 10px;
+      font-size: 12px;
       font-weight: 900;
       color: #ffffff;
       box-shadow: 0 3px 8px rgba(0, 0, 0, 0.25);
@@ -989,7 +998,7 @@
     }
 
     .game-card-meta {
-      font-size: 11px;
+      font-size: 12px;
       font-weight: 700;
       color: var(--ink-soft);
       display: flex;
@@ -1985,7 +1994,7 @@
       }
 
       .game-info-col span {
-        font-size: 11px;
+        font-size: 12px;
       }
 
       /* Search input */
@@ -2088,7 +2097,6 @@
     .app-container { width: 100%; min-width: 0; }
     .portal-layout, .view-panel, .view-panel.active, .game-play-section,
     .game-content-details, .main-content, .center-content { min-width: 0; }
-    .game-splash-overlay { display: none !important; visibility: hidden !important; pointer-events: none !important; }
     .game-screen-wrapper { width: 100%; height: auto; aspect-ratio: 16 / 9; min-height: 230px; max-height: 78svh; overflow: hidden; }
     .game-iframe-player { width: 100%; height: 100%; min-height: 0; display: block; }
     .catalog-grid { grid-template-columns: repeat(auto-fill, minmax(min(100%, 180px), 1fr)); }
@@ -2107,7 +2115,7 @@
       .game-screen-wrapper { max-height: 70svh; }
     }
 
-    @media (max-width: 760px) {
+    @media (max-width: 860px) {
       body { background-attachment: scroll; }
       .app-container { padding: 10px 12px calc(24px + env(safe-area-inset-bottom)); }
       .topbar { display: grid; grid-template-columns: 44px minmax(0, 1fr) auto; align-items: center; gap: 10px; margin-bottom: 12px; }
@@ -2136,7 +2144,7 @@
       .right-sidebar { display: flex; position: static; margin-top: 18px; gap: 14px; }
       .view-panel.active { gap: 14px; }
       .hero-island-showcase { border-width: 2px; border-radius: 20px; min-height: 180px; max-height: none; }
-      .hero-floating-badge { top: 9px; left: 9px; font-size: 10px; padding: 5px 9px; }
+      .hero-floating-badge { top: 9px; left: 9px; font-size: 12px; padding: 5px 9px; }
       .hikmah-daily-banner { padding: 12px; border-radius: 16px; gap: 10px; align-items: flex-start; }
       .hikmah-content { gap: 9px; }
       .hikmah-icon { font-size: 22px; }
@@ -2171,7 +2179,7 @@
       .btn-next-hikmah { align-self: flex-end; }
     }
 
-    @media (max-width: 760px) and (orientation: landscape) {
+    @media (max-width: 860px) and (orientation: landscape) {
       .game-screen-wrapper { aspect-ratio: 16 / 9; max-height: 78svh; min-height: 0; }
       .game-content-details { grid-template-columns: repeat(2, minmax(0, 1fr)); }
     }
@@ -2184,7 +2192,7 @@
 
     /* PLAYLAND MOBILE REBUILD v3: bottom navigation, drawer fix, popular slider */
     .mobile-bottom-bar { display: none; }
-    @media (max-width: 760px) {
+    @media (max-width: 860px) {
       body { padding-bottom: calc(76px + env(safe-area-inset-bottom)); }
       .app-container { padding-bottom: calc(92px + env(safe-area-inset-bottom)) !important; }
       .mobile-bottom-bar {
@@ -2198,7 +2206,7 @@
       }
       .mobile-bottom-item { min-width: 0; min-height: 52px; border: 0; border-radius: 14px; background: transparent; color: var(--ink-soft, #667085); font: inherit; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 3px; cursor: pointer; }
       .mobile-bottom-item .mb-icon { font-size: 20px; line-height: 1; }
-      .mobile-bottom-item .mb-label { font-size: 10px; font-weight: 800; line-height: 1.2; }
+      .mobile-bottom-item .mb-label { font-size: 12px; font-weight: 800; line-height: 1.2; }
       .mobile-bottom-item.active { background: rgba(56,157,255,.13); color: var(--primary-blue, #238bf7); }
       .mobile-bottom-item:focus-visible { outline: 2px solid var(--primary-blue, #238bf7); outline-offset: 2px; }
       /* Keep the drawer above its dimmer; the dimmer must never remain after closing. */
@@ -2215,18 +2223,129 @@
     }
     @media (max-width: 380px) {
       .mobile-bottom-bar { left: 6px; right: 6px; bottom: max(5px, env(safe-area-inset-bottom)); }
-      .mobile-bottom-item .mb-label { font-size: 9px; }
+      .mobile-bottom-item .mb-label { font-size: 12px; }
       .popular-item { flex-basis: 82vw !important; width: 82vw !important; }
     }
 
 
     /* v5: dedicated dimmer layer; no body pseudo-element or global blur */
     .mobile-drawer-backdrop { display: none; }
-    @media (max-width: 760px) {
+    @media (max-width: 860px) {
       .left-sidebar.mobile-open { position: fixed; z-index: 1301 !important; visibility: visible; transform: translateX(0); opacity: 1; filter: none !important; }
       body.mobile-nav-open .mobile-bottom-bar { z-index: 1200; }
     }
 
+  
+    /* PLAYLAND FIXES v6 */
+    /* Akar masalah drawer: z-index:1 di .app-container membuat stacking context,
+       sehingga drawer (1301) terperangkap di bawah backdrop (1299) yang berada di luar. */
+    .app-container { z-index: auto; }
+    .icon-wrap { display: inline-flex; align-items: center; }
+    .btn-theme-toggle > span.icon-wrap { display: inline-flex !important; }
+
+    /* Layar penuh sungguhan: jangan ikut aturan aspect-ratio / max-height */
+    .game-screen-wrapper:fullscreen { width: 100vw; height: 100vh; max-width: none; max-height: none; min-height: 0; aspect-ratio: auto; }
+    .game-screen-wrapper:-webkit-full-screen { width: 100vw; height: 100vh; max-width: none; max-height: none; min-height: 0; aspect-ratio: auto; }
+
+    /* Layar penuh cadangan (iPhone Safari tidak mendukung Fullscreen API untuk elemen biasa) */
+    .game-play-section.pseudo-fs-active { backdrop-filter: none; -webkit-backdrop-filter: none; overflow: visible; }
+    .game-screen-wrapper.pseudo-fullscreen { position: fixed; inset: 0; z-index: 2500; width: 100vw; height: 100vh; height: 100dvh; max-width: none; max-height: none; min-height: 0; aspect-ratio: auto; }
+    .pseudo-exit { display: none; position: absolute; top: 10px; right: 10px; z-index: 60; background: rgba(12, 28, 51, 0.85); }
+    .game-screen-wrapper.pseudo-fullscreen .pseudo-exit { display: inline-flex; }
+    body.pseudo-fs-lock { overflow: hidden; }
+
+    .game-card:focus-visible, .popular-item:focus-visible, .profile-pill:focus-visible,
+    .nav-btn:focus-visible, .filter-chip:focus-visible { outline: 3px solid var(--primary-blue); outline-offset: 2px; }
+
+    @media (max-width: 860px) {
+      /* Bar bawah hanya punya 3 tombol, bukan 4 */
+      .mobile-bottom-bar { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+    }
+  
+    /* PLAYLAND RESPONSIVE v7 */
+    /* Layar game: tinggi mengikuti viewport (bukan aspect-ratio 16/9 yang terlalu pendek untuk menu/splash game) */
+    .game-screen-wrapper { aspect-ratio: auto; height: clamp(440px, 76vh, 780px); min-height: 0; max-height: none; }
+    @supports (height: 1dvh) { .game-screen-wrapper { height: clamp(440px, 76dvh, 780px); } }
+
+    /* Game Populer jadi slider horizontal (sebelumnya flex-direction tetap column -> kartu setinggi 250px) */
+    @media (max-width: 1100px) {
+      .right-sidebar { display: block; position: static; margin-top: 4px; }
+      .popular-list { flex-direction: row; flex-wrap: nowrap; overflow-x: auto; overflow-y: hidden; gap: 10px; padding: 4px 2px 12px; scroll-snap-type: x mandatory; -webkit-overflow-scrolling: touch; overscroll-behavior-x: contain; }
+      .popular-list::-webkit-scrollbar { display: none; }
+      .popular-item { flex: 0 0 min(46vw, 250px); scroll-snap-align: start; }
+    }
+
+    @media (max-width: 860px) {
+      .game-screen-wrapper { height: min(78vh, 700px); height: min(78dvh, 700px); min-height: 420px; max-height: none; aspect-ratio: auto; }
+      .popular-list { flex-direction: row !important; }
+      .popular-item { align-self: flex-start; }
+      .carousel-track .game-card { flex: 0 0 min(58vw, 220px); }
+      .section-pilihan-card { padding: 14px 12px 14px; border-radius: 20px; }
+      .section-heading { font-size: 18px; }
+      .section-header { gap: 8px; }
+      .carousel-nav-btn { display: none; }
+      .catalog-panel { padding: 14px 12px; border-radius: 20px; }
+      .catalog-title-group h2 { font-size: 20px; }
+      .catalog-search-box { max-width: none; flex: 1 1 100%; }
+      .sort-group { width: 100%; justify-content: space-between; }
+      .sort-select { flex: 1; }
+      .game-action-toolbar { padding: 12px; }
+      .game-btn-toolbar-group { width: 100%; }
+      .game-btn-toolbar-group .btn-action-tool { flex: 1 1 auto; justify-content: center; }
+      .game-btn-toolbar-group .btn-fullscreen-main { flex: 1 1 100%; }
+    }
+
+    /* HP landscape: game memakai hampir seluruh tinggi layar */
+    @media (max-width: 960px) and (orientation: landscape) and (max-height: 520px) {
+      .game-screen-wrapper { height: calc(100vh - 70px); height: calc(100dvh - 70px); min-height: 220px; }
+    }
+  
+    /* PLAYLAND CARD v8: kartu gambar penuh, info muncul saat hover */
+    .game-card { display: block; padding: 0; gap: 0; border: 0; border-radius: 18px; overflow: hidden; aspect-ratio: 16 / 10; background: #dbeafe; box-shadow: 0 6px 18px rgba(23, 72, 131, 0.14); }
+    .game-card.featured-active { border: 0; box-shadow: 0 6px 18px rgba(23, 72, 131, 0.14); }
+    .game-card:hover { transform: translateY(-4px) scale(1.03); border: 0; box-shadow: 0 16px 34px rgba(35, 139, 247, 0.4); z-index: 5; }
+    .game-card .game-thumbnail { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; transition: transform 0.35s ease; }
+    .game-card:hover .game-thumbnail { transform: scale(1.07); }
+    .game-card .game-status-badge { top: 8px; left: 8px; z-index: 3; }
+    .game-hover-info { position: absolute; left: 0; right: 0; bottom: 0; z-index: 2; display: flex; flex-direction: column; gap: 6px; padding: 34px 12px 11px; color: #fff;
+      background: linear-gradient(to top, rgba(18, 116, 217, 0.96) 0%, rgba(18, 116, 217, 0.8) 45%, rgba(18, 116, 217, 0) 100%);
+      transition: opacity 0.22s ease, transform 0.22s ease; }
+    .game-hover-info .game-card-title { color: #fff; font-size: 15px; text-shadow: 0 1px 3px rgba(0, 0, 0, 0.4); }
+    .game-chip { align-self: flex-start; max-width: 100%; padding: 2px 9px; border-radius: 999px; border: 1px solid rgba(255, 255, 255, 0.35); background: rgba(255, 255, 255, 0.2); font-size: 10.5px; font-weight: 800; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .game-stats { display: flex; align-items: center; gap: 10px; font-size: 12px; font-weight: 800; color: #e3f1ff; }
+    .carousel-track { padding: 10px 8px 16px; }
+
+    @media (hover: hover) and (pointer: fine) {
+      .game-hover-info { opacity: 0; transform: translateY(10px); }
+      .game-card:hover .game-hover-info, .game-card:focus-visible .game-hover-info { opacity: 1; transform: none; }
+    }
+    /* Layar sentuh tidak punya hover: tampilkan judul saja, tanpa menutupi gambar */
+    @media (hover: none), (pointer: coarse) {
+      .game-hover-info { padding-top: 24px; }
+      .game-hover-info .game-chip, .game-hover-info .game-stats { display: none; }
+      .game-card:hover { transform: none; }
+    }
+    @media (min-width: 861px) { .carousel-track .game-card { flex: 0 0 230px; } }
+  
+    /* PLAYLAND v9 */
+    @media (max-width: 860px) {
+      /* Banner promo di bawah Game Populer hanya memakan ruang kosong di HP */
+      .right-sidebar .sidebar-integrated-banner { display: none; }
+      .popular-card { padding-bottom: 4px; }
+    }
+    .popular-icon-thumb { background: linear-gradient(135deg, #5bb4ff, #1d6fe0); }
+  
+    /* PLAYLAND DESKTOP v10 */
+    /* Panel game: tanpa backdrop-filter agar iframe tidak bermasalah menerima klik (hit-testing) */
+    .game-play-section { backdrop-filter: none; -webkit-backdrop-filter: none; background: var(--card-inner); }
+    .game-iframe-player { position: relative; z-index: 1; pointer-events: auto; background: #0c1c33; }
+
+    /* Mode teater: saat main game, sembunyikan Game Populer agar panel game lebih lebar */
+    body.view-detail .right-sidebar { display: none !important; }
+    @media (min-width: 1201px) {
+      body.view-detail .portal-layout { grid-template-columns: 215px minmax(0, 1fr); }
+    }
+    #moreGamesCard { margin-top: 0; }
   </style>
 </head>
 
@@ -2253,15 +2372,14 @@
 
       <div class="topbar-right-group">
         <!-- DARK / LIGHT MODE TOGGLE -->
-        <button class="btn-theme-toggle" id="btnThemeToggle" title="Ganti Mode Gelap / Terang">
-          <span class="iconify" id="themeIcon" data-icon="fluent-color:weather-sunny-low-24"
-            style="font-size: 18px;"></span>
+        <button class="btn-theme-toggle" id="btnThemeToggle" type="button" title="Ganti Mode Gelap / Terang" aria-label="Ganti mode gelap atau terang">
+          <span class="icon-wrap" id="themeIcon"><span class="iconify" data-icon="fluent-color:weather-sunny-low-24" style="font-size: 18px;"></span></span>
           <span id="themeToggleText">Mode Terang</span>
         </button>
 
         <!-- Player Profile (Nama Pemain - Simulasi Storage) -->
-        <div class="profile-pill" id="userProfilePill" title="Ganti Nama Pemain">
-          <img src="images/avatar-ahmad.png" alt="Avatar pemain" class="profile-avatar">
+        <div class="profile-pill" id="userProfilePill" role="button" tabindex="0" title="Ganti Nama Pemain" aria-label="Ganti nama pemain">
+          <img src="images/avatar-ahmad.png" alt="Avatar pemain" onerror="imgFallback(this)" class="profile-avatar">
           <div class="profile-info">
             <span class="profile-name"><span id="playerNameLabel">Ahmad</span> <span>▾</span></span>
             <span class="profile-badge" style="display: none;">
@@ -2305,7 +2423,7 @@
 
             <li>
               <button class="nav-btn category-btn" data-nav="all-games" data-filter-cat="ketangkasan">
-                <span class="iconify" data-icon="fluent-color:sparkle-24"></span> Ketangkasan 3D
+                <span class="iconify" style="width:22px;text-align:center;font-size:18px;">🎯</span> Ketangkasan 3D
               </button>
             </li>
             <li>
@@ -2340,7 +2458,7 @@
             </li>
 
             <!-- Extra Categories (Collapsed if > 7 items) -->
-            <div id="extraCategoriesGroup" style="display: none; flex-direction: column; gap: 4px;">
+            <li id="extraCategoriesGroup" style="display: none;"><ul class="nav-list" style="padding-bottom: 0;">
               <li>
                 <button class="nav-btn category-btn" data-nav="all-games" data-filter-cat="puzzle">
                   <span class="iconify" data-icon="fluent-color:puzzle-piece-24"></span> Puzzle Islami
@@ -2356,12 +2474,12 @@
                   <span class="iconify" data-icon="fluent-color:history-24"></span> Sirah & Sejarah
                 </button>
               </li>
-            </div>
+            </ul></li>
 
             <!-- Button: Semua Kategori > -->
             <li>
               <button class="nav-btn category-btn btn-toggle-cats" id="btnToggleAllCategories" style="color: var(--primary-blue); font-weight: 800; background: var(--sky-soft);">
-                <span class="iconify" id="iconToggleCats" data-icon="fluent-color:chevron-right-24"></span>
+                <span class="icon-wrap" id="iconToggleCats"><span class="iconify" data-icon="fluent:chevron-right-24-filled"></span></span>
                 <span id="labelToggleCats">Semua Kategori &gt;</span>
               </button>
             </li>
@@ -2385,6 +2503,24 @@
             <img src="images/hero-island-new.jpg" alt="Dunia Petualangan PlayLand Islami" class="hero-island-image">
           </div>
 
+          <!-- LANJUT MAIN (dari riwayat di perangkat ini; tersembunyi jika belum ada) -->
+          <div class="section-pilihan-card" id="continueCard" hidden>
+            <div class="section-header">
+              <div class="section-title-wrap">
+                <span class="iconify" data-icon="fluent-color:history-24" style="font-size: 26px;" aria-hidden="true"></span>
+                <h2 class="section-heading">Lanjut Main</h2>
+              </div>
+              <div class="header-actions">
+                <button class="btn-see-all" id="btnContinueSeeAll" type="button">
+                  Riwayat <span class="iconify" data-icon="fluent:arrow-right-24-filled" style="font-size: 16px;" aria-hidden="true"></span>
+                </button>
+              </div>
+            </div>
+            <div class="carousel-container">
+              <div class="carousel-track" id="continueTrack"></div>
+            </div>
+          </div>
+
           <!-- CAROUSEL: GAME PILIHAN -->
           <div class="section-pilihan-card">
             <div class="section-header">
@@ -2394,13 +2530,13 @@
               </div>
               <div class="header-actions">
                 <button class="carousel-nav-btn" id="carouselPrev" aria-label="Geser ke kiri">
-                  <span class="iconify" data-icon="fluent-color:arrow-left-24" style="font-size: 18px;"></span>
+                  <span class="iconify" data-icon="fluent:arrow-left-24-filled" style="font-size: 18px;"></span>
                 </button>
                 <button class="carousel-nav-btn" id="carouselNext" aria-label="Geser ke kanan">
-                  <span class="iconify" data-icon="fluent-color:arrow-right-24" style="font-size: 18px;"></span>
+                  <span class="iconify" data-icon="fluent:arrow-right-24-filled" style="font-size: 18px;"></span>
                 </button>
                 <button class="btn-see-all" id="btnSeeAllCarousel">
-                  Lihat Semua <span class="iconify" data-icon="fluent-color:arrow-right-24"
+                  Lihat Semua <span class="iconify" data-icon="fluent:arrow-right-24-filled"
                     style="font-size: 16px;"></span>
                 </button>
               </div>
@@ -2429,7 +2565,7 @@
                 <p id="catalogSubtitle">Jelajahi seluruh game edukasi Islami ramah anak Indonesia</p>
               </div>
               <button class="btn-back-home" id="btnCatalogBackHome">
-                <span class="iconify" data-icon="fluent-color:arrow-left-24" style="font-size: 18px;"></span> Kembali ke
+                <span class="iconify" data-icon="fluent:arrow-left-24-filled" style="font-size: 18px;"></span> Kembali ke
                 Beranda
               </button>
             </div>
@@ -2462,8 +2598,7 @@
                 <div class="sort-group">
                   <span>Urutkan:</span>
                   <select id="catalogSortSelect" class="sort-select">
-                    <option value="popular">Paling Populer 🔥</option>
-                    <option value="rating">Rating Tertinggi ⭐</option>
+                    <option value="popular">Paling Sering Dimainkan</option>
                     <option value="name-asc">Nama (A - Z)</option>
                     <option value="name-desc">Nama (Z - A)</option>
                   </select>
@@ -2493,7 +2628,7 @@
                 <span>/</span>
                 <span id="detailBreadcrumbTitle" style="color: var(--ink);">Petualangan Tajwid</span>
               </div>
-              <button class="btn-topbar-close-game" id="btnTopbarCloseGame" title="Keluar / Tutup Permainan">
+              <button class="btn-topbar-close-game" id="btnTopbarCloseGame" type="button" title="Keluar / Tutup Permainan" aria-label="Tutup game dan kembali">
                 <span class="iconify" data-icon="fluent-color:dismiss-circle-24" style="font-size: 17px;"></span>
                 <span>Tutup Game</span>
               </button>
@@ -2528,7 +2663,7 @@
                 <div class="splash-card">
                   <div class="splash-bismillah">بِسْمِ اللَّهِ الرَّحْمَٰنِ الرَّحِيمِ</div>
                   <div class="splash-icon-wrapper">
-                    <img id="splashGameIcon" src="games/tajwid/app.jpg" alt="Logo Game" class="splash-game-icon">
+                    <img id="splashGameIcon" onerror="imgFallback(this)" src="games/tajwid/app.jpg" alt="Logo Game" class="splash-game-icon">
                     <div class="splash-icon-pulse"></div>
                   </div>
                   <h2 id="splashGameTitle" class="splash-game-title">Petualangan Tajwid 3D</h2>
@@ -2558,6 +2693,7 @@
                 </div>
               </div>
 
+              <button class="btn-topbar-close-game pseudo-exit" id="btnPseudoExit" type="button">✕ Keluar Layar Penuh</button>
               <iframe id="detailGameIframe" class="game-iframe-player" src=""
                 allow="autoplay; fullscreen; xr-spatial-tracking" loading="lazy"></iframe>
             </div>
@@ -2565,31 +2701,31 @@
             <!-- Bloxd.io style interactive Toolbar right below game screen -->
             <div class="game-action-toolbar">
               <div class="game-title-badge-group">
-                <img id="detailGameIcon" src="games/tajwid/app.jpg" alt="Icon" class="game-current-icon">
+                <img id="detailGameIcon" onerror="imgFallback(this)" src="games/tajwid/app.jpg" alt="Icon" class="game-current-icon">
                 <div class="game-info-col">
                   <h1 id="detailGameMainTitle">Petualangan Tajwid 3D</h1>
                   <span>
                     <span class="iconify" data-icon="fluent-color:star-24" style="font-size: 15px;"></span>
-                    <span id="detailGamePlaysCount">15.8k dimainkan</span> • PlayLand Edukasi 3D
+                    <span id="detailGamePlaysCount">PlayLand Edukasi 3D</span>
                   </span>
                 </div>
               </div>
 
               <!-- Action buttons -->
               <div class="game-btn-toolbar-group">
-                <button class="btn-action-tool btn-fullscreen-main" id="btnToolbarFullscreen">
+                <button class="btn-action-tool btn-fullscreen-main" id="btnToolbarFullscreen" type="button" aria-label="Layar penuh">
                   <span class="iconify" data-icon="fluent:full-screen-maximize-24-filled"></span> Layar Penuh
                 </button>
-                <button class="btn-action-tool" id="btnToolbarLike">
-                  <span class="iconify" data-icon="fluent-color:thumb-like-24"></span> <span id="likeCount">2.8k</span>
+                <button class="btn-action-tool" id="btnToolbarLike" type="button" aria-label="Suka game ini">
+                  <span class="iconify" data-icon="fluent-color:thumb-like-24"></span> <span id="likeCount">Suka</span>
                 </button>
-                <button class="btn-action-tool" id="btnToolbarDislike">
+                <button class="btn-action-tool" id="btnToolbarDislike" type="button" aria-label="Tidak suka game ini" title="Tidak suka">
                   <span class="iconify" data-icon="fluent-color:thumb-dislike-24"></span>
                 </button>
-                <button class="btn-action-tool" id="btnToolbarBookmark">
+                <button class="btn-action-tool" id="btnToolbarBookmark" type="button" aria-label="Simpan ke favorit">
                   <span class="iconify" data-icon="fluent-color:bookmark-24"></span> Simpan
                 </button>
-                <button class="btn-action-tool" id="btnToolbarShare">
+                <button class="btn-action-tool" id="btnToolbarShare" type="button" aria-label="Bagikan game ini">
                   <span class="iconify" data-icon="fluent-color:share-24"></span> Bagikan
                 </button>
               </div>
@@ -2668,6 +2804,13 @@
             </div>
 
           </div>
+        
+          <div class="section-pilihan-card" id="moreGamesCard">
+            <div class="section-header">
+              <div class="section-title-wrap"><h2 class="section-heading">Game Lainnya</h2></div>
+            </div>
+            <div class="carousel-track" id="moreGamesTrack"></div>
+          </div>
         </section>
 
       </main>
@@ -2679,7 +2822,7 @@
           <div class="popular-header">
             <div class="popular-title-wrap">
               <span class="iconify" data-icon="fluent-color:trophy-24" style="font-size: 24px;"></span>
-              <h2 class="popular-title">Game Populer</h2>
+              <h2 class="popular-title">Rekomendasi Game</h2>
             </div>
             <button class="btn-see-all" id="btnPopSeeAll" style="font-size: 12px; padding: 5px 12px;">
               Semua ❯
@@ -2753,9 +2896,6 @@
          categoryLabel: 'Ketangkasan & Fisika 3D',
          thumbnail: 'games/slice-master-islami/thumbnail.svg',
          appIcon: 'games/slice-master-islami/thumbnail.svg',
-         plays: 18400,
-         playsLabel: '18.4k dimainkan',
-         rating: 4.9,
          playable: true,
          url: 'games/slice-master-islami/slice-master.html',
          description: 'Game Slice Master 3D versi Islami PlayLand! Balikkan pisau berkah di udara, potong buah-buahan halal segar (kurma Ajwa, buah tin, zaitun, delima, semangka), tancapkan bilah di sasaran kayu, dan raih jackpot multiplier hingga x100!'
@@ -2767,9 +2907,6 @@
         categoryLabel: 'Tajwid & Hijaiyah',
         thumbnail: 'games/tajwid/thumnail.jpg',
         appIcon: 'games/tajwid/app.jpg',
-        plays: 15800,
-        playsLabel: '15.8k dimainkan',
-        rating: 4.9,
         playable: true,
         url: 'games/tajwid/tajwid.html',
         description: 'Petualangan 3D seru menjelajahi pulau-pulau terapung PlayLand. Kendarai kereta api ajaib, temukan permata ilmu, dan pelajari hukum-hukum tajwid Al-Qur\'an secara interaktif dan menyenangkan.'
@@ -2781,9 +2918,6 @@
         categoryLabel: 'Tajwid & Hijaiyah',
         thumbnail: 'images/thumb-hijaiyah.png',
         appIcon: 'images/pop-hijaiyah.png',
-        plays: 14200,
-        playsLabel: '14.2k dimainkan',
-        rating: 4.9,
         playable: true,
         url: 'games/hijaiyah/hijaiyah.html',
         description: 'Game Endless Runner 3D Three.js di atas pulau langit! Kendalikan Ahmad berlari, berpindah jalur, melompat melewati rintangan, dan tangkap huruf hijaiyah Al-Qur\'an yang tepat untuk mengumpulkan Bintang Kebaikan.'
@@ -2795,9 +2929,6 @@
         categoryLabel: 'Doa Harian',
         thumbnail: 'images/thumb-doa.png',
         appIcon: 'images/thumb-doa.png',
-        plays: 8700,
-        playsLabel: '8.7k dimainkan',
-        rating: 4.7,
         playable: true,
         url: 'games/doa-puzzle/doa-puzzle.html',
         description: 'Jelajahi dunia masjid 3D yang ajaib menggunakan Three.js! Kumpulkan koin kata doa yang melayang di platform-platform terbang. Hafalkan Doa Makan, Doa Tidur, Doa Bangun Tidur, dan Doa Masuk Masjid sambil bermain petualangan 3D yang seru. Kontrol WASD + Space untuk lompat!'
@@ -2809,9 +2940,6 @@
         categoryLabel: 'Rukun Islam',
         thumbnail: 'images/thumb-rukun.png',
         appIcon: 'images/thumb-rukun.png',
-        plays: 6200,
-        playsLabel: '6.2k dimainkan',
-        rating: 4.9,
         playable: true,
         url: 'games/rukun-tower/rukun-tower.html',
         description: 'Tumpuk blok-blok Rukun Islam setinggi mungkin seperti game Stack populer! Tiap blok mewakili satu Rukun Islam: Syahadat, Shalat, Zakat, Puasa, dan Haji. Ketuk layar atau tekan Space untuk menjatuhkan blok. Semakin presisi, semakin tinggi menaramu dan semakin banyak kamu belajar tentang 5 Rukun Islam!'
@@ -2823,9 +2951,6 @@
         categoryLabel: 'Wudhu & Shalat',
         thumbnail: 'images/thumb-wudhu.png',
         appIcon: 'images/pop-wudhu.png',
-        plays: 5100,
-        playsLabel: '5.1k dimainkan',
-        rating: 4.8,
         playable: true,
         url: 'games/wudhu/wudhu.html',
         description: 'Simulasi 3D interaktif langkah-langkah bersuci dan rukun wudhu di pelataran masjid menggunakan Three.js! Praktikkan basuhan air mengalir 3 kali sesuai sunnah, pelajari doa dan hikmah thaharah dengan animasi yang indah.'
@@ -2837,9 +2962,6 @@
         categoryLabel: 'Adab & Akhlak',
         thumbnail: 'images/thumb-adab.png',
         appIcon: 'images/pop-adab.png',
-        plays: 7400,
-        playsLabel: '7.4k dimainkan',
-        rating: 4.9,
         playable: true,
         url: 'games/adab/adab.html',
         description: 'Petualangan interaktif 3D belajar adab dan akhlak mulia sehari-hari menggunakan Three.js! Pelajari adab bangun tidur, adab makan, adab masjid, sekolah, hingga bertetangga dengan 30 level, toko skin, misi harian, dan mutiara hadits.'
@@ -2851,9 +2973,6 @@
         categoryLabel: 'Hafalan Surah',
         thumbnail: 'images/thumb-hijaiyah.png',
         appIcon: 'images/pop-surah.png',
-        plays: 8600,
-        playsLabel: '8.6k dimainkan',
-        rating: 4.9,
         playable: true,
         url: 'games/surah/surah.html',
         description: 'Petualangan interaktif 3D hafalan surah Juz \'Amma menggunakan Three.js! Latihan sambung ayat, tebak surah, dan tartil Al-Qur\'an dari Al-Fatihah hingga An-Nas dengan 30 level, toko mushaf 3D, lentera nur, dan misi harian.'
@@ -2865,9 +2984,6 @@
         categoryLabel: 'Puzzle Islami',
         thumbnail: 'images/thumb-doa.png',
         appIcon: 'images/pop-puzzle.png',
-        plays: 6800,
-        playsLabel: '6.8k dimainkan',
-        rating: 4.9,
         playable: true,
         url: 'games/puzzle/puzzle.html',
         description: 'Asah ketangkasan otak dengan puzzle 3D arsitektur masjid bersejarah (Masjidil Haram, Nabawi, Aqsa, Istiqlal), seni kaligrafi indah, dan geometri ornamen Islam dengan 30 level, toko bingkai 3D, dan fakta sejarah.'
@@ -2879,9 +2995,6 @@
         categoryLabel: 'Sirah & Sejarah',
         thumbnail: 'images/thumb-sirah.png',
         appIcon: 'images/pop-sirah.png',
-        plays: 9200,
-        playsLabel: '9.2k dimainkan',
-        rating: 4.8,
         playable: true,
         url: 'games/sirah/sirah.html',
         description: 'Petualangan 3D interaktif menyusun jejak perjalanan Nabi Muhammad ﷺ! Susun peristiwa sirah secara kronologis di garis waktu 3D, dari kelahiran di Makkah hingga hijrah ke Madinah, dan pelajari sejarah Islam dengan cara yang menyenangkan.'
@@ -2893,9 +3006,6 @@
         categoryLabel: 'Kuis & Papan',
         thumbnail: 'games/roda-jelajah/thumbnail.svg',
         appIcon: 'games/roda-jelajah/thumbnail.svg',
-        plays: 5400,
-        playsLabel: '5.4k dimainkan',
-        rating: 4.7,
         playable: true,
         url: 'games/roda-jelajah/Roda_Jelajah_Islami.html',
         description: 'Putar roda keberuntungan dan jelajahi kartu kuis Islami: Baca Surat, Rukun Islam & Iman, Wudhu, Malaikat, Nabi & Rasul, dan Adab! Balik kartu, jawab tantangan, dan kumpulkan poin kebaikan bersama keluarga.'
@@ -2907,9 +3017,6 @@
         categoryLabel: 'Kuis & Papan',
         thumbnail: 'games/ludo/thumbnail.svg',
         appIcon: 'games/ludo/thumbnail.svg',
-        plays: 4900,
-        playsLabel: '4.9k dimainkan',
-        rating: 4.8,
         playable: true,
         url: 'games/ludo/ludo.html',
         description: 'Ludo 3D klasik penuh warna! Lempar dadu, jalankan keempat pionmu, kejar dan jatuhkan lawan di papan 3D yang ceria. Melatih strategi, kesabaran, dan sportivitas anak sejak dini.'
@@ -2921,9 +3028,6 @@
         categoryLabel: 'Kuis & Papan',
         thumbnail: 'games/ular-tangga/thumbnail.svg',
         appIcon: 'games/ular-tangga/thumbnail.svg',
-        plays: 4300,
-        playsLabel: '4.3k dimainkan',
-        rating: 4.7,
         playable: true,
         url: 'games/ular-tangga/uar-tangga.html',
         description: 'Ular Tangga 3D yang menggemaskan! Lempar dadu, panjat tangga menuju finish, dan awas ada ular! Permainan papan keluarga klasik untuk melatih hitungan anak sambil bersenang-senang bersama teman dan keluarga.'
@@ -2935,12 +3039,9 @@
         categoryLabel: 'Kuis & Papan',
         thumbnail: 'games/monopoli/thumbnail.svg',
         appIcon: 'games/monopoli/thumbnail.svg',
-        plays: 3900,
-        playsLabel: '3.9k dimainkan',
-        rating: 4.8,
         playable: true,
         url: 'games/monopoli/monopoli.html',
-        description: 'Jadi juragan properti di Nusantara! Beli kota dari Banda Aceh sampai Jayapura, bangun landmark ikonik seperti Masjid Baiturrahman dan Monas, kelola uangmu, dan tumbu menjadi taipan terkaya. Belajar ekonomi & geografi Indonesia sambil bermain!'
+        description: 'Jadi juragan properti di Nusantara! Beli kota dari Banda Aceh sampai Jayapura, bangun landmark ikonik seperti Masjid Baiturrahman dan Monas, kelola uangmu, dan tumbuh menjadi taipan terkaya. Belajar ekonomi & geografi Indonesia sambil bermain!'
       },
       {
         id: 'memory-hijaiyah',
@@ -2949,9 +3050,6 @@
         categoryLabel: 'Tajwid & Hijaiyah',
         thumbnail: 'games/memory-hijaiyah-flip/thumbnail.svg',
         appIcon: 'games/memory-hijaiyah-flip/thumbnail.svg',
-        plays: 12500,
-        playsLabel: '12.5k dimainkan',
-        rating: 4.9,
         playable: true,
         url: 'games/memory-hijaiyah-flip/memory-hijaiyah.html',
         description: 'Asah daya ingat dan hafalan huruf Al-Qur\'an dengan game tebak kartu 3D flip yang seru dan menenangkan! Cocokkan pasangan huruf Hijaiyah, kumpulkan skor tercepat, dan raih predikat Mumtaz!'
@@ -2963,9 +3061,6 @@
         categoryLabel: 'Ketangkasan 3D',
         thumbnail: 'games/tembak-huruf/thumbnail.svg',
         appIcon: 'games/tembak-huruf/thumbnail.svg',
-        plays: 11800,
-        playsLabel: '11.8k dimainkan',
-        rating: 4.8,
         playable: true,
         url: 'games/tembak-huruf/tembak-huruf.html',
         description: 'Tarik busur, bidik sasaran balon udara dengan tepat, dan tembak huruf Hijaiyah yang diminta! Latih fokus dan ketangkasan memanah sesuai sunnah Rasulullah ﷺ.'
@@ -2977,9 +3072,6 @@
         categoryLabel: 'Ketangkasan 3D',
         thumbnail: 'games/runner-kebaikan/thumbnail.svg',
         appIcon: 'games/runner-kebaikan/thumbnail.svg',
-        plays: 13900,
-        playsLabel: '13.9k dimainkan',
-        rating: 4.9,
         playable: true,
         url: 'games/runner-kebaikan/runner-kebaikan.html',
         description: 'Lari 3D di jalanan berkah PlayLand! Lompat dan geser jalur untuk menghindari rintangan batu, sambil mengumpulkan koin sedekah, kurma, dan bekal kebaikan sebanyak mungkin.'
@@ -2992,9 +3084,6 @@
         categoryLabel: 'Puzzle Islami',
         thumbnail: 'games/puzzle-huruf/thumbnail.svg',
         appIcon: 'games/puzzle-huruf/thumbnail.svg',
-        plays: 9800,
-        playsLabel: '9.8k dimainkan',
-        rating: 4.8,
         playable: true,
         url: 'games/puzzle-huruf/puzzle-huruf.html',
         description: 'Susun kepingan huruf Hijaiyah untuk membentuk kata-kata suci Islami seperti ALLAH, ISLAM, MASJID, dan QUR\'AN. Asah kosakata dan kemampuan membaca Al-Qur\'an sejak dini.'
@@ -3006,9 +3095,6 @@
         categoryLabel: 'Kuis & Papan',
         thumbnail: 'games/tarik-tambang-huruf/thumbnail.svg',
         appIcon: 'games/tarik-tambang-huruf/thumbnail.svg',
-        plays: 8900,
-        playsLabel: '8.9k dimainkan',
-        rating: 4.7,
         playable: true,
         url: 'games/tarik-tambang-huruf/tarik-tambang.html',
         description: 'Pertandingan adu cepat tarik tambang cerdas! Jawab soal huruf dan tajwid dengan cepat untuk menarik tali tambang ke garis kemenangan timmu.'
@@ -3020,9 +3106,6 @@
         categoryLabel: 'Adab & Akhlak',
         thumbnail: 'games/tokohijaiyah/thumbnail.svg',
         appIcon: 'games/tokohijaiyah/thumbnail.svg',
-        plays: 7600,
-        playsLabel: '7.6k dimainkan',
-        rating: 4.8,
         playable: true,
         url: 'games/tokohijaiyah/toko-hijaiyah.html',
         description: 'Studio kustomisasi busana muslim PlayLand! Hias sahabat Ahmad dan Fatimah dengan peci, mahkota, jilbab indah, serta tasbih dan Al-Qur\'an agar tampil rapi dan islami.'
@@ -3034,9 +3117,7 @@
         categoryLabel: 'Kuis & Papan',
         thumbnail: 'games/pohon-clicker/thumbnail.svg',
         appIcon: 'games/pohon-clicker/thumbnail.svg',
-        plays: 0,
-        playsLabel: 'Baru',
-        rating: 4.8,
+        isNew: true,
         playable: true,
         url: 'games/pohon-clicker/pohon-clicker.html',
         description: 'Ketuk, siram, dan tumbuhkan hutanmu sendiri! 8 spesies pohon dari Apel hingga Pohon Emas, 4 upgrade cerdas, sistem offline reward, dan prestasi untuk dikoleksi. Cocok untuk anak belajar sabar & rajin.'
@@ -3048,9 +3129,7 @@
         categoryLabel: 'Kuis & Papan',
         thumbnail: 'games/taman-siaga/thumbnail.svg',
         appIcon: 'games/taman-siaga/thumbnail.svg',
-        plays: 0,
-        playsLabel: 'Baru',
-        rating: 4.8,
+        isNew: true,
         playable: true,
         url: 'games/taman-siaga/taman-siaga.html',
         description: 'Tanam penjaga, hentikan hama, selamatkan kebunmu! Tower defense 3D dengan 5 tanaman penjaga, 5 tipe hama, 3 peta, 10 gelombang, dan 3 kemampuan khusus. Latih strategi & manajemen sumber daya.'
@@ -3094,6 +3173,36 @@
     const toastPopup = document.getElementById('toastPopup');
     let toastTimer;
 
+    // localStorage bisa melempar error (mode privat / iframe / storage diblokir) dan mematikan seluruh script
+    const safeStore = {
+      get(k) { try { return localStorage.getItem(k); } catch (e) { return null; } },
+      set(k, v) { try { localStorage.setItem(k, v); } catch (e) { } }
+    };
+    function readJSON(k, d) {
+      try { const v = JSON.parse(safeStore.get(k) || ''); return Array.isArray(v) ? v : d; } catch (e) { return d; }
+    }
+    // Iconify mengganti <span class="iconify"> dengan <svg>, jadi mengubah data-icon di elemen lama tidak berefek.
+    function setIcon(wrap, icon, size) {
+      if (!wrap) return;
+      wrap.innerHTML = '<span class="iconify" data-icon="' + icon + '"' + (size ? ' style="font-size:' + size + 'px"' : '') + '></span>';
+      if (window.Iconify && Iconify.scan) Iconify.scan(wrap);
+    }
+    // Gambar yang gagal dimuat diganti kotak gradasi + huruf pertama judul (bukan teks alt yang terpotong)
+    function imgFallback(img) {
+      if (!img || (img.src || '').indexOf('data:image/svg+xml') === 0) return;
+      const letter = ((img.getAttribute('alt') || 'P').trim().charAt(0) || 'P').toUpperCase().replace(/[<>&"']/g, 'P');
+      const svg = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 120"><defs><linearGradient id="g" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#5bb4ff"/><stop offset="1" stop-color="#1d6fe0"/></linearGradient></defs><rect width="120" height="120" fill="url(#g)"/><text x="60" y="76" text-anchor="middle" font-family="Arial,sans-serif" font-size="56" font-weight="700" fill="#fff">' + letter + '</text></svg>';
+      img.src = 'data:image/svg+xml;charset=utf-8,' + encodeURIComponent(svg);
+    }
+
+    function makeActivatable(el) {
+      el.tabIndex = 0;
+      el.setAttribute('role', 'button');
+      el.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); el.click(); }
+      });
+    }
+
     function showToast(msg) {
       toastPopup.textContent = msg;
       toastPopup.classList.add('visible');
@@ -3109,14 +3218,14 @@
     function applyTheme(isDark) {
       if (isDark) {
         document.body.classList.add('dark-mode');
-        themeIcon.setAttribute('data-icon', 'fluent-color:weather-snowflake-24');
+        setIcon(themeIcon, 'fluent-color:weather-snowflake-24', 18);
         themeToggleText.textContent = 'Mode Malam';
       } else {
         document.body.classList.remove('dark-mode');
-        themeIcon.setAttribute('data-icon', 'fluent-color:weather-sunny-low-24');
+        setIcon(themeIcon, 'fluent-color:weather-sunny-low-24', 18);
         themeToggleText.textContent = 'Mode Terang';
       }
-      localStorage.setItem('playland-theme', isDark ? 'dark' : 'light');
+      safeStore.set('playland-theme', isDark ? 'dark' : 'light');
     }
 
     btnThemeToggle.addEventListener('click', () => {
@@ -3126,7 +3235,7 @@
     });
 
     // Load saved theme
-    const savedTheme = localStorage.getItem('playland-theme');
+    const savedTheme = safeStore.get('playland-theme');
     if (savedTheme === 'dark') {
       applyTheme(true);
     }
@@ -3146,7 +3255,7 @@
 
     function openNameModal() {
       nameModalOverlay.classList.add('visible');
-      playerNameInput.value = localStorage.getItem(PLAYER_NAME_KEY) || '';
+      playerNameInput.value = safeStore.get(PLAYER_NAME_KEY) || '';
       setTimeout(() => playerNameInput.focus(), 50);
     }
 
@@ -3161,7 +3270,7 @@
         playerNameInput.focus();
         return;
       }
-      localStorage.setItem(PLAYER_NAME_KEY, name);
+      safeStore.set(PLAYER_NAME_KEY, name);
       applyPlayerName(name);
       closeNameModal();
       showToast('👤 Selamat datang, ' + name + '! Yuk main sambil belajar.');
@@ -3172,12 +3281,12 @@
       if (e.key === 'Enter') savePlayerName();
     });
     nameModalOverlay.addEventListener('click', (e) => {
-      if (e.target === nameModalOverlay && localStorage.getItem(PLAYER_NAME_KEY)) {
+      if (e.target === nameModalOverlay && safeStore.get(PLAYER_NAME_KEY)) {
         closeNameModal();
       }
     });
 
-    const savedPlayerName = localStorage.getItem(PLAYER_NAME_KEY);
+    const savedPlayerName = safeStore.get(PLAYER_NAME_KEY);
     if (savedPlayerName) {
       applyPlayerName(savedPlayerName);
     } else {
@@ -3196,7 +3305,38 @@
     // =========================================================================
     // VIEW SWITCHING (SPA ROUTING)
     // =========================================================================
+    let navFromPop = false;
+    function pushRoute(hash) {
+      if (navFromPop) return;
+      if (location.hash !== hash) {
+        try { history.pushState(null, '', hash); } catch (e) { }
+      }
+    }
+
+    function setPseudoFs(on) {
+      const w = document.getElementById('gameScreenWrapper');
+      const sec = document.querySelector('.game-play-section');
+      if (w) w.classList.toggle('pseudo-fullscreen', on);
+      if (sec) sec.classList.toggle('pseudo-fs-active', on);
+      document.body.classList.toggle('pseudo-fs-lock', on);
+    }
+
+    // Hentikan game (suara + loop) setiap kali halaman detail ditinggalkan.
+    function stopGame() {
+      const cur = detailGameIframe.getAttribute('src');
+      if (cur && cur !== 'about:blank') detailGameIframe.src = 'about:blank';
+      const modal = document.getElementById('gameExitConfirmModal');
+      if (modal) modal.style.display = 'none';
+      setPseudoFs(false);
+      const fs = document.fullscreenElement || document.webkitFullscreenElement;
+      if (fs) {
+        try { (document.exitFullscreen || document.webkitExitFullscreen).call(document); } catch (e) { }
+      }
+    }
+
     function switchView(viewName) {
+      if (viewName !== 'detail') stopGame();
+      document.body.classList.toggle('view-detail', viewName === 'detail');
       homeView.classList.remove('active');
       allGamesView.classList.remove('active');
       gameDetailView.classList.remove('active');
@@ -3209,7 +3349,7 @@
         const b = document.querySelector('.nav-btn[data-nav="all-games"]:not([data-filter-cat]):not([data-filter-tag])');
         if (b) b.classList.add('active');
         window.scrollTo({ top: 0, behavior: 'smooth' });
-        history.replaceState(null, '', '#games');
+        pushRoute('#games');
       } else if (viewName === 'detail') {
         gameDetailView.classList.add('active');
         window.scrollTo({ top: 0, behavior: 'smooth' });
@@ -3218,7 +3358,7 @@
         const b = document.querySelector('.nav-btn[data-nav="home"]');
         if (b) b.classList.add('active');
         window.scrollTo({ top: 0, behavior: 'smooth' });
-        history.replaceState(null, '', '#home');
+        pushRoute('#home');
       }
     }
 
@@ -3229,15 +3369,59 @@
     // OPEN GAME DETAIL VIEW (BLOXD.IO GAMING PORTAL LAYOUT WITH MANDATORY SPLASH)
     // =========================================================================
     let splashProgressTimer = null;
+    let currentGameId = null;
+
+    const DETAIL_CONTROLS = [
+      ['Sentuh / Klik', 'Pilih & berinteraksi'],
+      ['Geser / Swipe', 'Pindah jalur atau seret'],
+      ['W A S D / Panah', 'Bergerak (keyboard)'],
+      ['Spasi', 'Aksi utama / lompat']
+    ];
+    const DETAIL_LESSONS = {
+      ketangkasan: ['Melatih fokus, kecepatan, dan ketepatan', 'Belajar sabar dan tidak mudah menyerah', 'Mengumpulkan bekal kebaikan sambil bermain', 'Mengenal huruf dan nilai Islami lewat tantangan'],
+      tajwid: ['Mengenal huruf Hijaiyah & tajwid Al-Qur\'an', 'Melatih daya ingat dan ketelitian', 'Menumbuhkan rasa cinta pada bacaan kitab suci', 'Mengumpulkan bintang kebaikan & semangat belajar'],
+      doa: ['Menghafal doa harian dan artinya', 'Membiasakan berdoa di setiap aktivitas', 'Melatih konsentrasi dan hafalan', 'Menumbuhkan rasa dekat dengan Allah'],
+      rukun: ['Mengenal lima Rukun Islam secara berurutan', 'Memahami makna syahadat, shalat, zakat, puasa, dan haji', 'Melatih ketepatan dan konsentrasi', 'Menguatkan dasar keimanan sejak dini'],
+      wudhu: ['Mempelajari urutan wudhu yang benar', 'Mengenal doa dan hikmah bersuci', 'Membiasakan menjaga kebersihan', 'Persiapan belajar tata cara shalat'],
+      adab: ['Belajar adab sehari-hari dengan menyenangkan', 'Membiasakan akhlak mulia di rumah, sekolah, dan masjid', 'Mengenal mutiara hadits pilihan', 'Melatih kerapian dan kepedulian'],
+      surah: ['Menghafal surah-surah pendek Juz \'Amma', 'Melatih sambung ayat dan tartil', 'Menumbuhkan cinta pada Al-Qur\'an', 'Mengulang hafalan dengan cara yang seru'],
+      puzzle: ['Mengasah logika dan ketelitian', 'Mengenal huruf, kata, dan arsitektur Islami', 'Melatih kesabaran menyelesaikan tantangan', 'Menambah wawasan lewat fakta menarik'],
+      kuis: ['Melatih strategi, kesabaran, dan sportivitas', 'Belajar bermain bersama teman dan keluarga', 'Mengasah berhitung dan pengambilan keputusan', 'Bersenang-senang dengan cara yang positif'],
+      sejarah: ['Mengenal perjalanan hidup Nabi Muhammad ﷺ', 'Melatih urutan peristiwa (kronologi)', 'Mengambil teladan dari sirah', 'Mencintai sejarah Islam']
+    };
+
+    function updateDetailContent(g) {
+      const grid = document.getElementById('controlsGrid');
+      if (grid) {
+        grid.innerHTML = DETAIL_CONTROLS.map(c =>
+          '<div class="control-item"><span class="kbd-key">' + c[0] + '</span><span>' + c[1] + '</span></div>'
+        ).join('') + '<div class="control-item" style="grid-column: 1 / -1; font-weight: 700;">Kontrol bisa sedikit berbeda di tiap game. Ikuti petunjuk yang muncul di dalam game.</div>';
+      }
+      const list = document.getElementById('lessonsList');
+      if (list) {
+        const items = DETAIL_LESSONS[g.category] || DETAIL_LESSONS.tajwid;
+        list.innerHTML = items.map((t, n) =>
+          '<div class="lesson-chip"><span class="lesson-badge">' + (n + 1) + '</span><span>' + t + '</span></div>'
+        ).join('');
+      }
+    }
 
     function openGameDetail(gameId) {
-      const g = GAMES.find(x => x.id === gameId) || GAMES[0];
+      const g = GAMES.find(x => x.id === gameId);
+      if (!g) { switchView('home'); return; }
 
       detailGameMainTitle.textContent = g.title;
       detailBreadcrumbTitle.textContent = g.title;
       detailGameIcon.src = g.appIcon;
-      detailGamePlaysCount.textContent = g.playsLabel;
+      detailGamePlaysCount.textContent = g.categoryLabel;
       detailDescriptionText.textContent = g.description;
+      currentGameId = g.id;
+      trackRecent(g.id);
+      syncToolbar();
+      updateDetailContent(g);
+      renderMoreGames(g.id);
+      const exitModal = document.getElementById('gameExitConfirmModal');
+      if (exitModal) exitModal.style.display = 'none';
 
       // Load the selected game immediately. The global splash is intentionally removed.
       if (splashProgressTimer) {
@@ -3251,6 +3435,17 @@
         detailGameIframe.removeAttribute('srcdoc');
         detailGameIframe.onload = () => {
           detailGameIframe.setAttribute('title', 'Permainan: ' + g.title);
+          try {
+            const w = detailGameIframe.contentWindow;
+            if (!w || detailGameIframe.getAttribute('src') === 'about:blank') return;
+            w.focus();
+            // Bantu diagnosa: tampilkan error JavaScript dari dalam game (jika satu origin)
+            let shown = false;
+            w.addEventListener('error', (ev) => {
+              console.warn('[PlayLand] error di dalam game', g.id, ev.message, ev.filename, ev.lineno);
+              if (!shown) { shown = true; showToast('⚠️ Game mengalami error: ' + (ev.message || 'lihat console')); }
+            });
+          } catch (e) { /* beda origin / file:// */ }
         };
         detailGameIframe.src = g.url;
       } else {
@@ -3265,41 +3460,67 @@
       }
 
       switchView('detail');
-      history.replaceState(null, '', '#game/' + g.id);
+      pushRoute('#game/' + g.id);
       closeMobileDrawer();
     }
 
     // =========================================================================
     // RENDER CAROUSEL (HOME VIEW)
     // =========================================================================
+    // Kartu bersih: hanya gambar; judul, kategori, dan statistik muncul saat hover (di HP selalu tampil judul)
+    function gameCardHTML(game) {
+      return `
+        <img src="${game.thumbnail}" alt="${game.title}" class="game-thumbnail" loading="lazy" onerror="imgFallback(this)">
+        ${game.isNew ? '<span class="game-status-badge badge-coming">Baru</span>' : ''}
+        <div class="game-hover-info">
+          <h3 class="game-card-title">${game.title}</h3>
+          <span class="game-chip">${game.categoryLabel}</span>
+        </div>`;
+    }
+
+    function buildGameCard(game) {
+      const card = document.createElement('article');
+      card.className = 'game-card featured-active';
+      card.dataset.gameId = game.id;
+      card.innerHTML = gameCardHTML(game);
+      card.addEventListener('click', () => openGameDetail(game.id));
+      makeActivatable(card);
+      return card;
+    }
+    function renderMoreGames(currentId) {
+      const cur = GAMES.find(x => x.id === currentId);
+      const currentCat = cur ? cur.category : '';
+      const track = document.getElementById('moreGamesTrack');
+      if (!track) return;
+      track.innerHTML = '';
+      GAMES.filter(g => g.id !== currentId).sort((a, b) => ((b.category === currentCat ? 1 : 0) - (a.category === currentCat ? 1 : 0)) || (GAMES.indexOf(a) - GAMES.indexOf(b))).slice(0, 10)
+        .forEach(g => track.appendChild(buildGameCard(g)));
+      track.scrollLeft = 0;
+    }
+
+    // Lanjut Main: game yang terakhir dibuka di perangkat ini (maks. 6)
+    function renderContinue() {
+      const card = document.getElementById('continueCard');
+      const track = document.getElementById('continueTrack');
+      if (!card || !track) return;
+      const games = recentIds.map(id => GAMES.find(g => g.id === id)).filter(Boolean).slice(0, 6);
+      track.innerHTML = '';
+      card.hidden = games.length === 0;
+      games.forEach(g => track.appendChild(buildGameCard(g)));
+      track.scrollLeft = 0;
+    }
+
     function renderCarousel() {
       carouselTrack.innerHTML = '';
       GAMES.forEach(game => {
         const card = document.createElement('article');
         card.className = `game-card ${game.playable ? 'featured-active' : ''}`;
         card.dataset.gameId = game.id;
-        card.innerHTML = `
-          <div class="game-thumbnail-wrap">
-            <span class="game-status-badge ${game.playable ? 'badge-playable' : 'badge-coming'}">
-              ${game.playable ? '🟢 Siap Main' : 'Segera Hadir'}
-            </span>
-            <img src="${game.thumbnail}" alt="${game.title}" class="game-thumbnail" loading="lazy">
-          </div>
-          <div class="game-info-wrap">
-            <span class="game-mini-icon">
-              <span class="iconify" data-icon="${game.playable ? 'fluent-color:book-open-24' : 'fluent-color:book-star-24'}" style="font-size: 18px;"></span>
-            </span>
-            <div class="game-text">
-              <h3 class="game-card-title">${game.title}</h3>
-              <div class="game-card-meta">
-                <span>👥 ${game.playsLabel}</span>
-              </div>
-            </div>
-          </div>
-        `;
+        card.innerHTML = gameCardHTML(game);
         card.addEventListener('click', () => {
           openGameDetail(game.id);
         });
+        makeActivatable(card);
         carouselTrack.appendChild(card);
       });
     }
@@ -3310,29 +3531,31 @@
     let currentCatalogCategory = 'all';
     let currentCatalogSearch = '';
     let currentCatalogSort = 'popular';
+    let currentCatalogTag = '';
 
     function renderCatalog() {
       let filtered = GAMES.filter(g => {
         const matchCat = currentCatalogCategory === 'all' || g.category === currentCatalogCategory;
         const matchSearch = !currentCatalogSearch || g.title.toLowerCase().includes(currentCatalogSearch) || g.categoryLabel.toLowerCase().includes(currentCatalogSearch);
-        return matchCat && matchSearch;
+        const matchTag = !currentCatalogTag || (currentCatalogTag === 'favorit' ? favs.has(g.id) : recentIds.includes(g.id));
+        return matchCat && matchSearch && matchTag;
       });
 
       if (currentCatalogSort === 'popular') {
-        filtered.sort((a, b) => b.plays - a.plays);
-      } else if (currentCatalogSort === 'rating') {
-        filtered.sort((a, b) => b.rating - a.rating);
+        filtered.sort(byPlayCount);
       } else if (currentCatalogSort === 'name-asc') {
         filtered.sort((a, b) => a.title.localeCompare(b.title));
       } else if (currentCatalogSort === 'name-desc') {
         filtered.sort((a, b) => b.title.localeCompare(a.title));
       }
 
+      if (currentCatalogTag === 'terbaru') filtered.sort((a, b) => recentIds.indexOf(a.id) - recentIds.indexOf(b.id));
+
       catalogGrid.innerHTML = '';
       if (filtered.length === 0) {
         catalogGrid.innerHTML = `
           <div style="grid-column: 1 / -1; text-align: center; padding: 40px; color: var(--ink-soft);">
-            <p style="font-size: 16px; font-weight: 700;">Tidak ada game yang cocok dengan pencarian.</p>
+            <p style="font-size: 16px; font-weight: 700;">${currentCatalogTag === 'favorit' ? 'Belum ada game favorit. Tekan “Simpan” di halaman game ya!' : currentCatalogTag === 'terbaru' ? 'Belum ada game yang dimainkan.' : 'Tidak ada game yang cocok dengan pencarian.'}</p>
           </div>
         `;
         return;
@@ -3342,28 +3565,11 @@
         const card = document.createElement('article');
         card.className = `game-card ${game.playable ? 'featured-active' : ''}`;
         card.dataset.gameId = game.id;
-        card.innerHTML = `
-          <div class="game-thumbnail-wrap">
-            <span class="game-status-badge ${game.playable ? 'badge-playable' : 'badge-coming'}">
-              ${game.playable ? '🟢 Siap Main' : 'Segera Hadir'}
-            </span>
-            <img src="${game.thumbnail}" alt="${game.title}" class="game-thumbnail" loading="lazy">
-          </div>
-          <div class="game-info-wrap">
-            <span class="game-mini-icon">
-              <span class="iconify" data-icon="${game.playable ? 'fluent-color:book-open-24' : 'fluent-color:book-star-24'}" style="font-size: 18px;"></span>
-            </span>
-            <div class="game-text">
-              <h3 class="game-card-title">${game.title}</h3>
-              <div class="game-card-meta">
-                <span>👥 ${game.playsLabel}</span> • <span style="color: #e59f00;">⭐ ${game.rating}</span>
-              </div>
-            </div>
-          </div>
-        `;
+        card.innerHTML = gameCardHTML(game);
         card.addEventListener('click', () => {
           openGameDetail(game.id);
         });
+        makeActivatable(card);
         catalogGrid.appendChild(card);
       });
     }
@@ -3373,23 +3579,22 @@
     // =========================================================================
     function renderPopularSidebar() {
       popularSidebarList.innerHTML = '';
-      const popularGames = [...GAMES].sort((a, b) => b.plays - a.plays).slice(0, 9);
+      const popularGames = [...GAMES].sort(byPlayCount).slice(0, 9);
       popularGames.forEach(game => {
         const item = document.createElement('div');
         item.className = `popular-item ${game.playable ? 'featured-item' : ''}`;
         item.innerHTML = `
-          <img src="${game.appIcon}" alt="${game.title}" class="popular-icon-thumb">
+          <img src="${game.appIcon}" alt="${game.title}" class="popular-icon-thumb" onerror="imgFallback(this)">
           <div class="popular-meta">
             <strong class="popular-name">${game.title}</strong>
-            <span class="popular-plays">
-              👥 ${game.playsLabel}
-            </span>
+            <span class="popular-plays">${game.categoryLabel}</span>
           </div>
           <span class="popular-chevron">❯</span>
         `;
         item.addEventListener('click', () => {
           openGameDetail(game.id);
         });
+        makeActivatable(item);
         popularSidebarList.appendChild(item);
       });
     }
@@ -3405,14 +3610,19 @@
     });
 
     document.getElementById('btnSeeAllCarousel').addEventListener('click', () => {
-      currentCatalogCategory = 'all';
+      currentCatalogCategory = 'all'; currentCatalogTag = '';
       updateFilterChips();
       renderCatalog();
       switchView('all-games');
     });
 
+    document.getElementById('btnContinueSeeAll').addEventListener('click', () => {
+      const b = document.querySelector('.nav-btn[data-filter-tag="terbaru"]');
+      if (b) b.click();
+    });
+
     document.getElementById('btnPopSeeAll').addEventListener('click', () => {
-      currentCatalogCategory = 'all';
+      currentCatalogCategory = 'all'; currentCatalogTag = '';
       updateFilterChips();
       renderCatalog();
       switchView('all-games');
@@ -3443,12 +3653,14 @@
           switchView('home');
         } else if (nav === 'all-games') {
           currentCatalogCategory = filterCat || 'all';
+          currentCatalogTag = btn.dataset.filterTag || '';
           updateFilterChips();
           renderCatalog();
           switchView('all-games');
+          document.querySelectorAll('.nav-btn.active').forEach(b => b.classList.remove('active'));
+          btn.classList.add('active');
         }
-        document.getElementById('leftSidebar').classList.remove('mobile-open');
-        document.body.classList.remove('mobile-nav-open');
+        closeMobileDrawer();
       });
     });
 
@@ -3468,6 +3680,7 @@
         document.querySelectorAll('.filter-chip').forEach(c => c.classList.remove('active'));
         chip.classList.add('active');
         currentCatalogCategory = chip.dataset.cat;
+        currentCatalogTag = '';
         renderCatalog();
       }
     });
@@ -3525,31 +3738,78 @@
     const btnToolbarFullscreen = document.getElementById('btnToolbarFullscreen');
     btnToolbarFullscreen.addEventListener('click', () => {
       const screen = document.getElementById('gameScreenWrapper');
-      if (!document.fullscreenElement) {
-        if (screen.requestFullscreen) screen.requestFullscreen();
-        else if (screen.webkitRequestFullscreen) screen.webkitRequestFullscreen();
-      } else {
-        if (document.exitFullscreen) document.exitFullscreen();
+      const isFs = document.fullscreenElement || document.webkitFullscreenElement || screen.classList.contains('pseudo-fullscreen');
+      if (isFs) {
+        setPseudoFs(false);
+        if (document.fullscreenElement || document.webkitFullscreenElement) {
+          try { (document.exitFullscreen || document.webkitExitFullscreen).call(document); } catch (e) { }
+        }
+        return;
       }
+      const req = screen.requestFullscreen || screen.webkitRequestFullscreen;
+      if (!req) { setPseudoFs(true); return; }
+      try {
+        const p = req.call(screen);
+        if (p && p.catch) p.catch(() => setPseudoFs(true));
+      } catch (e) { setPseudoFs(true); }
     });
+    document.getElementById('btnPseudoExit').addEventListener('click', () => setPseudoFs(false));
 
-    let isLiked = false;
-    document.getElementById('btnToolbarLike').addEventListener('click', () => {
-      isLiked = !isLiked;
-      document.getElementById('btnToolbarLike').classList.toggle('active-liked', isLiked);
-      document.getElementById('likeCount').textContent = isLiked ? '2.9k Disukai' : '2.8k';
-      showToast(isLiked ? '❤️ Terima kasih atas apresiasinya!' : 'Tanda suka dibatalkan');
+    // Suka / Simpan tersimpan per game (bukan satu status global untuk semua game)
+    const likedSet = new Set(readJSON('playland-liked', []));
+    const favs = new Set(readJSON('playland-favs', []));
+    let recentIds = readJSON('playland-recent', []);
+    const btnLike = document.getElementById('btnToolbarLike');
+    const btnBookmark = document.getElementById('btnToolbarBookmark');
+    const likeCountEl = document.getElementById('likeCount');
+
+    // Hitungan main per-perangkat (bukan statistik global)
+    function readPlayCounts() {
+      try { const v = JSON.parse(safeStore.get('playland_playcount') || ''); return (v && typeof v === 'object' && !Array.isArray(v)) ? v : {}; } catch (e) { return {}; }
+    }
+    function getPlayCount(id) { return Number(readPlayCounts()[id]) || 0; }
+    function incPlayCount(id) {
+      const c = readPlayCounts();
+      c[id] = (Number(c[id]) || 0) + 1;
+      safeStore.set('playland_playcount', JSON.stringify(c));
+    }
+    function byPlayCount(a, b) {
+      return (getPlayCount(b.id) - getPlayCount(a.id)) || (GAMES.indexOf(a) - GAMES.indexOf(b));
+    }
+
+    function trackRecent(id) {
+      incPlayCount(id);
+      recentIds = [id].concat(recentIds.filter(x => x !== id)).slice(0, 12);
+      safeStore.set('playland-recent', JSON.stringify(recentIds));
+      renderContinue();
+    }
+    function syncToolbar() {
+      const liked = likedSet.has(currentGameId);
+      btnLike.classList.toggle('active-liked', liked);
+      likeCountEl.textContent = liked ? 'Disukai' : 'Suka';
+      btnBookmark.classList.toggle('active-liked', favs.has(currentGameId));
+    }
+
+    btnLike.addEventListener('click', () => {
+      if (!currentGameId) return;
+      const nowLiked = !likedSet.has(currentGameId);
+      if (nowLiked) likedSet.add(currentGameId); else likedSet.delete(currentGameId);
+      safeStore.set('playland-liked', JSON.stringify([...likedSet]));
+      syncToolbar();
+      showToast(nowLiked ? '❤️ Terima kasih atas apresiasinya!' : 'Tanda suka dibatalkan');
     });
 
     document.getElementById('btnToolbarDislike').addEventListener('click', () => {
       showToast('Masukanmu dicatat untuk perbaikan game!');
     });
 
-    let isBookmarked = false;
-    document.getElementById('btnToolbarBookmark').addEventListener('click', () => {
-      isBookmarked = !isBookmarked;
-      document.getElementById('btnToolbarBookmark').classList.toggle('active-liked', isBookmarked);
-      showToast(isBookmarked ? '⭐ Game tersimpan di daftar favorit!' : 'Dihapus dari favorit');
+    btnBookmark.addEventListener('click', () => {
+      if (!currentGameId) return;
+      const nowFav = !favs.has(currentGameId);
+      if (nowFav) favs.add(currentGameId); else favs.delete(currentGameId);
+      safeStore.set('playland-favs', JSON.stringify([...favs]));
+      syncToolbar();
+      showToast(nowFav ? '⭐ Game tersimpan di daftar favorit!' : 'Dihapus dari favorit');
     });
 
     document.getElementById('btnToolbarShare').addEventListener('click', async () => {
@@ -3564,8 +3824,17 @@
           await navigator.clipboard.writeText(location.href);
           showToast('🔗 Tautan game berhasil disalin!');
         }
-      } catch (err) { }
+      } catch (err) {
+        if (err && err.name !== 'AbortError') showToast('Salin tautan ini: ' + location.href);
+      }
     });
+
+    function openMobileDrawer() {
+      const sidebar = document.getElementById('leftSidebar');
+      sidebar?.classList.add('mobile-open');
+      document.body.classList.add('mobile-nav-open');
+      document.getElementById('mobileMenuBtn')?.setAttribute('aria-expanded', 'true');
+    }
 
     function closeMobileDrawer() {
       const sidebar = document.getElementById('leftSidebar');
@@ -3594,42 +3863,54 @@
 
     // Mobile bottom navigation
     document.querySelectorAll('[data-mobile-nav]').forEach(button => {
-      button.addEventListener('click', () => {
+      button.addEventListener('click', (e) => {
+        // jangan biarkan klik ini naik ke handler "klik di luar sidebar" yang langsung menutup drawer
+        e.stopPropagation();
         const action = button.dataset.mobileNav;
-        document.querySelectorAll('.mobile-bottom-item').forEach(item => item.classList.toggle('active', item === button));
+        if (action === 'menu') {
+          if (document.getElementById('leftSidebar').classList.contains('mobile-open')) closeMobileDrawer();
+          else openMobileDrawer();
+          return;
+        }
+        closeMobileDrawer();
         if (action === 'home') {
           switchView('home');
         } else if (action === 'games') {
-          currentCatalogCategory = 'all';
+          currentCatalogCategory = 'all'; currentCatalogTag = '';
           updateFilterChips();
           renderCatalog();
           switchView('all-games');
-        } else if (action === 'menu') {
-          openMobileDrawer();
         }
-        closeMobileDrawer();
       });
     });
 
     document.addEventListener('keydown', event => {
-      if (event.key === 'Escape') {
-        closeMobileDrawer();
-      }
+      if (event.key !== 'Escape') return;
+      closeMobileDrawer();
+      const exitModal = document.getElementById('gameExitConfirmModal');
+      if (exitModal && exitModal.style.display === 'flex') exitModal.style.display = 'none';
+      if (document.getElementById('gameScreenWrapper').classList.contains('pseudo-fullscreen')) setPseudoFs(false);
+      if (nameModalOverlay.classList.contains('visible') && safeStore.get(PLAYER_NAME_KEY)) closeNameModal();
     });
 
     document.getElementById('userProfilePill').addEventListener('click', () => {
       openNameModal();
     });
+    makeActivatable(document.getElementById('userProfilePill'));
 
-    window.addEventListener('hashchange', () => {
+    function routeFromHash() {
       const h = location.hash;
       if (h.startsWith('#game/')) {
-        openGameDetail(h.replace('#game/', ''));
+        openGameDetail(decodeURIComponent(h.slice(6)));
       } else if (h === '#games') {
         switchView('all-games');
       } else {
         switchView('home');
       }
+    }
+    window.addEventListener('popstate', () => {
+      navFromPop = true;
+      try { routeFromHash(); } finally { navFromPop = false; }
     });
 
     // Toggle Semua Kategori in Sidebar
@@ -3642,21 +3923,20 @@
       btnToggleAllCategories.addEventListener('click', (e) => {
         e.preventDefault();
         const isHidden = extraCategoriesGroup.style.display === 'none';
-        extraCategoriesGroup.style.display = isHidden ? 'flex' : 'none';
+        extraCategoriesGroup.style.display = isHidden ? 'block' : 'none';
         labelToggleCats.textContent = isHidden ? 'Lebih Sedikit ▴' : 'Semua Kategori >';
-        iconToggleCats.setAttribute('data-icon', isHidden ? 'fluent-color:chevron-up-24' : 'fluent-color:chevron-right-24');
+        setIcon(iconToggleCats, isHidden ? 'fluent:chevron-up-24-filled' : 'fluent:chevron-right-24-filled');
       });
     }
 
     // Initial render
     renderCarousel();
+    renderContinue();
     renderCatalog();
     renderPopularSidebar();
 
-    if (location.hash.startsWith('#game/')) {
-      openGameDetail(location.hash.replace('#game/', ''));
-    } else if (location.hash === '#games') {
-      switchView('all-games');
+    if (location.hash.startsWith('#game/') || location.hash === '#games') {
+      routeFromHash();
     }
   </script>
 </body>
