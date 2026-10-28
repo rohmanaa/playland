@@ -1,5 +1,5 @@
 /* PlayLand service worker — naikkan VERSION setiap rilis agar cache lama dibuang */
-const VERSION = 'playland-v6';
+const VERSION = 'playland-v7';
 const SHELL = ['./', './index.html', './manifest.webmanifest', './icons/icon-192.png', './icons/icon-512.png'];
 const RUNTIME = VERSION + '-runtime';
 const MAX_RUNTIME = 120; // batas jumlah berkas di cache runtime
