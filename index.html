@@ -3,7 +3,7 @@
 
 <head>
   <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=yes, maximum-scale=5">
   <title>PlayLand — Game Islami Anak Indonesia</title>
   <meta name="description"
     content="Portal PlayLand Game Islami Anak Indonesia. Mainkan Petualangan Tajwid 3D, Hijaiyah Sky Run 3D, dan pelajari nilai-nilai kebaikan Islam dengan ceria!">
@@ -1951,6 +1951,132 @@
 
       .game-screen-wrapper {
         height: 290px;
+      }
+    }
+
+    /* Mobile-first improvements */
+    @media (max-width: 480px) {
+      /* Better touch targets */
+      .btn-action-tool,
+      .btn-filter,
+      .btn-sort,
+      .game-btn-toolbar-group .btn-action-tool {
+        min-height: 48px;
+        min-width: 48px;
+        padding: 12px 16px;
+        font-size: 14px;
+      }
+
+      .game-btn-toolbar-group {
+        gap: 10px;
+      }
+
+      .game-title-badge-group {
+        gap: 8px;
+      }
+
+      .game-current-icon {
+        width: 40px;
+        height: 40px;
+      }
+
+      .game-info-col h1 {
+        font-size: 16px;
+      }
+
+      .game-info-col span {
+        font-size: 11px;
+      }
+
+      /* Search input */
+      .search-input {
+        font-size: 16px; /* Prevent zoom on iOS */
+        padding: 12px 16px;
+      }
+
+      /* Category chips */
+      .category-chips {
+        gap: 8px;
+        padding: 8px 4px;
+      }
+
+      .category-chip {
+        padding: 10px 16px;
+        font-size: 13px;
+        min-height: 44px;
+      }
+
+      /* Game cards */
+      .game-card {
+        border-radius: 16px;
+      }
+
+      .game-card-image {
+        aspect-ratio: 16/10;
+      }
+
+      .game-card-title {
+        font-size: 14px;
+        line-height: 1.3;
+      }
+
+      /* Modal improvements */
+      .modal-content {
+        max-width: 95vw;
+        margin: 16px;
+        max-height: 90vh;
+      }
+
+      /* Splash screen mobile */
+      .splash-card {
+        margin: 16px;
+        max-width: calc(100vw - 32px);
+        border-radius: 20px;
+      }
+
+      .splash-game-icon {
+        width: 100px;
+        height: 100px;
+      }
+
+      .splash-game-title {
+        font-size: 18px;
+      }
+
+      .splash-play-btn {
+        min-height: 52px;
+        padding: 14px 32px;
+        font-size: 16px;
+      }
+
+      .splash-progress-container {
+        padding: 0 24px;
+      }
+    }
+
+    /* Landscape mobile */
+    @media (max-width: 896px) and (orientation: landscape) {
+      .game-screen-wrapper {
+        height: 220px;
+      }
+
+      .splash-card {
+        max-height: 90vh;
+        overflow-y: auto;
+      }
+    }
+
+    /* Safe area handling for notched devices */
+    @supports (padding: max(0px)) {
+      .app-container {
+        padding-left: max(12px, env(safe-area-inset-left));
+        padding-right: max(12px, env(safe-area-inset-right));
+        padding-bottom: max(40px, env(safe-area-inset-bottom));
+      }
+
+      .topbar {
+        padding-left: max(12px, env(safe-area-inset-left));
+        padding-right: max(12px, env(safe-area-inset-right));
       }
     }
   </style>
