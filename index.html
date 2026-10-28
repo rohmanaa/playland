@@ -2079,6 +2079,154 @@
         padding-right: max(12px, env(safe-area-inset-right));
       }
     }
+
+
+    /* PLAYLAND RESPONSIVE REBUILD v2 — mobile layout is a first-class layout */
+    html, body { width: 100%; max-width: 100%; overflow-x: clip; }
+    img, video, iframe, canvas, svg { max-width: 100%; }
+    button, input, select, textarea { max-width: 100%; }
+    .app-container { width: 100%; min-width: 0; }
+    .portal-layout, .view-panel, .view-panel.active, .game-play-section,
+    .game-content-details, .main-content, .center-content { min-width: 0; }
+    .game-splash-overlay { display: none !important; visibility: hidden !important; pointer-events: none !important; }
+    .game-screen-wrapper { width: 100%; height: auto; aspect-ratio: 16 / 9; min-height: 230px; max-height: 78svh; overflow: hidden; }
+    .game-iframe-player { width: 100%; height: 100%; min-height: 0; display: block; }
+    .catalog-grid { grid-template-columns: repeat(auto-fill, minmax(min(100%, 180px), 1fr)); }
+    .game-content-details { grid-template-columns: minmax(0, 1.4fr) minmax(0, 1fr); }
+    .hero-island-showcase { aspect-ratio: 16 / 9; height: auto; }
+    .hero-island-image { object-fit: cover; }
+    .carousel-track { max-width: 100%; }
+    .game-play-topbar, .game-breadcrumb { min-width: 0; }
+    .game-breadcrumb { flex-wrap: wrap; overflow-wrap: anywhere; }
+
+    @media (max-width: 1100px) {
+      .app-container { padding: 12px 18px 32px; }
+      .portal-layout { grid-template-columns: 190px minmax(0, 1fr); gap: 16px; }
+      .right-sidebar { grid-column: 2; position: static; display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); align-items: start; }
+      .game-content-details { grid-template-columns: minmax(0, 1fr); padding: 20px; }
+      .game-screen-wrapper { max-height: 70svh; }
+    }
+
+    @media (max-width: 760px) {
+      body { background-attachment: scroll; }
+      .app-container { padding: 10px 12px calc(24px + env(safe-area-inset-bottom)); }
+      .topbar { display: grid; grid-template-columns: 44px minmax(0, 1fr) auto; align-items: center; gap: 10px; margin-bottom: 12px; }
+      .mobile-menu-btn { display: inline-flex; align-items: center; justify-content: center; width: 44px; height: 44px; border-radius: 13px; font-size: 0; flex-shrink: 0; }
+      .mobile-menu-btn::before { content: '☰'; font-size: 23px; line-height: 1; }
+      .brand-link { grid-column: 2; grid-row: 1; justify-self: start; min-width: 0; }
+      .brand-logo { height: 44px; max-width: min(42vw, 150px); }
+      .topbar-right-group { grid-column: 3; grid-row: 1; gap: 6px; min-width: 0; }
+      .btn-theme-toggle { width: 42px; height: 42px; padding: 0; justify-content: center; border-radius: 13px; }
+      .btn-theme-toggle > span:not(.iconify), .btn-theme-toggle .theme-label { display: none; }
+      .profile-pill { padding: 4px; width: 42px; height: 42px; justify-content: center; gap: 0; }
+      .profile-info, .profile-pill .profile-name, .profile-pill .profile-badge { display: none !important; }
+      .search-wrapper { grid-column: 1 / -1; grid-row: 2; order: initial; width: 100%; max-width: none; }
+      .search-bar { height: 46px; font-size: 16px; padding-left: 46px; padding-right: 14px; }
+      .search-icon-box { left: 14px; }
+      .portal-layout { display: block; width: 100%; }
+      .left-sidebar { display: block; position: fixed; z-index: 1300; top: 0; bottom: 0; left: 0; width: min(86vw, 320px); padding: 12px; overflow-y: auto; overscroll-behavior: contain; background: var(--card-bg); box-shadow: 4px 0 24px rgba(8, 30, 60, .18); transform: translateX(-110%); visibility: hidden; transition: transform .24s ease, visibility .24s ease; }
+      .left-sidebar.mobile-open { display: block; transform: translateX(0); visibility: visible; }
+      body.mobile-nav-open { overflow: hidden; }
+      .mobile-drawer-backdrop { display: none; }
+      body.mobile-nav-open .mobile-drawer-backdrop {
+        display: block; position: fixed; inset: 0; z-index: 1299;
+        background: rgba(8, 24, 48, .38); pointer-events: auto;
+      }
+      .nav-card { border-radius: 20px; min-height: 100%; }
+      .right-sidebar { display: flex; position: static; margin-top: 18px; gap: 14px; }
+      .view-panel.active { gap: 14px; }
+      .hero-island-showcase { border-width: 2px; border-radius: 20px; min-height: 180px; max-height: none; }
+      .hero-floating-badge { top: 9px; left: 9px; font-size: 10px; padding: 5px 9px; }
+      .hikmah-daily-banner { padding: 12px; border-radius: 16px; gap: 10px; align-items: flex-start; }
+      .hikmah-content { gap: 9px; }
+      .hikmah-icon { font-size: 22px; }
+      .hikmah-quote { font-size: 12px; }
+      .btn-next-hikmah { padding: 8px 10px; white-space: normal; }
+      .catalog-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; }
+      .game-card { min-width: 0; border-radius: 15px; }
+      .game-card-title { font-size: 13px; overflow-wrap: anywhere; }
+      .game-card-meta { flex-wrap: wrap; gap: 5px; }
+      .game-play-section { border-radius: 18px; border-width: 1px; }
+      .game-play-topbar { padding: 12px; align-items: flex-start; }
+      .game-breadcrumb { font-size: 12px; gap: 5px; flex: 1 1 100%; }
+      .btn-topbar-close-game { min-height: 42px; padding: 8px 12px; }
+      .game-screen-wrapper { aspect-ratio: 4 / 3; height: auto; min-height: 240px; max-height: 72svh; }
+      .game-content-details { padding: 12px; gap: 12px; }
+      .detail-card-box { padding: 15px; border-radius: 15px; }
+      .controls-grid { grid-template-columns: minmax(0, 1fr); }
+      .game-toolbar, .game-btn-toolbar-group { flex-wrap: wrap; }
+      .modal-content { width: calc(100vw - 24px); max-width: calc(100vw - 24px); margin: 12px; max-height: calc(100svh - 24px); overflow-y: auto; }
+    }
+
+    @media (max-width: 390px) {
+      .app-container { padding-left: 8px; padding-right: 8px; }
+      .topbar { grid-template-columns: 40px minmax(0, 1fr) 82px; gap: 7px; }
+      .mobile-menu-btn { width: 40px; height: 40px; }
+      .brand-logo { height: 38px; max-width: 35vw; }
+      .topbar-right-group { gap: 4px; }
+      .btn-theme-toggle, .profile-pill { width: 38px; height: 38px; }
+      .catalog-grid { gap: 8px; }
+      .game-screen-wrapper { aspect-ratio: 3 / 2; min-height: 210px; }
+      .hikmah-daily-banner { flex-direction: column; }
+      .btn-next-hikmah { align-self: flex-end; }
+    }
+
+    @media (max-width: 760px) and (orientation: landscape) {
+      .game-screen-wrapper { aspect-ratio: 16 / 9; max-height: 78svh; min-height: 0; }
+      .game-content-details { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after { scroll-behavior: auto !important; animation-duration: .01ms !important; transition-duration: .01ms !important; }
+    }
+
+
+
+    /* PLAYLAND MOBILE REBUILD v3: bottom navigation, drawer fix, popular slider */
+    .mobile-bottom-bar { display: none; }
+    @media (max-width: 760px) {
+      body { padding-bottom: calc(76px + env(safe-area-inset-bottom)); }
+      .app-container { padding-bottom: calc(92px + env(safe-area-inset-bottom)) !important; }
+      .mobile-bottom-bar {
+        position: fixed; z-index: 1200; left: 10px; right: 10px;
+        bottom: max(8px, env(safe-area-inset-bottom));
+        display: grid; grid-template-columns: repeat(4, minmax(0, 1fr));
+        gap: 4px; padding: 7px; border: 1px solid var(--item-border, rgba(120,140,160,.22));
+        border-radius: 20px; background: var(--card-bg, #fff);
+        box-shadow: 0 10px 35px rgba(10, 30, 60, .18);
+        backdrop-filter: blur(18px); -webkit-backdrop-filter: blur(18px);
+      }
+      .mobile-bottom-item { min-width: 0; min-height: 52px; border: 0; border-radius: 14px; background: transparent; color: var(--ink-soft, #667085); font: inherit; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 3px; cursor: pointer; }
+      .mobile-bottom-item .mb-icon { font-size: 20px; line-height: 1; }
+      .mobile-bottom-item .mb-label { font-size: 10px; font-weight: 800; line-height: 1.2; }
+      .mobile-bottom-item.active { background: rgba(56,157,255,.13); color: var(--primary-blue, #238bf7); }
+      .mobile-bottom-item:focus-visible { outline: 2px solid var(--primary-blue, #238bf7); outline-offset: 2px; }
+      /* Keep the drawer above its dimmer; the dimmer must never remain after closing. */
+      .left-sidebar { z-index: 1301 !important; background: var(--card-bg, #fff) !important; color: var(--ink, #172033); }
+      /* Popular games become a genuine touch slider, not a narrow sidebar column. */
+      .right-sidebar { display: block !important; width: 100%; min-width: 0; margin: 16px 0 0 !important; }
+      .popular-card { width: 100%; min-width: 0; max-width: 100%; overflow: hidden; }
+      .popular-header { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+      .popular-list { display: flex !important; flex-wrap: nowrap !important; gap: 10px; width: 100%; max-width: 100%; overflow-x: auto; overflow-y: hidden; padding: 4px 2px 12px; scroll-snap-type: x mandatory; -webkit-overflow-scrolling: touch; overscroll-behavior-x: contain; }
+      .popular-list::-webkit-scrollbar { display: none; }
+      .popular-item { flex: 0 0 min(76vw, 250px) !important; width: min(76vw, 250px) !important; min-width: 0; scroll-snap-align: start; }
+      .sidebar-integrated-banner { max-width: 100%; }
+      .game-screen-wrapper { width: 100%; }
+    }
+    @media (max-width: 380px) {
+      .mobile-bottom-bar { left: 6px; right: 6px; bottom: max(5px, env(safe-area-inset-bottom)); }
+      .mobile-bottom-item .mb-label { font-size: 9px; }
+      .popular-item { flex-basis: 82vw !important; width: 82vw !important; }
+    }
+
+
+    /* v5: dedicated dimmer layer; no body pseudo-element or global blur */
+    .mobile-drawer-backdrop { display: none; }
+    @media (max-width: 760px) {
+      .left-sidebar.mobile-open { position: fixed; z-index: 1301 !important; visibility: visible; transform: translateX(0); opacity: 1; filter: none !important; }
+      body.mobile-nav-open .mobile-bottom-bar { z-index: 1200; }
+    }
+
   </style>
 </head>
 
@@ -2351,7 +2499,7 @@
               </button>
             </div>
 
-            <!-- Game Player Screen with Mandatory Splash & Loading Overlay -->
+            <!-- Game Player Screen: direct play, no global splash -->
             <div class="game-screen-wrapper" id="gameScreenWrapper">
 
               <!-- Confirm Exit Modal -->
@@ -2564,6 +2712,20 @@
     </section>
 
   </div>
+
+  <div class="mobile-drawer-backdrop" id="mobileDrawerBackdrop" aria-hidden="true"></div>
+
+  <nav class="mobile-bottom-bar" aria-label="Navigasi utama mobile">
+    <button class="mobile-bottom-item active" type="button" data-mobile-nav="home" aria-label="Beranda">
+      <span class="mb-icon">⌂</span><span class="mb-label">Beranda</span>
+    </button>
+    <button class="mobile-bottom-item" type="button" data-mobile-nav="games" aria-label="Jelajah game">
+      <span class="mb-icon">▦</span><span class="mb-label">Jelajah</span>
+    </button>
+    <button class="mobile-bottom-item" type="button" data-mobile-nav="menu" aria-label="Menu navigasi">
+      <span class="mb-icon">☰</span><span class="mb-label">Menu</span>
+    </button>
+  </nav>
 
   <!-- MODAL INPUT NAMA PEMAIN (SIMULASI STORAGE) -->
   <div class="name-modal-overlay" id="nameModalOverlay" role="dialog" aria-modal="true" aria-label="Masukkan Nama Pemain">
@@ -3040,6 +3202,7 @@
       gameDetailView.classList.remove('active');
 
       document.querySelectorAll('.nav-btn').forEach(btn => btn.classList.remove('active'));
+      document.querySelectorAll('.mobile-bottom-item').forEach(btn => btn.classList.toggle('active', (viewName === 'home' && btn.dataset.mobileNav === 'home') || (viewName === 'all-games' && btn.dataset.mobileNav === 'games')));
 
       if (viewName === 'all-games') {
         allGamesView.classList.add('active');
@@ -3076,98 +3239,34 @@
       detailGamePlaysCount.textContent = g.playsLabel;
       detailDescriptionText.textContent = g.description;
 
-      // Update Splash Screen Content
+      // Load the selected game immediately. The global splash is intentionally removed.
+      if (splashProgressTimer) {
+        clearInterval(splashProgressTimer);
+        splashProgressTimer = null;
+      }
       const splashOverlay = document.getElementById('gameSplashOverlay');
-      const progressBar = document.getElementById('splashProgressBar');
-      const progressPercent = document.getElementById('splashProgressPercent');
-      const progressStatus = document.getElementById('splashProgressStatus');
-      const playBtn = document.getElementById('splashPlayBtn');
-
-      document.getElementById('splashGameIcon').src = g.appIcon;
-      document.getElementById('splashGameTitle').textContent = g.title;
-      document.getElementById('splashGameCategory').textContent = g.categoryLabel;
-
-      const quotes = [
-        '"Menuntut ilmu adalah kewajiban bagi setiap muslim." — (HR. Ibnu Majah)',
-        '"Sebaik-baik manusia adalah yang paling bermanfaat bagi sesama." — (HR. Ahmad)',
-        '"Barangsiapa menempuh jalan untuk menuntut ilmu, Allah mudahkan jalannya menuju surga." — (HR. Muslim)',
-        '"Senyummu di hadapan saudaramu adalah sedekah bagimu." — (HR. Tirmidzi)',
-        '"Makanlah dari rezeki yang halal lagi baik yang telah Kami berikan kepadamu." — (QS. Al-Baqarah: 172)'
-      ];
-      document.getElementById('splashQuoteText').textContent = quotes[Math.floor(Math.random() * quotes.length)];
-
-      // Reset & Display Splash
-      splashOverlay.classList.remove('hidden');
-      progressBar.style.width = '0%';
-      progressPercent.textContent = '0%';
-      progressStatus.textContent = 'Menyiapkan aset 3D & audio...';
-      playBtn.style.display = 'none';
-
-      if (splashProgressTimer) clearInterval(splashProgressTimer);
-
-      let currentProg = 0;
-      let isIframeLoaded = false;
+      if (splashOverlay) splashOverlay.classList.add('hidden');
 
       if (g.playable) {
+        detailGameIframe.removeAttribute('srcdoc');
         detailGameIframe.onload = () => {
-          isIframeLoaded = true;
+          detailGameIframe.setAttribute('title', 'Permainan: ' + g.title);
         };
         detailGameIframe.src = g.url;
       } else {
-        isIframeLoaded = true;
+        detailGameIframe.removeAttribute('src');
         detailGameIframe.srcdoc = `
-          <!doctype html>
-          <html>
-          <head>
-            <meta charset="utf-8">
-            <style>
-              body { margin: 0; min-height: 100vh; display: flex; flex-direction: column; align-items: center; justify-content: center; background: linear-gradient(135deg, #183c6c, #2a5a98); color: white; font-family: sans-serif; text-align: center; padding: 20px; box-sizing: border-box; }
-              h2 { font-size: 26px; margin-bottom: 8px; }
-              p { font-size: 14px; opacity: 0.9; max-width: 460px; line-height: 1.5; margin-bottom: 20px; }
-              button { background: #2ecc71; border: none; color: white; font-weight: bold; font-size: 15px; padding: 12px 24px; border-radius: 99px; cursor: pointer; box-shadow: 0 4px 12px rgba(0,0,0,0.25); }
-              button:hover { transform: scale(1.05); }
-            </style>
-          </head>
-          <body>
-            <h2>🌟 ${g.title} Segera Hadir!</h2>
-            <p>${g.description}</p>
-            <button onclick="parent.openGameDetail('slice-master')">▶ Mainkan Slice Master Islami 3D Sekarang</button>
-          </body>
-          </html>
-        `;
+          <!doctype html><html lang="id"><head><meta charset="utf-8">
+          <meta name="viewport" content="width=device-width, initial-scale=1">
+          <style>
+            *{box-sizing:border-box}body{margin:0;min-height:100vh;display:flex;flex-direction:column;align-items:center;justify-content:center;background:linear-gradient(135deg,#183c6c,#2a5a98);color:#fff;font-family:system-ui,sans-serif;text-align:center;padding:24px;}
+            h2{font-size:clamp(20px,4vw,28px);margin:0 0 10px}p{font-size:14px;max-width:460px;line-height:1.6;margin:0 0 20px}button{background:#2ecc71;border:0;color:#fff;font-weight:700;font-size:15px;padding:13px 22px;border-radius:99px;cursor:pointer;max-width:100%}
+          </style></head><body><h2>🌟 ${g.title} Segera Hadir!</h2><p>${g.description}</p><button onclick="parent.openGameDetail('slice-master')">▶ Coba Slice Master Islami 3D</button></body></html>`;
       }
-
-      // Smooth loading progress animation
-      splashProgressTimer = setInterval(() => {
-        if (currentProg < 85) {
-          currentProg += Math.floor(Math.random() * 12) + 8;
-        } else if (isIframeLoaded && currentProg < 100) {
-          currentProg += 15;
-        }
-        if (currentProg > 100) currentProg = 100;
-
-        progressBar.style.width = currentProg + '%';
-        progressPercent.textContent = currentProg + '%';
-
-        if (currentProg < 35) {
-          progressStatus.textContent = 'Menyiapkan aset 3D & audio...';
-        } else if (currentProg < 75) {
-          progressStatus.textContent = 'Mengunduh dunia PlayLand...';
-        } else if (currentProg < 100) {
-          progressStatus.textContent = 'Hampir selesai...';
-        } else {
-          progressStatus.textContent = 'Alhamdulillah, permainan siap!';
-          clearInterval(splashProgressTimer);
-          playBtn.style.display = 'inline-flex';
-        }
-      }, 100);
-
-      playBtn.onclick = () => {
-        splashOverlay.classList.add('hidden');
-      };
 
       switchView('detail');
       history.replaceState(null, '', '#game/' + g.id);
+      closeMobileDrawer();
     }
 
     // =========================================================================
@@ -3349,6 +3448,7 @@
           switchView('all-games');
         }
         document.getElementById('leftSidebar').classList.remove('mobile-open');
+        document.body.classList.remove('mobile-nav-open');
       });
     });
 
@@ -3467,8 +3567,54 @@
       } catch (err) { }
     });
 
+    function closeMobileDrawer() {
+      const sidebar = document.getElementById('leftSidebar');
+      sidebar?.classList.remove('mobile-open');
+      document.body.classList.remove('mobile-nav-open');
+      document.getElementById('mobileMenuBtn')?.setAttribute('aria-expanded', 'false');
+    }
+
     document.getElementById('mobileMenuBtn').addEventListener('click', () => {
-      document.getElementById('leftSidebar').classList.toggle('mobile-open');
+      const sidebar = document.getElementById('leftSidebar');
+      const isOpening = !sidebar.classList.contains('mobile-open');
+      sidebar.classList.toggle('mobile-open', isOpening);
+      document.body.classList.toggle('mobile-nav-open', isOpening);
+      document.getElementById('mobileMenuBtn').setAttribute('aria-expanded', String(isOpening));
+    });
+
+    document.getElementById('mobileDrawerBackdrop').addEventListener('click', closeMobileDrawer);
+
+    document.addEventListener('click', (event) => {
+      const sidebar = document.getElementById('leftSidebar');
+      const menuButton = document.getElementById('mobileMenuBtn');
+      if (sidebar && sidebar.classList.contains('mobile-open') && !sidebar.contains(event.target) && !menuButton.contains(event.target)) {
+        closeMobileDrawer();
+      }
+    });
+
+    // Mobile bottom navigation
+    document.querySelectorAll('[data-mobile-nav]').forEach(button => {
+      button.addEventListener('click', () => {
+        const action = button.dataset.mobileNav;
+        document.querySelectorAll('.mobile-bottom-item').forEach(item => item.classList.toggle('active', item === button));
+        if (action === 'home') {
+          switchView('home');
+        } else if (action === 'games') {
+          currentCatalogCategory = 'all';
+          updateFilterChips();
+          renderCatalog();
+          switchView('all-games');
+        } else if (action === 'menu') {
+          openMobileDrawer();
+        }
+        closeMobileDrawer();
+      });
+    });
+
+    document.addEventListener('keydown', event => {
+      if (event.key === 'Escape') {
+        closeMobileDrawer();
+      }
     });
 
     document.getElementById('userProfilePill').addEventListener('click', () => {
