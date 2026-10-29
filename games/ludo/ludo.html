@@ -21,7 +21,7 @@
         <span id="splashProgressPercent">0%</span>
       </div>
     </div>
-    <button class="splash-play-btn hidden" id="splashPlayBtn" disabled>
+    <button class="splash-play-btn hidden" id="splashPlayBtn" type="button">
       <span class="ico">▶</span>
       <span>BISMILLAH</span>
     </button>
@@ -152,6 +152,16 @@ body.topdown .hud .btn[data-topdown]{background:#FFF1A6;box-shadow:0 2px 0 var(-
 .err{color:#9B1C1C;font-weight:800}
 .center{text-align:center;align-items:stretch}
 
+.themes-label{font-family:var(--font-display);font-weight:700;text-transform:uppercase;letter-spacing:.08em;font-size:12px;margin-bottom:-6px}
+.themes{display:grid;grid-template-columns:repeat(4,1fr);gap:8px}
+.theme-btn{
+  display:flex;flex-direction:column;align-items:center;gap:4px;padding:8px 2px;cursor:pointer;
+  font-family:var(--font-display);font-weight:700;font-size:10px;line-height:1;text-transform:uppercase;letter-spacing:.03em;
+  background:var(--paper);border:3px solid var(--ink);border-radius:6px;box-shadow:0 3px 0 var(--ink);
+  -webkit-user-select:none;user-select:none;touch-action:manipulation;
+}
+.theme-btn .ti{font-size:22px;line-height:1}
+.theme-btn[aria-pressed=true]{background:#FFF1A6;transform:translateY(2px);box-shadow:0 1px 0 var(--ink)}
 @media (max-width:420px){
   .roller{gap:12px;padding:8px 10px}
   .btn.big{font-size:14px;padding:13px 14px}
@@ -290,9 +300,19 @@ body.topdown .hud .btn[data-topdown]{background:#FFF1A6;box-shadow:0 2px 0 var(-
       opacity: 0;
       transform: scale(0.9);
     }
+    .splash-play-btn.hidden {
+      visibility: hidden;
+      pointer-events: none;
+      animation: none;
+      opacity: 0;
+    }
     .splash-play-btn:not(.hidden) {
       opacity: 1;
       transform: scale(1);
+      position: relative;
+      z-index: 2;
+      touch-action: manipulation;
+      -webkit-tap-highlight-color: transparent;
     }
     .splash-play-btn:active:not(:disabled) {
       transform: translateY(4px);
@@ -316,6 +336,7 @@ body.topdown .hud .btn[data-topdown]{background:#FFF1A6;box-shadow:0 2px 0 var(-
     <button class="btn small light" id="btnCam" type="button">Reset Kamera</button>
     <button class="btn small light" data-topdown id="btnTop" type="button">POV Atas</button>
     <button class="btn small light" id="btnFlat" type="button">Tampilan Flat</button>
+    <button class="btn small light" id="btnTheme" type="button">Tema: Padang</button>
     <button class="btn small light" id="btnSnd" type="button">Suara: nyala</button>
     <button class="btn small light" id="btnMenu" type="button">Menu</button>
   </div>
@@ -341,6 +362,13 @@ body.topdown .hud .btn[data-topdown]{background:#FFF1A6;box-shadow:0 2px 0 var(-
       <li>Dua pion sewarna di satu petak menjadi balok. Balok tidak bisa dimakan dan lawan tidak bisa mendarat di atasnya.</li>
       <li>Masuk ke rumah harus dengan angka pas. Ketuk pion yang bersinar untuk memilih saat ada lebih dari satu pilihan.</li>
     </ul>
+    <div class="themes-label">Tema papan</div>
+    <div class="themes" id="themes" role="group" aria-label="Tema papan">
+      <button class="theme-btn" type="button" data-theme="padang" aria-pressed="true"><span class="ti">🌿</span><span>Padang</span></button>
+      <button class="theme-btn" type="button" data-theme="salju" aria-pressed="false"><span class="ti">❄️</span><span>Salju</span></button>
+      <button class="theme-btn" type="button" data-theme="hutan" aria-pressed="false"><span class="ti">🌲</span><span>Hutan</span></button>
+      <button class="theme-btn" type="button" data-theme="gurun" aria-pressed="false"><span class="ti">🌵</span><span>Gurun</span></button>
+    </div>
     <div class="modes">
       <button class="btn" type="button" data-mode="cpu1">Lawan 1 komputer</button>
       <button class="btn" type="button" data-mode="cpu3">Lawan 3 komputer</button>
@@ -454,7 +482,7 @@ renderer.setClearColor(0x000000,0);
 const scene=new THREE.Scene();
 const camera=new THREE.PerspectiveCamera(38,1,0.1,250);
 
-scene.add(new THREE.HemisphereLight(0xFFFFFF,0xB9D7A0,0.9));
+const hemi=new THREE.HemisphereLight(0xFFFFFF,0xB9D7A0,0.9); scene.add(hemi);
 const sun=new THREE.DirectionalLight(0xFFFFFF,0.7);
 sun.position.set(-10,22,14);
 sun.castShadow=true;
@@ -497,7 +525,7 @@ function addBox(b,cx,cy,cz,sx,sy,sz,color,o){
     b.idx.push(base,base+1,base+2,base,base+2,base+3);
     b.n+=4;
   }
-  if(o.edge!==false){
+  if(o.edge===true){ // garis tepi dimatikan secara default
     const k=o.edgeK||0.5,er=col.r*k,eg=col.g*k,eb=col.b*k;
     const pts=CORNERS.map(v=>tr(v[0]*hx,v[1]*hy,v[2]*hz));
     for(let e=0;e<EDGES.length;e++){
@@ -529,8 +557,9 @@ function buildBatch(b,opt){
   return g;
 }
 
-/* ---------- Papan, pulau, dekorasi ---------- */
+/* ---------- Papan, pulau, dekorasi (per tema) ---------- */
 const world=new THREE.Group(); scene.add(world);
+const TILE=1; // ukuran petak: makin dekat ke 1 makin rapat celahnya
 
 /* objek yang memudar saat menghalangi pandangan: awan dan pohon */
 const fades=[];
@@ -564,10 +593,255 @@ function updateFades(dt,pts){
     f.lmat.opacity=0.6*f.k;
   }
 }
-const DIRT=[0x9A6A3B,0x8A5C32,0xA9783F,0x7B4F2A];
-const STONE=[0x9AA5B1,0x8591A0,0xAEB8C2];
-const TB=makeBatch();
 
+/* ---------- Definisi tema ---------- */
+const THEMES={
+  padang:{label:'Padang',icon:'🌿',
+    skyTop:'#5EC1FF',skyBot:'#DDF4FF',hemiSky:0xFFFFFF,hemiGround:0xB9D7A0,hemiI:0.9,sunC:0xFFFFFF,sunI:0.7,
+    ground:0x6AD04E,dirt:[0x9A6A3B,0x8A5C32,0xA9783F,0x7B4F2A],stone:[0x9AA5B1,0x8591A0,0xAEB8C2],under:0x4A3B28,core:0x6E4A28,
+    track:[0xF1F5CF,0xE4EDB8],speck:3,cloud:[0.58,0.35,0.97],cloudN:6,
+    trees:[['oak',10],['birch',3]],
+    deco:[['house',3],['ore',3],['pond',2],['chest',1],['pumpkin',2],['hay',2],['bush',2]],
+    corners:[['house',8.4,-8.4],['pond',-8.4,8.4],['ore',8.4,8.4],['hay',-8.4,-8.4]],
+    scatter:[0xF0453A,0xFFD23F,0xFFFFFF,0xFF7EB6],fx:null},
+  salju:{label:'Salju',icon:'❄️',
+    skyTop:'#A8D2F2',skyBot:'#F4FAFF',hemiSky:0xFFFFFF,hemiGround:0xCFE3F5,hemiI:1.0,sunC:0xFFFFFF,sunI:0.6,
+    ground:0xF2F8FF,dirt:[0xDCEBF5,0xCFE2F0,0xE8F2FA],stone:[0x9FB6C9,0x8AA3B8,0xB2C6D6],under:0x5B6B7C,core:0x8AA3B8,
+    track:[0xFFFFFF,0xE3EEF8],speck:3,cloud:[0.58,0.18,0.93],cloudN:6,
+    trees:[['snowpine',13],['pine',4]],
+    deco:[['snowman',3],['ice',4],['snowrock',3],['igloo',1]],
+    corners:[['igloo',8.4,8.4],['snowman',-8.4,8.4],['ice',8.4,-8.4],['igloo',-8.4,-8.4]],
+    scatter:[0xFFFFFF,0xCDEBFA,0x9ADAF5],
+    fx:{n:320,range:18,h:16,vx:0.3,vy:-1.6,sway:0.5,bob:0,color:0xFFFFFF,size:0.17,op:0.95}},
+  hutan:{label:'Hutan',icon:'🌲',
+    skyTop:'#7FCBA8',skyBot:'#E6F6D8',hemiSky:0xE8FFE0,hemiGround:0x6FA060,hemiI:0.8,sunC:0xFFF6D0,sunI:0.62,
+    ground:0x3E9A3A,dirt:[0x6B4A2B,0x5E4126,0x78532F],stone:[0x7A8591,0x6A7580,0x8A949E],under:0x33261A,core:0x4F3720,
+    track:[0xE6D3A3,0xD9C28C],speck:4,cloud:[0.40,0.18,0.9],cloudN:5,
+    trees:[['oak',8],['darkoak',6],['birch',3],['pine',3]],
+    deco:[['mushroom',4],['log',3],['bush',3],['rock',1]],
+    corners:[['mushroom',8.4,8.4],['log',-8.4,8.4],['bush',8.4,-8.4],['rock',-8.4,-8.4]],
+    scatter:[0xB36BFF,0xFFD23F,0xFF7EB6,0xFFFFFF],
+    fx:{n:45,range:11,h:3.5,vx:0,vy:0.05,sway:0.5,bob:0.6,color:0xE6FF5A,size:0.16,op:0.9}},
+  gurun:{label:'Gurun',icon:'🌵',
+    skyTop:'#FFB86B',skyBot:'#FFF0CF',hemiSky:0xFFF4D8,hemiGround:0xE6C27A,hemiI:0.95,sunC:0xFFF1D0,sunI:0.85,
+    ground:0xEDC879,dirt:[0xE0B866,0xD2A456,0xEBC77A],stone:[0xC48F35,0xB5822E,0xD09C42],under:0x7A5A28,core:0xB5822E,
+    track:[0xFBE8B8,0xF1D794],speck:3,cloud:[0.10,0.40,0.97],cloudN:3,
+    trees:[['palm',6]],
+    deco:[['cactus',10],['dune',5],['rock',3],['pond',1]],
+    corners:[['pyramid',8.4,8.4],['pyramid',-8.4,-8.4],['dune',8.4,-8.4],['pond',-8.4,8.4]],
+    scatter:[0xE8C47A,0xC48F35,0xFFF1C2],
+    fx:{n:90,range:16,h:3,vx:1.6,vy:0,sway:0.3,bob:0,color:0xF2DDA6,size:0.1,op:0.55}}
+};
+const THEME_ORDER=['padang','salju','hutan','gurun'];
+
+/* ---------- Pohon ---------- */
+function leafyTree(b,x,z,s,trunk,leaf,h){
+  const u=0.5*s;
+  for(let i=0;i<h;i++) addBox(b,x,u*(i+0.5),z,0.4*s,u,0.4*s,jit(trunk,0.08));
+  const y0=u*h;
+  for(let ly=0;ly<3;ly++){
+    for(let ix=-1;ix<=1;ix++){
+      for(let iz=-1;iz<=1;iz++){
+        if(ly===2&&Math.abs(ix)+Math.abs(iz)>1) continue;
+        if(ly===1&&Math.abs(ix)===1&&Math.abs(iz)===1&&rnd()<0.4) continue;
+        addBox(b,x+ix*u,y0+u*(ly+0.5),z+iz*u,u,u,u,jit(leaf,0.12));
+      }
+    }
+  }
+}
+function pineTree(b,x,z,s,snow){
+  const u=0.5*s;
+  for(let i=0;i<2;i++) addBox(b,x,u*(i+0.5),z,0.36*s,u,0.36*s,jit(0x6B4426,0.08));
+  const layers=[
+    {r:2,ok:(a,c)=>Math.abs(a)+Math.abs(c)<=3},
+    {r:1,ok:()=>true},
+    {r:1,ok:(a,c)=>Math.abs(a)+Math.abs(c)<=1},
+    {r:0,ok:()=>true}
+  ];
+  layers.forEach((L,ly)=>{
+    const y=u*2+u*(ly+0.5);
+    for(let ix=-L.r;ix<=L.r;ix++){
+      for(let iz=-L.r;iz<=L.r;iz++){
+        if(!L.ok(ix,iz)) continue;
+        addBox(b,x+ix*u,y,z+iz*u,u,u,u,jit(0x2E7D4F,0.1));
+        if(snow&&(Math.abs(ix)===L.r||Math.abs(iz)===L.r)&&rnd()<0.7) addBox(b,x+ix*u,y+u/2+0.02,z+iz*u,u*0.98,0.06,u*0.98,0xFFFFFF,{edge:false});
+      }
+    }
+  });
+  if(snow) addBox(b,x,u*6+0.03,z,u*0.9,0.06,u*0.9,0xFFFFFF,{edge:false});
+}
+function palmTree(b,x,z,s){
+  const u=0.5*s;
+  for(let i=0;i<5;i++) addBox(b,x+i*0.05*s,u*(i+0.5),z,0.3*s,u,0.3*s,jit(0xA9783F,0.08));
+  const tx=x+0.25*s,ty=u*5;
+  addBox(b,tx,ty+0.08*s,z,0.45*s,0.12*s,0.45*s,jit(0x3DAA3A,0.1));
+  [[1,0],[-1,0],[0,1],[0,-1]].forEach(d=>{
+    for(let k=1;k<=2;k++){
+      const w=d[0]?[u,0.1*s,0.45*s]:[0.45*s,0.1*s,u];
+      addBox(b,tx+d[0]*k*u,ty+(k===2?-0.06*s:0.08*s),z+d[1]*k*u,w[0],w[1],w[2],jit(0x3DAA3A,0.12));
+    }
+  });
+  addBox(b,tx+0.1*s,ty-0.1*s,z+0.12*s,0.14*s,0.14*s,0.14*s,0x6B4426,{edge:false});
+  addBox(b,tx-0.1*s,ty-0.1*s,z-0.1*s,0.14*s,0.14*s,0.14*s,0x6B4426,{edge:false});
+}
+const TREE={
+  oak:(b,x,z,s)=>leafyTree(b,x,z,s,0x8A5A2E,0x4FBF3A,3),
+  birch:(b,x,z,s)=>leafyTree(b,x,z,s,0xE8E4D8,0x7CCB4A,3),
+  darkoak:(b,x,z,s)=>leafyTree(b,x,z,s,0x4A3320,0x2F7F2A,4),
+  pine:(b,x,z,s)=>pineTree(b,x,z,s,false),
+  snowpine:(b,x,z,s)=>pineTree(b,x,z,s,true),
+  palm:palmTree
+};
+
+/* ---------- Dekorasi kecil ---------- */
+const DECO={
+  house(b,x,z,s){
+    const w=0.9*s;
+    addBox(b,x,0.3*s,z,w,0.6*s,w,jit(0xB8854B,0.06));
+    addBox(b,x,0.68*s,z,1.0*s,0.16*s,1.0*s,jit(0xB5453A,0.06));
+    addBox(b,x,0.84*s,z,0.7*s,0.16*s,0.7*s,jit(0xB5453A,0.06));
+    addBox(b,x,0.17*s,z+w/2+0.01,0.2*s,0.34*s,0.03,0x4A2E17,{edge:false});
+    addBox(b,x+0.26*s,0.38*s,z+w/2+0.01,0.16*s,0.16*s,0.03,0x8FD3FF,{edge:false});
+  },
+  ore(b,x,z,s){
+    const a=0.5*s,c=pick([0x222222,0xD8A06A,0x4FE3E0,0xFFD23F,0xE04040]);
+    addBox(b,x,a/2,z,a,a,a,jit(pick([0x9AA5B1,0x8591A0,0xAEB8C2]),0.06));
+    for(let i=0;i<2;i++){
+      addBox(b,x+(rnd()-0.5)*a*0.6,a+0.01,z+(rnd()-0.5)*a*0.6,0.1,0.03,0.1,c,{edge:false});
+      addBox(b,x+(rnd()-0.5)*a*0.6,a*(0.25+rnd()*0.5),z+a/2+0.01,0.1,0.1,0.03,c,{edge:false});
+      addBox(b,x+a/2+0.01,a*(0.25+rnd()*0.5),z+(rnd()-0.5)*a*0.6,0.03,0.1,0.1,c,{edge:false});
+    }
+  },
+  pond(b,x,z,s){
+    addBox(b,x,0.02,z,1.6*s,0.04,1.2*s,0xE8D79A,{edge:false});
+    addBox(b,x,0.035,z,1.4*s,0.07,1.0*s,0x3F8FE0,{edge:false});
+    addBox(b,x+0.3*s,0.08,z-0.1*s,0.16,0.02,0.16,0x3FA64A,{edge:false});
+  },
+  chest(b,x,z,s){
+    addBox(b,x,0.2*s,z,0.5*s,0.4*s,0.4*s,0x9A6A3B);
+    addBox(b,x,0.45*s,z,0.5*s,0.1*s,0.4*s,0x7B4F2A);
+    addBox(b,x,0.32*s,z+0.21*s,0.08*s,0.12*s,0.03,0xFFD23F,{edge:false});
+  },
+  pumpkin(b,x,z,s){
+    addBox(b,x,0.2*s,z,0.45*s,0.4*s,0.45*s,0xF08A24);
+    addBox(b,x,0.45*s,z,0.08*s,0.1*s,0.08*s,0x3F7A2A,{edge:false});
+  },
+  hay(b,x,z,s){
+    addBox(b,x,0.25*s,z,0.55*s,0.5*s,0.55*s,0xE8C547);
+    addBox(b,x,0.25*s,z,0.58*s,0.1*s,0.58*s,0xB8902A,{edge:false});
+  },
+  bush(b,x,z,s){
+    addBox(b,x,0.17*s,z,0.4*s,0.34*s,0.4*s,jit(0x3F9A35,0.12));
+    addBox(b,x+0.3*s,0.12*s,z+0.1*s,0.3*s,0.24*s,0.3*s,jit(0x4FBF3A,0.12));
+    addBox(b,x-0.2*s,0.12*s,z-0.25*s,0.28*s,0.24*s,0.28*s,jit(0x3F9A35,0.12));
+  },
+  mushroom(b,x,z,s){
+    [[0,0,1],[0.4,0.25,0.7],[-0.35,0.3,0.55]].forEach(m=>{
+      const k=m[2]*s,mx=x+m[0]*s,mz=z+m[1]*s;
+      addBox(b,mx,0.12*k,mz,0.12*k,0.24*k,0.12*k,0xF2EAD8);
+      addBox(b,mx,0.3*k,mz,0.36*k,0.12*k,0.36*k,0xD9382E);
+      addBox(b,mx+0.05*k,0.37*k,mz,0.07*k,0.02,0.07*k,0xFFFFFF,{edge:false});
+      addBox(b,mx-0.07*k,0.37*k,mz+0.06*k,0.07*k,0.02,0.07*k,0xFFFFFF,{edge:false});
+    });
+  },
+  log(b,x,z,s){
+    addBox(b,x,0.14*s,z,0.9*s,0.28*s,0.28*s,0x7B4F2A);
+    addBox(b,x+0.46*s,0.14*s,z,0.03,0.22*s,0.22*s,0xC9A06A,{edge:false});
+    addBox(b,x-0.46*s,0.14*s,z,0.03,0.22*s,0.22*s,0xC9A06A,{edge:false});
+  },
+  rock(b,x,z,s){
+    addBox(b,x,0.15*s,z,0.45*s,0.3*s,0.4*s,jit(0x8A949E,0.1));
+    addBox(b,x+0.28*s,0.1*s,z+0.1*s,0.3*s,0.2*s,0.3*s,jit(0x9AA5B1,0.1));
+  },
+  snowrock(b,x,z,s){
+    addBox(b,x,0.15*s,z,0.5*s,0.3*s,0.45*s,jit(0x8A949E,0.1));
+    addBox(b,x,0.32*s,z,0.52*s,0.06,0.47*s,0xFFFFFF,{edge:false});
+    addBox(b,x+0.3*s,0.1*s,z+0.1*s,0.3*s,0.2*s,0.3*s,jit(0x9AA5B1,0.1));
+    addBox(b,x+0.3*s,0.21*s,z+0.1*s,0.32*s,0.05,0.32*s,0xFFFFFF,{edge:false});
+  },
+  snowman(b,x,z,s){
+    addBox(b,x,0.25*s,z,0.5*s,0.5*s,0.5*s,0xFFFFFF);
+    addBox(b,x,0.69*s,z,0.38*s,0.38*s,0.38*s,0xFFFFFF);
+    addBox(b,x,1.0*s,z,0.28*s,0.28*s,0.28*s,0xFFFFFF);
+    addBox(b,x,1.17*s,z,0.3*s,0.06*s,0.3*s,0x222222,{edge:false});
+    addBox(b,x,1.27*s,z,0.2*s,0.16*s,0.2*s,0x222222,{edge:false});
+    addBox(b,x,1.0*s,z+0.18*s,0.05*s,0.05*s,0.14*s,0xF08A24,{edge:false});
+    addBox(b,x-0.06*s,1.06*s,z+0.15*s,0.04*s,0.04*s,0.03,0x222222,{edge:false});
+    addBox(b,x+0.06*s,1.06*s,z+0.15*s,0.04*s,0.04*s,0.03,0x222222,{edge:false});
+    addBox(b,x,0.7*s,z+0.2*s,0.05*s,0.05*s,0.03,0x222222,{edge:false});
+  },
+  igloo(b,x,z,s){
+    const a=0.5*s;
+    for(let ix=-1;ix<=1;ix++) for(let iz=-1;iz<=1;iz++){
+      if(ix===0&&iz===0) continue;
+      if(ix===0&&iz===1) continue;
+      addBox(b,x+ix*a,a/2,z+iz*a,a,a,a,jit(0xEAF4FB,0.05));
+    }
+    for(let ix=-1;ix<=0;ix++) for(let iz=-1;iz<=0;iz++) addBox(b,x+(ix+0.5)*a,a*1.5,z+(iz+0.5)*a,a,a,a,jit(0xF5FAFF,0.04));
+    addBox(b,x,a/2,z+a*1.0,a*0.5,a*0.8,0.03,0x2A4A66,{edge:false});
+  },
+  ice(b,x,z,s){
+    const c=0x9ADAF5;
+    addBox(b,x,0.2*s,z,0.4*s,0.4*s,0.4*s,jit(c,0.06));
+    addBox(b,x+0.38*s,0.14*s,z+0.1*s,0.28*s,0.28*s,0.28*s,jit(c,0.06));
+    addBox(b,x+0.05*s,0.55*s,z,0.26*s,0.3*s,0.26*s,jit(0xBFE9FB,0.06));
+  },
+  cactus(b,x,z,s){
+    const u=0.4*s,g=0x2F9E4A;
+    for(let i=0;i<4;i++) addBox(b,x,u*(i+0.5),z,0.3*s,u,0.3*s,jit(g,0.08));
+    addBox(b,x-0.3*s,u*2.3,z,0.3*s,0.3*s,0.3*s,jit(g,0.08));
+    addBox(b,x-0.3*s,u*2.9,z,0.3*s,0.4*s,0.3*s,jit(g,0.08));
+    if(rnd()<0.7){
+      addBox(b,x+0.3*s,u*1.7,z,0.3*s,0.3*s,0.3*s,jit(g,0.08));
+      addBox(b,x+0.3*s,u*2.2,z,0.3*s,0.4*s,0.3*s,jit(g,0.08));
+    }
+    addBox(b,x,u*4+0.03,z,0.1*s,0.06,0.1*s,0xFF7EB6,{edge:false});
+  },
+  dune(b,x,z,s){
+    const c=0xEDC879;
+    addBox(b,x,0.15*s,z,1.3*s,0.3*s,1.1*s,jit(c,0.06));
+    addBox(b,x-0.05*s,0.4*s,z,0.8*s,0.2*s,0.7*s,jit(c,0.06));
+    addBox(b,x-0.1*s,0.58*s,z,0.4*s,0.16*s,0.4*s,jit(c,0.06));
+  },
+  pyramid(b,x,z,s){
+    const c=0xE3B857;
+    [[1.8,0.4],[1.3,0.4],[0.85,0.4],[0.4,0.35]].forEach((p,i)=>{
+      addBox(b,x,0.2*s+i*0.4*s,z,p[0]*s,p[1]*s,p[0]*s,jit(c,0.05));
+    });
+    addBox(b,x,0.14*s,z+0.9*s+0.01,0.26*s,0.28*s,0.03,0x3A2A18,{edge:false});
+  }
+};
+
+/* ---------- Cuaca / partikel ---------- */
+let fxSys=null;
+function setFx(cfg){
+  if(fxSys){ scene.remove(fxSys.pts); fxSys.pts.geometry.dispose(); fxSys.pts.material.dispose(); fxSys=null; }
+  if(!cfg||reduce) return;
+  const n=cfg.n,pos=new Float32Array(n*3),ph=new Float32Array(n);
+  for(let i=0;i<n;i++){
+    pos[i*3]=(Math.random()*2-1)*cfg.range; pos[i*3+1]=Math.random()*cfg.h; pos[i*3+2]=(Math.random()*2-1)*cfg.range;
+    ph[i]=Math.random()*6.28;
+  }
+  const geo=new THREE.BufferGeometry(); geo.setAttribute('position',new THREE.BufferAttribute(pos,3));
+  const mat=new THREE.PointsMaterial({color:cfg.color,size:cfg.size,transparent:true,opacity:cfg.op,depthWrite:false});
+  const pts=new THREE.Points(geo,mat); pts.frustumCulled=false; scene.add(pts);
+  fxSys={pts,cfg,ph};
+}
+function tickFx(dt,now){
+  if(!fxSys) return;
+  const c=fxSys.cfg,a=fxSys.pts.geometry.attributes.position,p=a.array,ph=fxSys.ph,t=now*0.001;
+  for(let i=0;i<ph.length;i++){
+    const k=i*3;
+    p[k]+=(c.vx+Math.sin(t+ph[i])*c.sway)*dt;
+    p[k+1]+=c.vy*dt+(c.bob?Math.cos(t*0.8+ph[i])*c.bob*dt:0);
+    p[k+2]+=Math.cos(t*0.7+ph[i])*c.sway*dt;
+    if(p[k+1]<0) p[k+1]=c.h; else if(p[k+1]>c.h) p[k+1]=0;
+    if(p[k]>c.range) p[k]=-c.range; else if(p[k]<-c.range) p[k]=c.range;
+  }
+  a.needsUpdate=true;
+}
+
+/* ---------- Peta petak ---------- */
 const trackIdx={};
 TRACK.forEach((cell,i)=>{ trackIdx[cell[0]+','+cell[1]]=i; });
 const homeOwner={};
@@ -575,127 +849,171 @@ for(let k=0;k<4;k++) for(let j=1;j<=5;j++){ const h=homeCell(k,j); homeOwner[h[0
 const finOwner={};
 FIN.forEach((c,k)=>{ finOwner[c[0]+','+c[1]]=k; });
 
-function cellColor(c,r){
+function cellColor(c,r,T){
   const key=c+','+r;
   if(key in trackIdx){
     const i=trackIdx[key];
     if(i%13===0) return COLORS[i/13].hex;
-    return ((c+r)%2===0)?0xFFF4D6:0xFFEBC4;
+    return ((c+r)%2===0)?T.track[0]:T.track[1];
   }
   if(key in homeOwner) return COLORS[homeOwner[key]].hex;
   if(key in finOwner) return COLORS[finOwner[key]].deep;
   if(c>=6&&c<=8&&r>=6&&r<=8) return (c===7&&r===7)?0xFFD23F:0xE2B94A;
-  const k=(c>=9?1:0)+(r>=9?2:0); // 0 TL, 1 TR, 2 BL->swap below
   const kk=(c<6&&r<6)?0:(c>8&&r<6)?1:(c>8&&r>8)?2:3;
   const rc=c-YARD0[kk][0],rr=r-YARD0[kk][1];
   if(rc>=1&&rc<=4&&rr>=1&&rr<=4) return COLORS[kk].pale;
   return COLORS[kk].hex;
 }
-// lapisan gelap di bawah papan supaya garis antar petak terlihat
-addBox(TB,0,-0.3,0,15,0.2,15,0x4A3B28,{edge:false});
-for(let r=0;r<15;r++){
-  for(let c=0;c<15;c++){
-    addBox(TB,c-7,-0.1,r-7,0.95,0.2,0.95,cellColor(c,r));
-  }
-}
-// tempat pion di kandang
-for(let k=0;k<4;k++){
-  for(let i=0;i<4;i++){
-    const gx=YARD0[k][0]+YARD_REL[i][0]-7.5,gz=YARD0[k][1]+YARD_REL[i][1]-7.5;
-    addBox(TB,gx,0.05,gz,1.35,0.1,1.35,COLORS[k].deep);
-    addBox(TB,gx,0.11,gz,0.95,0.04,0.95,0xFFFFFF,{edge:false});
-  }
-}
-// piala di tengah
-addBox(TB,0,0.08,0,0.64,0.16,0.64,0xB8860B);
-addBox(TB,0,0.33,0,0.2,0.34,0.2,0xFFD23F);
-addBox(TB,0,0.66,0,0.56,0.3,0.56,0xFFD23F);
-addBox(TB,-0.34,0.66,0,0.12,0.2,0.2,0xFFD23F);
-addBox(TB,0.34,0.66,0,0.12,0.2,0.2,0xFFD23F);
-addBox(TB,0,0.92,0,0.16,0.16,0.16,0xFFF1A0);
-// pulau melayang dan rumput di sekeliling papan
-for(let ix=-9;ix<=9;ix++){
-  for(let iz=-9;iz<=9;iz++){
-    if(Math.abs(ix)<=7&&Math.abs(iz)<=7) continue;
-    addBox(TB,ix,-0.1,iz,1,0.2,1,jit(0x6AD04E,0.07));
-  }
-}
-for(let ix=-9;ix<=9;ix++){
-  for(let iz=-9;iz<=9;iz++){
-    const edge=Math.abs(ix)===9||Math.abs(iz)===9||Math.abs(ix)===7&&Math.abs(iz)<=7&&false;
-    if(Math.abs(ix)>7||Math.abs(iz)>7){ if(edge) addBox(TB,ix,-0.35,iz,1,0.3,1,jit(pick(DIRT),0.05)); }
-    else if(Math.abs(ix)===7||Math.abs(iz)===7){ addBox(TB,ix,-0.35,iz,1,0.3,1,jit(pick(DIRT),0.05)); }
-  }
-}
-addBox(TB,0,-0.35,0,13,0.3,13,0x6E4A28,{edge:false});
-for(let k=1;k<=7;k++){
-  const n=19-2*(k-1),yc=-k,pal=k<=3?DIRT:STONE;
-  if(n<=2) break;
-  for(let i=0;i<n;i++){
-    for(let j=0;j<n;j++){
-      if(i===0||j===0||i===n-1||j===n-1) addBox(TB,-n/2+0.5+i,yc,-n/2+0.5+j,1,1,1,jit(pick(pal),0.07));
-    }
-  }
-  addBox(TB,0,yc,0,n-2,1,n-2,pal[1],{edge:false});
-}
-world.add(buildBatch(TB));
 
-// pohon dan bunga
-let DB=makeBatch();
-function addTree(x,z,s){
-  const u=0.5*s;
-  for(let i=0;i<3;i++) addBox(DB,x,u*(i+0.5),z,0.4*s,u,0.4*s,jit(0x8A5A2E,0.08));
-  const y0=u*3;
-  for(let ly=0;ly<3;ly++){
-    for(let ix=-1;ix<=1;ix++){
-      for(let iz=-1;iz<=1;iz++){
-        if(ly===2&&Math.abs(ix)+Math.abs(iz)>1) continue;
-        if(ly===1&&Math.abs(ix)===1&&Math.abs(iz)===1&&rnd()<0.4) continue;
-        addBox(DB,x+ix*u,y0+u*(ly+0.5),z+iz*u,u,u,u,jit(0x4FBF3A,0.12));
-      }
-    }
-  }
-}
-[[8.6,8.4,0.9],[8.6,-1,1],[8.5,-8.5,0.95],[-8.6,8.5,0.9],[-8.6,0.5,1],[-8.5,-8.5,1],[0.5,8.6,0.9],[-4,8.6,0.85],[4.5,8.6,0.9],[0,-8.6,1],[-4.5,-8.6,0.9],[4.5,-8.6,0.9],[8.6,4.5,0.85],[-8.6,-4.5,0.9]]
-  .forEach(t=>{ DB=makeBatch(); addTree(t[0],t[1],t[2]); fadeable(world,DB,t[0],1.5*t[2],t[1],1.6*t[2]+0.3); });
-DB=makeBatch();
-const FLOWERS=[0xF0453A,0xFFD23F,0xFFFFFF,0xFF7EB6];
-for(let i=0;i<60;i++){
-  const x=(rnd()*19)-9.5,z=(rnd()*19)-9.5;
-  if(Math.abs(x)<7.7&&Math.abs(z)<7.7) continue;
-  addBox(DB,x,0.07,z,0.14,0.14,0.14,pick(FLOWERS),{edge:false});
-}
-world.add(buildBatch(DB));
-
-// awan
+/* ---------- Awan ---------- */
 const clouds=[];
-function makeCloud(x,y,z,s){
+const CLOUD_POS=[[-16,8,-8,1.1],[-4,10,-13,1.3],[12,8.5,3,1],[18,11,-10,1.2],[-20,7.5,7,0.9],[5,12,-16,1.4]];
+function makeCloud(x,y,z,s,T){
   const b=makeBatch(),n=5+Math.floor(rnd()*4);
   for(let i=0;i<n;i++){
     addBox(b,(i-n/2)*1.3+(rnd()-0.5)*0.6,(rnd()-0.5)*0.5,(rnd()-0.5)*1.2,1.6+rnd()*1.6,0.8+rnd()*0.4,1.4+rnd(),
-      new THREE.Color().setHSL(0.58,0.35,0.97-rnd()*0.04),{edge:false});
+      new THREE.Color().setHSL(T.cloud[0],T.cloud[1],T.cloud[2]-rnd()*0.04),{edge:false});
   }
   const g=fadeable(scene,b,x,y,z,3.2*s,{cast:false,receive:false,follow:true,base:0.9});
   g.position.set(x,y,z); g.scale.setScalar(s);
   clouds.push({g,speed:0.18+rnd()*0.22});
 }
-makeCloud(-16,8,-8,1.1); makeCloud(-4,10,-13,1.3); makeCloud(12,8.5,3,1);
-makeCloud(18,11,-10,1.2); makeCloud(-20,7.5,7,0.9); makeCloud(5,12,-16,1.4);
 
-// bintang di petak aman
-(function(){
-  const cv=document.createElement('canvas'); cv.width=cv.height=128;
-  const g=cv.getContext('2d'); g.translate(64,64);
-  g.beginPath();
-  for(let i=0;i<10;i++){ const rr=i%2?22:50,a=-Math.PI/2+i*Math.PI/5; g.lineTo(Math.cos(a)*rr,Math.sin(a)*rr); }
-  g.closePath(); g.fillStyle='#FFC21A'; g.fill(); g.lineWidth=8; g.lineJoin='round'; g.strokeStyle='#8A5A00'; g.stroke();
-  const tex=new THREE.CanvasTexture(cv);
-  const geo=new THREE.PlaneGeometry(0.7,0.7),mat=new THREE.MeshBasicMaterial({map:tex,transparent:true,depthWrite:false});
+/* ---------- Pembangun dunia ---------- */
+function clearGroup(g){
+  g.traverse(o=>{
+    if(o.geometry) o.geometry.dispose();
+    if(o.material&&o.material!==MAT&&o.material!==LINE_MAT){ if(o.material.map) o.material.map.dispose(); o.material.dispose(); }
+  });
+  while(g.children.length) g.remove(g.children[0]);
+}
+let curTheme='padang';
+function buildWorld(key){
+  const T=THEMES[key]||THEMES.padang; curTheme=THEMES[key]?key:'padang';
+  clearGroup(world);
+  fades.length=0;
+  clouds.forEach(c=>{ scene.remove(c.g); clearGroup(c.g); });
+  clouds.length=0;
+  seed=77123;
+
+  // langit dan cahaya
+  document.documentElement.style.setProperty('--sky-top',T.skyTop);
+  document.documentElement.style.setProperty('--sky-bot',T.skyBot);
+  hemi.color.setHex(T.hemiSky); hemi.groundColor.setHex(T.hemiGround); hemi.intensity=T.hemiI;
+  sun.color.setHex(T.sunC); sun.intensity=T.sunI;
+
+  // papan: petak rapat (TILE=0.99) di atas lapisan gelap
+  const TB=makeBatch();
+  addBox(TB,0,-0.3,0,15,0.2,15,T.under,{edge:false});
+  for(let r=0;r<15;r++){
+    for(let c=0;c<15;c++){
+      addBox(TB,c-7,-0.1,r-7,TILE,0.2,TILE,cellColor(c,r,T),{edgeK:0.72});
+    }
+  }
+  // tekstur piksel kecil di atas petak
+  for(let r=0;r<15;r++){
+    for(let c=0;c<15;c++){
+      const key2=c+','+r;
+      if(key2 in trackIdx&&trackIdx[key2]%13===8) continue;
+      if(c>=6&&c<=8&&r>=6&&r<=8) continue;
+      const base=cellColor(c,r,T);
+      for(let n=0;n<T.speck;n++){
+        const sz=0.1+rnd()*0.12;
+        addBox(TB,c-7+(rnd()-0.5)*0.74,0.008,r-7+(rnd()-0.5)*0.74,sz,0.02,sz,jit(base,0.16),{edge:false});
+      }
+    }
+  }
+  // tempat pion di kandang
+  for(let k=0;k<4;k++){
+    for(let i=0;i<4;i++){
+      const gx=YARD0[k][0]+YARD_REL[i][0]-7.5,gz=YARD0[k][1]+YARD_REL[i][1]-7.5;
+      addBox(TB,gx,0.05,gz,1.35,0.1,1.35,COLORS[k].deep);
+      addBox(TB,gx,0.11,gz,0.95,0.04,0.95,0xFFFFFF,{edge:false});
+    }
+  }
+  // piala di tengah
+  addBox(TB,0,0.08,0,0.64,0.16,0.64,0xB8860B);
+  addBox(TB,0,0.33,0,0.2,0.34,0.2,0xFFD23F);
+  addBox(TB,0,0.66,0,0.56,0.3,0.56,0xFFD23F);
+  addBox(TB,-0.34,0.66,0,0.12,0.2,0.2,0xFFD23F);
+  addBox(TB,0.34,0.66,0,0.12,0.2,0.2,0xFFD23F);
+  addBox(TB,0,0.92,0,0.16,0.16,0.16,0xFFF1A0);
+  // pulau melayang di sekeliling papan
+  for(let ix=-9;ix<=9;ix++){
+    for(let iz=-9;iz<=9;iz++){
+      if(Math.abs(ix)<=7&&Math.abs(iz)<=7) continue;
+      addBox(TB,ix,-0.1,iz,1,0.2,1,jit(T.ground,0.07));
+    }
+  }
+  for(let ix=-9;ix<=9;ix++){
+    for(let iz=-9;iz<=9;iz++){
+      const edge=Math.abs(ix)===9||Math.abs(iz)===9;
+      if(Math.abs(ix)>7||Math.abs(iz)>7){ if(edge) addBox(TB,ix,-0.35,iz,1,0.3,1,jit(pick(T.dirt),0.05)); }
+      else if(Math.abs(ix)===7||Math.abs(iz)===7){ addBox(TB,ix,-0.35,iz,1,0.3,1,jit(pick(T.dirt),0.05)); }
+    }
+  }
+  addBox(TB,0,-0.35,0,13,0.3,13,T.core,{edge:false});
+  for(let k=1;k<=7;k++){
+    const n=19-2*(k-1),yc=-k,pal=k<=3?T.dirt:T.stone;
+    if(n<=2) break;
+    for(let i=0;i<n;i++){
+      for(let j=0;j<n;j++){
+        if(i===0||j===0||i===n-1||j===n-1) addBox(TB,-n/2+0.5+i,yc,-n/2+0.5+j,1,1,1,jit(pick(pal),0.07));
+      }
+    }
+    addBox(TB,0,yc,0,n-2,1,n-2,pal[1],{edge:false});
+  }
+  world.add(buildBatch(TB));
+
+  // slot di cincin pulau, diacak lalu dibagi ke pohon dan dekorasi
+  const slots=[];
+  for(let t=-7;t<=7;t+=2) slots.push([t,8.65],[t,-8.65],[8.65,t],[-8.65,t]);
+  for(let i=slots.length-1;i>0;i--){ const j=Math.floor(rnd()*(i+1)); const tmp=slots[i]; slots[i]=slots[j]; slots[j]=tmp; }
+  let si=0;
+  T.trees.forEach(tr=>{
+    for(let i=0;i<tr[1]&&si<slots.length;i++){
+      const p=slots[si++],s=0.85+rnd()*0.2,D=makeBatch();
+      TREE[tr[0]](D,p[0],p[1],s);
+      fadeable(world,D,p[0],1.5*s,p[1],1.6*s+0.3);
+    }
+  });
+  const DB=makeBatch();
+  T.deco.forEach(d=>{
+    for(let i=0;i<d[1]&&si<slots.length;i++){
+      const p=slots[si++];
+      DECO[d[0]](DB,p[0]+(rnd()-0.5)*0.3,p[1]+(rnd()-0.5)*0.3,0.9+rnd()*0.25);
+    }
+  });
+  T.corners.forEach(c=>DECO[c[0]](DB,c[1],c[2],1.1));
+  for(let i=0;i<80;i++){
+    const x=(rnd()*19)-9.5,z=(rnd()*19)-9.5;
+    if(Math.abs(x)<7.7&&Math.abs(z)<7.7) continue;
+    addBox(DB,x,0.07,z,0.14,0.14,0.14,pick(T.scatter),{edge:false});
+  }
+  world.add(buildBatch(DB));
+
+  // awan
+  CLOUD_POS.slice(0,T.cloudN).forEach(p=>makeCloud(p[0],p[1],p[2],p[3],T));
+
+  // bintang di petak aman
+  const scv=document.createElement('canvas'); scv.width=scv.height=128;
+  const g2=scv.getContext('2d'); g2.translate(64,64);
+  g2.beginPath();
+  for(let i=0;i<10;i++){ const rr=i%2?22:50,a=-Math.PI/2+i*Math.PI/5; g2.lineTo(Math.cos(a)*rr,Math.sin(a)*rr); }
+  g2.closePath(); g2.fillStyle='#FFC21A'; g2.fill(); g2.lineWidth=8; g2.lineJoin='round'; g2.strokeStyle='#8A5A00'; g2.stroke();
+  const tex=new THREE.CanvasTexture(scv);
+  const sgeo=new THREE.PlaneGeometry(0.7,0.7),smat=new THREE.MeshBasicMaterial({map:tex,transparent:true,depthWrite:false});
   TRACK.forEach((cell,i)=>{
     if(i%13!==8) return;
-    const m=new THREE.Mesh(geo,mat); m.rotation.x=-Math.PI/2; m.position.set(cell[0]-7,0.012,cell[1]-7); m.renderOrder=2; world.add(m);
+    const m=new THREE.Mesh(sgeo,smat); m.rotation.x=-Math.PI/2; m.position.set(cell[0]-7,0.03,cell[1]-7); m.renderOrder=2; world.add(m);
   });
-})();
+
+  setFx(T.fx);
+}
+let savedTheme='padang';
+try{ savedTheme=localStorage.getItem('ludoTheme')||'padang'; }catch(e){}
+if(!THEMES[savedTheme]) savedTheme='padang';
+buildWorld(savedTheme);
 
 /* ---------- Pion ---------- */
 function makePawn(hex){
@@ -1121,6 +1439,18 @@ function startGame(m){
 
 document.querySelectorAll('[data-mode]').forEach(b=>b.addEventListener('click',()=>{ ensureAudio(); startGame(b.getAttribute('data-mode')); }));
 $('btnRoll').addEventListener('click',()=>{ ensureAudio(); doRoll(); });
+function markTheme(k){
+  document.querySelectorAll('.theme-btn').forEach(b=>b.setAttribute('aria-pressed',b.getAttribute('data-theme')===k?'true':'false'));
+  $('btnTheme').textContent='Tema: '+THEMES[k].label;
+}
+function setTheme(k){
+  if(!THEMES[k]) k='padang';
+  buildWorld(k); markTheme(k);
+  try{ localStorage.setItem('ludoTheme',k); }catch(e){}
+}
+markTheme(curTheme);
+document.querySelectorAll('.theme-btn').forEach(b=>b.addEventListener('click',()=>setTheme(b.getAttribute('data-theme'))));
+$('btnTheme').addEventListener('click',()=>{ setTheme(THEME_ORDER[(THEME_ORDER.indexOf(curTheme)+1)%THEME_ORDER.length]); });
 $('btnCam').addEventListener('click',resetCam);
 $('btnSnd').addEventListener('click',()=>{ muted=!muted; ensureAudio(); $('btnSnd').textContent='Suara: '+(muted?'mati':'nyala'); });
 $('btnMenu').addEventListener('click',()=>{ menuOpen=true; $('win').hidden=true; $('menu').hidden=false; });
@@ -1182,6 +1512,7 @@ function frame(now){
   camera.position.set(camTarget.x+dist*Math.sin(cam.yaw)*cp,camTarget.y+dist*Math.sin(cam.pitch),camTarget.z+dist*Math.cos(cam.yaw)*cp);
   camera.lookAt(camTarget);
   if(!reduce) clouds.forEach(c=>{ c.g.position.x+=c.speed*dt; if(c.g.position.x>26) c.g.position.x=-26; });
+  tickFx(dt,now);
   tokens.forEach(t=>{
     const mk=t.mesh.userData.marker;
     if(mk.visible){ mk.position.y=1.15+Math.sin(now*0.005)*0.1; mk.rotation.y+=dt*2.5; }
@@ -1239,13 +1570,14 @@ requestAnimationFrame(frame);
       if (progress >= 100) {
         clearInterval(splashProgressTimer);
         const playBtn = document.getElementById('splashPlayBtn');
-        if (playBtn) playBtn.classList.remove('hidden');
+        if (playBtn) { playBtn.disabled = false; playBtn.classList.remove('hidden'); }
       }
     }, 150);
 
     const playBtnEl = document.getElementById('splashPlayBtn');
     if (playBtnEl) {
       playBtnEl.addEventListener('click', () => {
+        try { ensureAudio(); } catch (e) {}
         document.getElementById('splash-screen').classList.add('hidden');
       });
     }
