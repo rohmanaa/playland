@@ -281,6 +281,36 @@
       color: var(--yellow-dark);
     }
 
+    /* Tombol terpisah: Poin & Lencana (buka panel poin, independen dari profil) */
+    .btn-player-stats {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      height: 42px;
+      padding: 0 14px;
+      border-radius: 999px;
+      border: 2px solid var(--card-border);
+      background: var(--card-bg);
+      font-family: inherit;
+      font-size: 12.5px;
+      font-weight: 800;
+      color: var(--yellow-dark);
+      cursor: pointer;
+      box-shadow: 0 8px 24px rgba(27, 85, 153, 0.14);
+      transition: transform 0.2s, box-shadow 0.2s;
+      user-select: none;
+    }
+
+    .btn-player-stats:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 12px 28px rgba(27, 85, 153, 0.2);
+    }
+
+    .btn-player-stats:focus-visible {
+      outline: 2px solid var(--yellow-dark);
+      outline-offset: 2px;
+    }
+
     /* ==========================================================================
        POIN & LENCANA ASLI (dihitung dari aktivitas perangkat, bukan angka karangan)
        ========================================================================== */    .pstats-card {
@@ -373,6 +403,76 @@
 
     @media (max-width: 420px) {
       .pstats-badges { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    }
+
+    /* ==========================================================================
+       MODAL POIN & LENCANA (terpisah dari profil — punya tombol buka sendiri)
+       ========================================================================== */
+    .pstats-modal-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(10, 25, 47, 0.55);
+      backdrop-filter: blur(4px);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      z-index: 3000;
+      padding: 20px;
+    }
+
+    .pstats-modal-overlay.visible {
+      display: flex;
+    }
+
+    .pstats-modal-card {
+      position: relative;
+      background: var(--card-bg);
+      border: 2px solid var(--card-border);
+      border-radius: 28px;
+      padding: 28px 26px 24px;
+      max-width: 380px;
+      width: 100%;
+      max-height: calc(100vh - 32px);
+      overflow-y: auto;
+      box-shadow: var(--shadow-hover);
+      text-align: center;
+      animation: namePop 0.35s cubic-bezier(0.34, 1.56, 0.64, 1);
+    }
+
+    .pstats-modal-card h2 {
+      font-family: 'Fredoka', cursive, sans-serif;
+      font-size: 22px;
+      color: var(--ink);
+      margin: 10px 0 6px;
+    }
+
+    .pstats-modal-card p {
+      font-size: 13px;
+      font-weight: 700;
+      color: var(--ink-soft);
+      margin-bottom: 16px;
+      line-height: 1.5;
+    }
+
+    .pstats-modal-close {
+      position: absolute;
+      top: 12px;
+      right: 12px;
+      width: 34px;
+      height: 34px;
+      border-radius: 50%;
+      border: 2px solid var(--card-border);
+      background: var(--card-inner);
+      color: var(--ink-soft);
+      font-size: 15px;
+      font-weight: 800;
+      cursor: pointer;
+      transition: transform 0.15s, background 0.15s;
+    }
+
+    .pstats-modal-close:hover {
+      transform: scale(1.08);
+      background: var(--sky-soft);
     }
 
     /* ==========================================================================
@@ -2331,6 +2431,8 @@
       .btn-theme-toggle > span:not(.iconify), .btn-theme-toggle .theme-label { display: none; }
       .profile-pill { padding: 4px; width: 42px; height: 42px; justify-content: center; gap: 0; }
       .profile-info, .profile-pill .profile-name, .profile-pill .profile-badge { display: none !important; }
+      .btn-player-stats { width: 42px; height: 42px; padding: 0; justify-content: center; border-radius: 13px; }
+      .btn-player-stats .bstats-count, .btn-player-stats .bstats-label { display: none; }
       .search-wrapper { grid-column: 1 / -1; grid-row: 2; order: initial; width: 100%; max-width: none; }
       .search-bar { height: 46px; font-size: 16px; padding-left: 46px; padding-right: 14px; }
       .search-icon-box { left: 14px; }
@@ -2375,7 +2477,7 @@
       .mobile-menu-btn { width: 40px; height: 40px; }
       .brand-logo { height: 38px; max-width: 35vw; }
       .topbar-right-group { gap: 4px; }
-      .btn-theme-toggle, .profile-pill { width: 38px; height: 38px; }
+      .btn-theme-toggle, .profile-pill, .btn-player-stats { width: 38px; height: 38px; }
       .catalog-grid { gap: 8px; }
       .game-screen-wrapper { aspect-ratio: 3 / 2; min-height: 210px; }
       .hikmah-daily-banner { flex-direction: column; }
@@ -2647,15 +2749,18 @@
           <span id="themeToggleText">Mode Terang</span>
         </button>
 
+        <!-- TOMBOL TERPISAH: POIN & LENCANA PEMAIN -->
+        <button class="btn-player-stats" id="btnPlayerStats" type="button" title="Lihat Poin & Lencana" aria-label="Lihat poin dan lencana pemain">
+          <svg class="iconify" aria-hidden="true" style="font-size: 16px;"><use href="#i-fluent-color-star-24"/></svg>
+          <span class="bstats-count" id="headerCoinsCount">0</span>
+          <span class="bstats-label">Poin</span>
+        </button>
+
         <!-- Player Profile (Nama Pemain - Simulasi Storage) -->
         <div class="profile-pill" id="userProfilePill" role="button" tabindex="0" title="Ganti Nama Pemain" aria-label="Ganti nama pemain">
           <img src="images/avatar-ahmad.png" alt="Avatar pemain" onerror="imgFallback(this)" class="profile-avatar">
           <div class="profile-info">
             <span class="profile-name"><span id="playerNameLabel">Ahmad</span> <span>▾</span></span>
-            <span class="profile-badge" title="Poin asli dari aktivitas main di perangkat ini">
-              <svg class="iconify" aria-hidden="true" style="font-size: 16px;"><use href="#i-fluent-color-star-24"/></svg>
-              <span id="headerCoinsCount">0</span> Poin
-            </span>
           </div>
         </div>
       </div>
@@ -3065,7 +3170,6 @@
       <div class="name-modal-emoji">👤</div>
       <h2>Selamat Datang di PlayLand!</h2>
       <p>Siapa nama kamu? Nama ini akan tampil di pojok kanan atas saat bermain.</p>
-      <div class="pstats-card" id="profileStatsCard" hidden></div>
       <input type="text" id="playerNameInput" class="name-modal-input" placeholder="Tulis namamu di sini..." maxlength="20" autocomplete="off">
       <label class="name-modal-label" for="breakLimitSelect">Pengingat istirahat</label>
       <select id="breakLimitSelect" class="name-modal-input">
@@ -3077,6 +3181,18 @@
         <option value="0">Nonaktif</option>
       </select>
       <button class="btn-save-name" id="btnSaveName">Mulai Bermain ▶</button>
+    </div>
+  </div>
+
+  <!-- MODAL POIN & LENCANA PEMAIN (TERPISAH DARI PROFIL — DIBUKA LEWAT TOMBOL POIN) -->
+  <div class="pstats-modal-overlay" id="statsModalOverlay" role="dialog" aria-modal="true" aria-label="Poin dan Lencana Pemain">
+    <div class="pstats-modal-card">
+      <button class="pstats-modal-close" id="btnCloseStats" type="button" aria-label="Tutup panel poin">✕</button>
+      <div class="name-modal-emoji">⭐</div>
+      <h2>Poin &amp; Lencana</h2>
+      <p>Skor aslimu dari aktivitas bermain di perangkat ini.</p>
+      <div class="pstats-card" id="profileStatsCard" hidden></div>
+      <button class="btn-save-name" id="btnCloseStatsOk" type="button">Tutup</button>
     </div>
   </div>
 
@@ -3540,7 +3656,6 @@
       nameModalOverlay.classList.add('visible');
       playerNameInput.value = safeStore.get(PLAYER_NAME_KEY) || '';
       const bl = document.getElementById('breakLimitSelect'); if (bl) bl.value = String(getBreakLimit());
-      renderProfileStats();
       setTimeout(() => playerNameInput.focus(), 50);
     }
 
@@ -3577,6 +3692,28 @@
     } else {
       openNameModal();
     }
+
+    // =========================================================================
+    // MODAL POIN & LENCANA (terpisah dari profil — dibuka lewat tombol Poin)
+    // =========================================================================
+    const statsModalOverlay = document.getElementById('statsModalOverlay');
+    const btnPlayerStats = document.getElementById('btnPlayerStats');
+
+    function openStatsModal() {
+      renderProfileStats();
+      statsModalOverlay.classList.add('visible');
+    }
+
+    function closeStatsModal() {
+      statsModalOverlay.classList.remove('visible');
+    }
+
+    btnPlayerStats.addEventListener('click', openStatsModal);
+    document.getElementById('btnCloseStats').addEventListener('click', closeStatsModal);
+    document.getElementById('btnCloseStatsOk').addEventListener('click', closeStatsModal);
+    statsModalOverlay.addEventListener('click', (e) => {
+      if (e.target === statsModalOverlay) closeStatsModal();
+    });
 
     // =========================================================================
     // ROTATING HADITS & HIKMAH
@@ -4342,6 +4479,7 @@
       if (exitModal && exitModal.style.display === 'flex') exitModal.style.display = 'none';
       if (document.getElementById('gameScreenWrapper').classList.contains('pseudo-fullscreen')) setPseudoFs(false);
       if (nameModalOverlay.classList.contains('visible') && safeStore.get(PLAYER_NAME_KEY)) closeNameModal();
+      if (statsModalOverlay.classList.contains('visible')) closeStatsModal();
     });
 
     document.getElementById('userProfilePill').addEventListener('click', () => {
